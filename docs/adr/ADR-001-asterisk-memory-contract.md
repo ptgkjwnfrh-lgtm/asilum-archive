@@ -4,7 +4,7 @@
   `GET/POST /api/asterisk/memory`, schema v14; drawer in the shell, full page
   at `/asterisk`; brand/user follows graduated to `user_follows`)
 - Date: 2026-07-15
-- Deciders: owner + Codex review
+- Deciders: owner
 
 ## Context
 

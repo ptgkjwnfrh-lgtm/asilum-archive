@@ -5,7 +5,7 @@
 //        and a refusal names its code; nothing is trimmed in silence.
 // Law 3: the table is registered everywhere a per-person table must be:
 //        adoption moves rows into the account (no-clobber), erasure removes
-//        them, export lists them (AGENTS.md § Identity).
+//        them, export lists them (docs/engineering/architecture.md § Identity).
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

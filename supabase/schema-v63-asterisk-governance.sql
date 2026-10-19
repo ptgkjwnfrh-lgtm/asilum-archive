@@ -35,7 +35,7 @@
 --                             an admin confirms is added to the library").
 --
 -- Numbered 63: v61 is the latest applied on the live ledger (read 17 Oct
--- 2026); v62 is reserved by the unpushed codex/native-storefront branch.
+-- 2026); v62 is reserved by the unpushed the native-storefront branch branch.
 --
 -- ROLLBACK: DROP TABLE IF EXISTS replica_patterns; DROP TABLE IF EXISTS
 --           asterisk_queue; DROP TABLE IF EXISTS asterisk_actions;

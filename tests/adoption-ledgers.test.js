@@ -1,3 +1,7 @@
+// tests/adoption-ledgers.test.js — Sign-in adoption and the corroboration
+// ledgers: one person never counts as two edge contributors or popularity
+// engagers, and account deletion reaches what was done before sign-in.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

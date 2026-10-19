@@ -1,5 +1,5 @@
 // scripts/measure-v2-gates.mjs — the V.2 launch gates, composed and declared
-// (docs/v2/CLAUDE-BACKEND-HANDOFF.md § Sunday order of work: "Measure
+// (the V.2 backend plan, order of work: "Measure
 // constraint violations, entity/intersection precision, duplicate/skip rate,
 // catalog coverage, sourced-claim coverage, fit abstention/error rate …
 // Declare thresholds against the existing baseline before tuning").

@@ -10,7 +10,7 @@
 -- picture), and an author-written alt. Legacy rows read as `transmission`
 -- (or `post` where image_url was set — the read path decides).
 --
--- Numbered 57: v54/v55 are Codex's on its open branches; v56 is the eBay
+-- Numbered 57: v54/v55 are on other open branches; v56 is the eBay
 -- feed publication on market/ebay-bulk-feed.
 --
 -- ROLLBACK: ALTER TABLE editorial_posts DROP COLUMN IF EXISTS post_kind,

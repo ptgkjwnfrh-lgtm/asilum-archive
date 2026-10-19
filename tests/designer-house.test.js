@@ -152,7 +152,7 @@ test("law 3: no sourced record and a miss are said as what they are, and never w
   assert.ok(plain.total >= 13);
 });
 
-test("the resolver hands Codex both canonical ids for a pair, and the chronology for a name", () => {
+test("the resolver hands the client both canonical ids for a pair, and the chronology for a name", () => {
   const pair = resolveOverviewForQuery("tom ford: gucci", { pool: CATALOG });
   assert.deepEqual(pair.query, { text: "tom ford: gucci", designerId: "tom-ford", houseId: "gucci" });
   assert.equal(pair.overview.id, "tom-ford");

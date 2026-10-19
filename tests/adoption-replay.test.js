@@ -1,3 +1,7 @@
+// tests/adoption-replay.test.js — Operation replay across sign-in: a replayed
+// operation is refused rather than applied twice, rekeying is collision-safe,
+// and identities match exactly, never as substrings.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

@@ -7,7 +7,7 @@
 // popup, so this opens only from the deck's Post disc). Turn to a type and
 // tap the centre, or let it dwell, to enter the composer.
 //
-// Honesty: the composer (lib/wire/compose.js) derives transmission / post /
+// Honesty: the composer (lib/posts/compose.js) derives transmission / post /
 // video from what is attached, so TRANSM, STILL and MOTION all open it with
 // a hint; BRDCST opens it on the event attachment; ECHO opens it marked
 // temporary (24 hours). LISTING is the native storefront (blueprint

@@ -1,3 +1,7 @@
+// tests/asterisk-explain.test.js — ASTERISK's explanations: seed products
+// explain without a database, corrections must name a product, and saved
+// corrections surface in later explanations.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

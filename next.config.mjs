@@ -1,3 +1,8 @@
+// next.config.mjs — Next.js configuration for ASILUM: the security headers
+// (a strict Content-Security-Policy that allows only Stripe's script, HSTS in
+// production, no framing) and the redirects that send every alternate host
+// to the canonical site origin (lib/site.js).
+
 import { REDIRECT_HOSTS, SITE_ORIGIN } from "./lib/site.js";
 
 const isProduction = process.env.NODE_ENV === "production";

@@ -1,3 +1,7 @@
+// tests/storefront-fees.test.js — Passenger fees: $1 per unit plus 1.5% of
+// merchandise rounded half up, shipping and tax excluded from the base, and
+// discounts allocated to the cent.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import {

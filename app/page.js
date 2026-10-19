@@ -28,7 +28,7 @@ import { EchoRail } from "./components/EchoRail.jsx";
 import PlaceCard from "./components/PlaceCard.jsx";
 import PageMast from "./components/PageMast.jsx";
 import Wordmark from "./components/Wordmark.jsx";
-import WireCard from "./components/WireCard.jsx";
+import PostCard from "./components/PostCard.jsx";
 import PieceFloat from "./components/PieceFloat.jsx";
 import { createPortal } from "react-dom";
 import TagRow from "./components/TagChip.jsx";
@@ -36,7 +36,7 @@ import { STOREFRONT_CATEGORIES } from "../lib/storefront/contracts.js";
 import { tagsFor, visibleTags } from "../lib/tagging/grammar.js";
 import { SAMPLE_POSTS } from "../lib/model/media.js";
 import { saveView, readView, restoreAnchor, newAbove, currentAnchor, settleAnchor } from "../lib/viewstate.js";
-import { fetchWire, fetchEngagement, toggleEngagement, fetchPost } from "../lib/social.js";
+import { fetchPosts, fetchEngagement, toggleEngagement, fetchPost } from "../lib/social.js";
 
 const DWELL_FLUSH_MS = 5000;
 const DWELL_MIN_MS = 2000;
@@ -230,7 +230,7 @@ export default function Home() {
 
   const [pinned, setPinned] = useState(null); // ?post=<id>
   const loadPosts = useCallback(() => {
-    fetchWire("user")
+    fetchPosts("user")
       .then((w) => {
         setPosts(w.posts || []);
         const ids = (w.posts || []).map((x) => x.serverId).filter((v) => v != null);
@@ -818,7 +818,7 @@ export default function Home() {
   // cards is one masonry segment; a STILL or MOTION stands full width; a
   // standalone BRDCST is a thin strip. The wheel overlaps slightly (CSS).
   function renderCard(it) {
-    if (it.__post) return <WireCard key={it.id} post={it.__post} engagement={engagement} onEngage={engage} />;
+    if (it.__post) return <PostCard key={it.id} post={it.__post} engagement={engagement} onEngage={engage} />;
     if (it.__place) return <PlaceCard key={it.id} place={it.__place} />;
     return (
       <FragmentCard
@@ -911,7 +911,7 @@ export default function Home() {
           {pinned && (
             <section className="wfocus" aria-label="pinned transmission">
               <div className="cclbl">PINNED TRANSMISSION · <a className="txtbtn" href="/">BACK TO THE STREAM</a></div>
-              <WireCard post={pinned} engagement={engagement} onEngage={engage} />
+              <PostCard post={pinned} engagement={engagement} onEngage={engage} />
             </section>
           )}
 

@@ -2,6 +2,7 @@
   "name": "asilum-brain",
   "version": "0.1.0",
   "private": true,
+  "author": "Ebube Ogokeh (EMO)",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"

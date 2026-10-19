@@ -1,3 +1,7 @@
+// tests/integrity.test.js — Request and write integrity: quota subjects ignore
+// forgeable forwarding headers, only the declared trusted header is read, and
+// concurrent first saves share one default board.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";

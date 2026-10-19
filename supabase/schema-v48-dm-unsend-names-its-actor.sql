@@ -7,7 +7,7 @@
 -- come back. Who did it was checked in exactly one place — the
 -- `AND sender_account_id = $2` in unsendMessage's WHERE clause.
 --
--- That is the shape docs/dm-core-decisions-2026-08-23.md rules out in as many
+-- That is the shape docs/history/dm-core-decisions-2026-08-23.md rules out in as many
 -- words: "a law that lives in one caller is a convention", and "the route is
 -- not the only writer: the admin desk, a migration and any future job write
 -- too." `asilum_app` holds UPDATE on dm_messages, so nothing at the database
@@ -18,7 +18,7 @@
 -- removed them. The same file's header calls those "different facts"; the
 -- missing check let the wrong one be written.
 --
--- MINOR finding of docs/dm-open-findings-2026-08-23.md. No second writer
+-- MINOR finding of docs/history/dm-open-findings-2026-08-23.md. No second writer
 -- exists in the tree today — `redacted_at` is read in four places and written
 -- by nothing — which is exactly why this is cheap to close NOW, before one
 -- does.

@@ -23,11 +23,11 @@ import { NextResponse } from "next/server";
 import { accountIdFromIdentity, resolveRequestUser } from "../../../../lib/identity.js";
 import { readJsonRequest } from "../../../../lib/security/json.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../../lib/security/rateLimit.js";
-import { safeWirePath } from "../../../../lib/wire/media.js";
+import { safePostPath } from "../../../../lib/posts/media.js";
 import { MOTION, SPEEDS, QUALITIES, QUALITY_NOTE, MAX_CAPTION_TRACKS, VTT_MAX_BYTES } from "../../../../lib/media/index.js";
 import { beginMotionUpload, verifyMotionUpload, motionUploadsAvailable, workerNote, motionUrls } from "../../../../lib/media/worker.js";
 import { getMotionAsset, listMotionAssets, setMotionCaptions, setMotionPoster, removeMotionAsset, MotionRefused } from "../../../../lib/db/production/media.js";
-import { deleteWireVideo } from "../../../../lib/wire/media.js";
+import { deletePostVideo } from "../../../../lib/posts/media.js";
 
 export const dynamic = "force-dynamic";
 const LAW = Object.freeze({ maxBytes: MOTION.maxBytes, maxMs: MOTION.maxMs, minMs: MOTION.minMs, maxEdge: MOTION.maxEdge, mimes: Object.keys(MOTION.mimes), codecs: MOTION.codecs, speeds: SPEEDS, qualities: QUALITIES, qualityNote: QUALITY_NOTE, captionTracks: MAX_CAPTION_TRACKS, vttMaxBytes: VTT_MAX_BYTES });
@@ -83,12 +83,12 @@ export async function POST(req) {
         return NextResponse.json({ asset: mine(await setMotionCaptions({ id, ownerId: user, tracks: Array.isArray(body.tracks) ? body.tracks : [] })) });
       case "poster": {
         let path = null;
-        if (body.path) { try { path = safeWirePath(body.path); } catch { return NextResponse.json({ error: "invalid poster path", code: "POSTER" }, { status: 400 }); } if (!path.startsWith(user + "/")) return NextResponse.json({ error: "not your image", code: "POSTER" }, { status: 403 }); }
+        if (body.path) { try { path = safePostPath(body.path); } catch { return NextResponse.json({ error: "invalid poster path", code: "POSTER" }, { status: 400 }); } if (!path.startsWith(user + "/")) return NextResponse.json({ error: "not your image", code: "POSTER" }, { status: 403 }); }
         return NextResponse.json({ asset: mine(await setMotionPoster({ id, ownerId: user, posterPath: path })) });
       }
       case "remove": {
         const a = await removeMotionAsset({ id, ownerId: user });
-        if (motionUploadsAvailable().available) await deleteWireVideo(a.path).catch(() => false);
+        if (motionUploadsAvailable().available) await deletePostVideo(a.path).catch(() => false);
         return NextResponse.json({ asset: mine(a) });
       }
       default:

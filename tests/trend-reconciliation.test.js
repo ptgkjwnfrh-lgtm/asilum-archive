@@ -1,3 +1,7 @@
+// tests/trend-reconciliation.test.js — Trend reconciliation: culture records
+// carry no trend data of their own, every aesthetic trend names a real culture
+// entity, and aesthetic records stay structurally honest.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

@@ -2,7 +2,7 @@
 
 // app/components/TransmissionText.jsx
 // One transmission's body, with #hashtags and @mentions as live links
-// (owner directive, HANDOVER-2026-08-14 backlog 3). Every surface that
+// (owner directive, 14 Aug 2026, backlog 3). Every surface that
 // prints a transmission renders it through here — the wire floor, the
 // permalink focus, the profile's POSTS tab, and /u/[handle] — so a tag
 // behaves the same everywhere.
@@ -11,7 +11,7 @@
 // escapes each segment, and no segment is ever rewritten, so a reader
 // sees exactly the characters the author wrote.
 
-import { segmentTransmission, hashtagHref, mentionHref } from "../../lib/wire/refs.js";
+import { segmentTransmission, hashtagHref, mentionHref } from "../../lib/posts/refs.js";
 
 export default function TransmissionText({ text, className = "fposttext" }) {
   const segments = segmentTransmission(text);

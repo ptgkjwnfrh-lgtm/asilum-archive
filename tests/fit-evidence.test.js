@@ -1,5 +1,5 @@
 // Fit evidence truthfulness — two primitive-level bugs reproduced 19 Sep 2026
-// (docs/v2/CLAUDE-BACKEND-HANDOFF.md § Sizing) and the typed evidence result
+// (the V.2 sizing plan) and the typed evidence result
 // the V.2 contract asks for (docs/v2/CONTRACTS.md § Fit).
 //
 // Law 1: an absent measurement survives normalize -> display -> resave as

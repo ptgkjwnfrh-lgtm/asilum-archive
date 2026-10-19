@@ -46,7 +46,7 @@ unmeasurable. Anything but 0 fails the run.
 ## Two schedules, and which one has hands (3 September 2026)
 
 Since 3 September the steward has hands — `lib/steward/actions.js`, inside the
-boundary `lib/steward/decisions.js` declares and `docs/steward-boundary-2026-09-03.md`
+boundary `lib/steward/decisions.js` declares and `docs/history/steward-boundary-2026-09-03.md`
 records. **This workflow does not use them.** Its `permissions: contents: read`
 is the outside proof, and `scripts/steward.mjs` never acts unless it is passed
 `--act`, which the workflow does not pass. What this schedule does that the

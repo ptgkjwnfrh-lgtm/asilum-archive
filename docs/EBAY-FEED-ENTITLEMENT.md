@@ -28,7 +28,7 @@ reports the local configuration only and says so.
   production site `https://www.asilummagazine.com`, category
   "Fashion / Apparel", traffic source "owned website / app".
 - Accept the Network Agreement. **Read §"Prohibited AI Uses" before
-  accepting** — it is the clause `docs/epn-terms-check-2026-08-22.md`
+  accepting** — it is the clause `docs/history/epn-terms-check-2026-08-22.md`
   flags: eBay Data may not improve a recommender or be exposed to a
   foundation model without written approval. The feed publisher is built
   so that no eBay text or image enters tag inference, colour analysis,

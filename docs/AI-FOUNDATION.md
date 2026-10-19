@@ -60,7 +60,6 @@ dual tagging, learned facts, moderation).
 | Mood Board service | `lib/ai/moodBoardAnalyzer.js` |
 | Style profile service | `lib/ai/styleProfile.js` |
 | Stylist service | `lib/ai/stylistReasoningEngine.js` |
-| Typedefs | `lib/ai/types.js` (JSDoc — project is plain JS) |
 | DB CRUD | `lib/db/production.js` (AI-foundation section) |
 | Schema | `supabase/schema-v3-ai.sql` (applied; 29 public tables) |
 | Routes | `POST/GET /api/style-profile`, `POST /api/stylist` (request + feedback), `/api/moodboard` (analysis wired in) |

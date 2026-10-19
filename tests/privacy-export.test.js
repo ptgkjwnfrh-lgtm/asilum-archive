@@ -1,3 +1,7 @@
+// tests/privacy-export.test.js — Privacy export and erasure: every table
+// erasure deletes is declared in the export manifest, the manifest declares
+// nothing extra, and the export really contains the user's data.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
@@ -250,7 +254,7 @@ test("E9 no declared cap exceeds what its reader will actually return", async ()
 });
 
 test("E10 every messaging table is declared in exactly one place", () => {
-  // An UNVERIFIED claim of docs/dm-open-findings-2026-08-23.md, checked and
+  // An UNVERIFIED claim of docs/history/dm-open-findings-2026-08-23.md, checked and
   // true: erasure and export did not know the DM subsystem existed. No dm_*
   // table was deleted, none was exported, and the retention disclosure did not
   // name them — so /api/privacy's DELETE response listed what it keeps and the

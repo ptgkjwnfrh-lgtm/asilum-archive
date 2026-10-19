@@ -1,3 +1,7 @@
+// tests/security-boundaries.test.js — Security boundaries: the JSON reader
+// rejects non-JSON and oversized or endless bodies, and upstream reads enforce
+// content type and decompressed size.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

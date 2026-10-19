@@ -1,3 +1,7 @@
+// tests/sizing-honesty.test.js — Sizing honesty: extended alpha sizes resolve
+// to themselves rather than a body measurement, and numeric and regional
+// labels resolve as before.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

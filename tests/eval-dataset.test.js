@@ -1,3 +1,7 @@
+// tests/eval-dataset.test.js — The search evaluation dataset: structurally
+// sound, every expected entity exists in the catalog, and adversarial cases
+// carry an explicit must-not-claim.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

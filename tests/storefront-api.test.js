@@ -1,3 +1,7 @@
+// tests/storefront-api.test.js — The storefront API: the owner API refuses
+// device identities and marks private responses no-store, and non-public slugs
+// all return one indistinguishable not-found.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

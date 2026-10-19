@@ -55,7 +55,7 @@ the source's own facts (brand, category, condition, material) through the
 vocabulary. Rows therefore carry no aesthetic vector: they reach the
 catalog lane and search, not the taste ranking. Whether eBay rows may ever
 feed the recommender is the EPN Prohibited-AI-Uses question in
-`docs/epn-terms-check-2026-08-22.md`, unchanged by this.
+`docs/history/epn-terms-check-2026-08-22.md`, unchanged by this.
 
 **Availability words stay apart**: AVAILABLE → `available`;
 TEMPORARILY_UNAVAILABLE / UNAVAILABLE → `unavailable`; a snapshot's

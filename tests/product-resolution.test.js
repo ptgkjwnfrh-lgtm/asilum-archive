@@ -1,5 +1,5 @@
 // tests/product-resolution.test.js — audit finding #10, verified in
-// docs/audit-verified-2026-08-14.md.
+// docs/history/audit-verified-2026-08-14.md.
 //
 // resolveProducts awaited resolveProduct once per id, so a 60-id
 // /api/interaction request became 60 primary-key queries — against the shipped

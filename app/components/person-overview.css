@@ -1,4 +1,4 @@
-/* Codex owns this presentation layer. Sourced records stay in lib/people. */
+/* The person overview's presentation layer. Sourced records stay in lib/people. */
 .pov.pov-editorial {
   display: block;
   padding: 0;

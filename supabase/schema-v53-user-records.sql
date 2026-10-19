@@ -10,7 +10,7 @@
 -- a record that lives in one browser is not a record. This table holds all
 -- four as the SAME JSON the client already writes, keyed by the identity
 -- every other per-person table uses, so adoption on sign-in, erasure and
--- export reach them like everything else (AGENTS.md § Identity).
+-- export reach them like everything else (docs/engineering/architecture.md § Identity).
 --
 -- One table, not four. The rows differ in `kind`; the laws (identity,
 -- adoption, purge, export, caps) are identical, and four copies of the same

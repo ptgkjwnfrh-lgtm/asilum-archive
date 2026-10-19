@@ -1,6 +1,6 @@
 # V.2 integration contracts, proposal v0.1
 
-Status: proposed by Codex, September 19, 2026; Claude acknowledgement pending. This file defines information and behavior, not a mandate to create duplicate routes. Adapt existing endpoints additively where possible. Preserve current clients until both sides have migrated. Claude supplies server adapters and validators; Codex supplies client adapters and presentation. Resolve names in the coordination issue.
+Status: proposed September 19, 2026. This file defines information and behavior, not a mandate to create duplicate routes. Adapt existing endpoints additively where possible. Preserve current clients until both sides have migrated. The backend supplies server adapters and validators; the UI supplies client adapters and presentation. Resolve names in the coordination issue.
 
 ## Common behavior
 
@@ -42,7 +42,7 @@ type SearchPage = {
 };
 ```
 
-These illustrative TypeScript names are not imports or implemented declarations. Actual fixtures must validate against the agreed runtime schema. An overview is nullable when evidence is missing. Return full prose; Codex clamps to four visual lines and owns expansion. Career edges are independent of item availability and sort by known start date, with a deterministic unknown-date policy. Separate historical house names/aliases from canonical IDs. Never manufacture garment attribution from a career date alone.
+These illustrative TypeScript names are not imports or implemented declarations. Actual fixtures must validate against the agreed runtime schema. An overview is nullable when evidence is missing. Return full prose; the UI clamps to four visual lines and owns expansion. Career edges are independent of item availability and sort by known start date, with a deterministic unknown-date policy. Separate historical house names/aliases from canonical IDs. Never manufacture garment attribution from a career date alone.
 
 For pair queries, return both canonical entities/IDs so quick selections and headings cannot disagree. Existing product cards remain the item contract; add minimal explicit designer attribution/provenance metadata rather than replacing the entire DTO. Apply current explicit constraints to every returned carousel, including exploration. A designer's complete career registry and an inventory-backed quick filter are different concepts and both must be identifiable.
 
@@ -58,13 +58,13 @@ Keep the current fitAssessment fields through an adapter. Add a typed evidence r
 
 ## DM
 
-Retain current routes and operation names. Return stable message ID, thread ID, server sequence/timestamp, client retry ID, cursor, and authoritative delivery/request status where supported. Identity is derived from the session, never a client-supplied user ID. A retry cannot create a second message. Cursor tie-breakers must handle identical timestamps. Block/consent changes are rechecked at write time. Codex maps pending/sent/failed states and paginates the durable thread; realtime only prompts reconciliation.
+Retain current routes and operation names. Return stable message ID, thread ID, server sequence/timestamp, client retry ID, cursor, and authoritative delivery/request status where supported. Identity is derived from the session, never a client-supplied user ID. A retry cannot create a second message. Cursor tie-breakers must handle identical timestamps. Block/consent changes are rechecked at write time. The UI maps pending/sent/failed states and paginates the durable thread; realtime only prompts reconciliation.
 
 ## Purchase hub
 
 Provide a read facade that returns stable record IDs, `kind: payment_order | source_ticket`, merchant, item/variant, currency, separate payment/fee/merchant/outcome state, source of the outcome, timestamps, and allowed next actions. Existing state machines stay authoritative. An unavailable provider does not convert a pending order to paid, cancelled, or refunded. Amounts remain integer minor units. Actions validate current ownership and server state; a UI button cannot authorize a refund or purchase by itself.
 
-Provider confirmation, user report, and unknown must remain separate. Never count a saved bag or paid ASILUM fee as a verified garment purchase. Handle partial/cross-lane outcomes explicitly. Claude proposes the smallest existing-route extension and a representative fixture for each state; Codex renders it without guessing.
+Provider confirmation, user report, and unknown must remain separate. Never count a saved bag or paid ASILUM fee as a verified garment purchase. Handle partial/cross-lane outcomes explicitly. The backend proposes the smallest existing-route extension and a representative fixture for each state; the UI renders it without guessing.
 
 ## Map, uploads, and connections
 
@@ -81,4 +81,4 @@ Return consent-scoped user locations, sourced store/event coordinates, stable ID
 - A fee payment and merchant garment purchase cannot share a misleading “purchased” state.
 - New data tables and event fields participate in authorized export/deletion and identity adoption.
 
-Claude should post the actual exported types, endpoint mappings, state fixtures, test evidence, and any required amendments in the coordination issue. Codex then confirms integration against those exact contracts.
+The backend posts the actual exported types, endpoint mappings, state fixtures, test evidence, and any required amendments; the UI confirms integration against those exact contracts.

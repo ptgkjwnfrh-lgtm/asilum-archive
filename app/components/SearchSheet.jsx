@@ -18,7 +18,7 @@ import { useDock, pushSheet, unpinTag, setQuery, flipToggle } from "../../lib/do
 import AMark from "./AMark.jsx";
 import { TagChip } from "./TagChip.jsx";
 import { authorizedFetch, getUid, thumbFor } from "../../lib/client.js";
-import { fetchWire } from "../../lib/social.js";
+import { fetchPosts } from "../../lib/social.js";
 import { findEntity } from "../../lib/entities/graph.js";
 import { isDemoItem, DEMO_LABEL } from "../../lib/social.js";
 import { haptic } from "../../lib/haptics.js";
@@ -55,7 +55,7 @@ function QueryRow({ text, onPick }) {
 export default function SearchSheet() {
   const dock = useDock();
   const q = String(dock.q || "").trim();
-  const { pieces: wantPieces, wire: wantWire, asterisk } = dock.toggles;
+  const { pieces: wantPieces, wire: wantPosts, asterisk } = dock.toggles;
   const pins = dock.pins || [];
   const pinKey = pins.map((p) => p.key).join("|");
   const [tab, setTab] = useState("all");
@@ -86,8 +86,8 @@ export default function SearchSheet() {
           }
           out.note = d.note || d.engineNote || null;
         } else out.error = "the index did not answer";
-        if (wantWire) {
-          const w = await fetchWire("user", 60);
+        if (wantPosts) {
+          const w = await fetchPosts("user", 60);
           const needle = q.toLowerCase();
           out.posts = (w.posts || []).filter((p) => [p.title, p.text, p.name, p.handle, ...(p.tags || [])].join(" ").toLowerCase().includes(needle)).slice(0, POSTS);
         }
@@ -98,7 +98,7 @@ export default function SearchSheet() {
       if (live) setRes(out);
     }, 180);
     return () => { live = false; clearTimeout(h); };
-  }, [q, wantPieces, wantWire, asterisk, pinKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [q, wantPieces, wantPosts, asterisk, pinKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // an entity overview is eligible regardless of the content toggles (brief, decision 4):
   // the server's (the career registry, three letters enough) first, the client graph's houses and spots after
@@ -173,7 +173,7 @@ export default function SearchSheet() {
         </section>
       )}
 
-      {q && wantWire && !res.loading && show("posts") && (tab === "posts" || res.posts.length > 0) && (
+      {q && wantPosts && !res.loading && show("posts") && (tab === "posts" || res.posts.length > 0) && (
         <section className="srchsec" aria-label="posts">
           <div className="srchlbl">POSTS</div>
           {res.posts.length ? (

@@ -19,7 +19,7 @@
 -- from a dead one, which is exactly what a stranger sending unsolicited mail
 -- wants to learn. No trigger can stop a read; only the query can.
 --
--- Serious findings of docs/dm-open-findings-2026-08-23.md.
+-- Serious findings of docs/history/dm-open-findings-2026-08-23.md.
 --
 -- P0003 is the code v42 uses for "this needs an accepted conversation", and
 -- the same one v40 uses for the one-knock law. The refusal is a state, not a

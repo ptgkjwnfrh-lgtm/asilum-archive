@@ -1,3 +1,7 @@
+// tests/interpret-loop.test.js — The interpretation loop: readings train taste
+// without touching the anchor ring, real engagements still fill the ring, and
+// the recent cap is never starved by readings.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

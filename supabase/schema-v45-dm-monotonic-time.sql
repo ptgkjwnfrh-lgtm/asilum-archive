@@ -22,7 +22,7 @@
 -- written later reads later. It is the only one of PostgreSQL's five time
 -- functions that is not frozen for the transaction.
 --
--- Blocker 2 of docs/dm-open-findings-2026-08-23.md. The store's own bump is
+-- Blocker 2 of docs/history/dm-open-findings-2026-08-23.md. The store's own bump is
 -- fixed alongside this, in lib/db/dm.js: it now takes the created_at of the
 -- message it just inserted, under GREATEST, so the conversation's activity
 -- time is the newest message's time and can never walk backwards even if some

@@ -1,6 +1,6 @@
 -- schema-v36-hotlist-program.sql
 -- P2–P4 of the hotlist program (owner build order, 20 Aug 2026;
--- docs/hotlist-program-spec-2026-08-20.md §4):
+-- docs/history/hotlist-program-spec-2026-08-20.md §4):
 --   booth_visits            — THE separate attribution channel: who reached
 --                             which booth on their hotlist, when. A 15% is
 --                             chargeable ONLY on orders this channel proves.

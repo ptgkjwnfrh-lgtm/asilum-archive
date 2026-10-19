@@ -1,7 +1,7 @@
 -- schema-v64-native-commerce.sql
 --
 -- NATIVE COMMERCE (V.2 Blueprint, owner, 17 Oct 2026, chapters 7 and 8;
--- slice 6 over codex/native-storefront's v62). The law is
+-- slice 6 over the native-storefront branch's v62). The law is
 -- lib/storefront/commerce.js; these are its rows.
 --
 --   native_listings.mode       SELL (single item) or DROP (quantities, sizes,

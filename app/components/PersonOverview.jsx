@@ -19,8 +19,9 @@ export default function PersonOverview({ person, compact = false }) {
   return <OverviewCard key={person.id} person={person} compact={compact} />;
 }
 
-// Presentation stays independent of the sourced person record. Claude owns
-// the record/API; Codex owns this card and its expanded reading experience.
+// Presentation stays independent of the sourced person record: the record
+// and its API live in lib/people; this card owns its expanded reading
+// experience.
 function OverviewCard({ person, compact }) {
   const detailsId = useId();
   const [expanded, setExpanded] = useState(!compact);

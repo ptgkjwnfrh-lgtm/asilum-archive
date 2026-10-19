@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import { getUid, postJSON, authorizedFetch, thumbFor } from "../../lib/client.js";
 import {
-  READING_ROOM, fetchWire, addPost, timeAgo, getProfileInfo, sourceFor,
+  READING_ROOM, fetchPosts, addPost, timeAgo, getProfileInfo, sourceFor,
 } from "../../lib/social.js";
 import { Avatar } from "../components/UserBits.jsx";
 import TransmissionText from "../components/TransmissionText.jsx";
@@ -51,7 +51,7 @@ export default function CoverPage() {
   const [looks, setLooks] = useState([]);
   const [posts, setPosts] = useState(null);
   const [postsLive, setPostsLive] = useState(true);
-  const [wireNote, setWireNote] = useState("");
+  const [postNote, setPostNote] = useState("");
   const [sys, setSys] = useState(null);
   const [text, setText] = useState("");
   const [stamp, setStamp] = useState("");
@@ -65,15 +65,15 @@ export default function CoverPage() {
   const [near, setNear] = useState(null);
   const lead = SAMPLE_POSTS[0];
 
-  function loadCoverWire() {
-    fetchWire()
+  function loadCoverPosts() {
+    fetchPosts()
       .then((w) => { setPosts(w.posts); setPostsLive(w.live); })
       .catch(() => { setPosts([]); setPostsLive(false); });
   }
 
   useEffect(() => {
     const user = getUid() || "guest";
-    loadCoverWire();
+    loadCoverPosts();
     const now = new Date();
     setStamp(now.toLocaleDateString("en-US", {
       year: "numeric", month: "long", day: "numeric",
@@ -163,11 +163,11 @@ export default function CoverPage() {
         // no note. Telling the reader their post did not save needs copy that
         // is the owner's to choose, not a guard's to improvise.
         const d = res.ok ? await res.json().catch(() => null) : null;
-        setWireNote(d && d.held ? (d.note || "your post is saved and paused for a human review") : "");
-        loadCoverWire();
+        setPostNote(d && d.held ? (d.note || "your post is saved and paused for a human review") : "");
+        loadCoverPosts();
       })
-      .catch(() => setWireNote("saved on this device — the shared wire could not be reached"));
-    loadCoverWire();
+      .catch(() => setPostNote("saved on this device — the shared wire could not be reached"));
+    loadCoverPosts();
     setText("");
   }
 
@@ -365,7 +365,7 @@ export default function CoverPage() {
       </div>
 
       <div className="cvband2">
-        <section className="cvwire" aria-label="the feed">
+        <section className="cvposts" aria-label="the feed">
           <div className="cvkick">THE FEED — WHAT ARE YOU WEARING?</div>
           <div className="cvcompose">
             <Avatar name={getProfileInfo().name} />
@@ -383,7 +383,7 @@ export default function CoverPage() {
               </div>
             </div>
           </div>
-          {wireNote && <div className="pempty">{wireNote}</div>}
+          {postNote && <div className="pempty">{postNote}</div>}
           {(posts || []).slice(0, 4).map((p, i) => (
             <div className={"cvpost" + (i === 0 ? " cvlead" : "")} key={p.id}>
               <TransmissionText text={p.text} className="cvposttext" />

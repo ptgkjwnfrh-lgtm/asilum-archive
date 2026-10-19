@@ -1,5 +1,5 @@
 // tests/storefront-ui.test.js — the Storefront's owner and public surfaces
-// on V.2 (codex/native-storefront landed on v2/build, slice 6). Source reads
+// on V.2 (the native-storefront branch landed on v2/build, slice 6). Source reads
 // where a .jsx cannot be imported under node's test runner.
 import test from "node:test";
 import assert from "node:assert/strict";

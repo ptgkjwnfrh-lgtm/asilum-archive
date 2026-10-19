@@ -1,3 +1,8 @@
+// tests/postgres-integration.test.js — The Postgres integration suite, the
+// only file CI runs against a real database: adoption and ledgers, replay
+// refusal, the mem/Postgres differentials for every subsystem, RLS and
+// storage.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -43,7 +48,7 @@ function committedSchemaVersion() {
 // creates is invisible to the ledger. Both are applied on live today, so there
 // is no drift — but a fresh environment that skipped the embeddings file would
 // look perfectly healthy. Renumbering it is the owner's call (flagged in
-// docs/audit-verified-2026-08-14.md), so it is allowed for here rather than
+// docs/history/audit-verified-2026-08-14.md), so it is allowed for here rather than
 // silently fixed.
 const LEDGER_SILENT = new Map([
   [1, "schema-v1-brain.sql"],
@@ -508,7 +513,7 @@ test("mem and Postgres agree on the money scenario", { skip: !databaseUrl }, asy
   assert.equal(mem.sellerDelivery.moved, false); assert.equal(mem.payoutOpen, "releasable"); assert.equal(mem.released.net, 7500); assert.equal(mem.released.twice, "NOT_RELEASABLE");
 });
 
-// The §6 export has a mem branch and a Postgres branch, and AGENTS.md makes
+// The §6 export has a mem branch and a Postgres branch, and docs/engineering/architecture.md makes
 // mem/pg parity a hard rule — the unit battery in tests/privacy-export.test.js
 // runs mem, so a Postgres-only fault in the export would ship green.
 test("Postgres assembles the §6 export with the same shape as mem", { skip: !databaseUrl }, async (t) => {
@@ -553,7 +558,7 @@ test("Postgres assembles the §6 export with the same shape as mem", { skip: !da
   assert.deepEqual(out.retained, purged.retained);
 });
 
-// WHY THESE EXIST (audit resume, Aug 14 — law 4 of HANDOVER-2026-08-08:
+// WHY THESE EXIST (audit resume, Aug 14 — law 4 of the 8 Aug 2026 notes:
 // "mem and Postgres are one system with two implementations, and mem is the
 // one being exercised"). The v27 lifecycle verbs and the v28 engagement
 // ledger shipped with mem-mode unit tests, and every hand-walk of them ran
@@ -2472,7 +2477,7 @@ test("activity: the payload cannot be used to read the other person's setting",
   // reason: it is the id of the newest message in the CALLER'S OWN thread,
   // which they can already read off the messages they are looking at. What
   // must be indistinguishable is everything that describes the OTHER person.
-  const onWire = (activity) => {
+  const onPosts = (activity) => {
     const { reciprocal, newest, ...rest } = activity;
     return JSON.stringify(rest);
   };
@@ -2492,8 +2497,8 @@ test("activity: the payload cannot be used to read the other person's setting",
   await dm.setActivitySignals(silent, false);
 
   assert.equal(
-    onWire(await dm.peerActivity(a1, pairs[0].id)),
-    onWire(await dm.peerActivity(a2, pairs[1].id)),
+    onPosts(await dm.peerActivity(a1, pairs[0].id)),
+    onPosts(await dm.peerActivity(a2, pairs[1].id)),
     "a peer who has not read it yet and a peer who switched signals off must be "
     + "BYTE-IDENTICAL on the wire — otherwise every accepted contact is a permanent "
     + "monitor of that person's global privacy switch");
@@ -2503,16 +2508,16 @@ test("activity: the payload cannot be used to read the other person's setting",
   const { lo: c, hi: d } = await dmAccounts(pool);
   const knock = await dm.openConversation(c, d);
   await dm.sendMessage({ conversationId: knock.id, senderId: c, body: "hi" });
-  assert.equal(onWire(await dm.peerActivity(c, knock.id)), onWire(await dm.peerActivity(a1, pairs[0].id)),
+  assert.equal(onPosts(await dm.peerActivity(c, knock.id)), onPosts(await dm.peerActivity(a1, pairs[0].id)),
     "an unaccepted knock reads the same");
 
   const { lo: stranger } = await dmAccounts(pool);
-  assert.equal(onWire(await dm.peerActivity(stranger, pairs[0].id)),
-    onWire(await dm.peerActivity(a1, pairs[0].id)), "so does a conversation I am not in");
+  assert.equal(onPosts(await dm.peerActivity(stranger, pairs[0].id)),
+    onPosts(await dm.peerActivity(a1, pairs[0].id)), "so does a conversation I am not in");
 
   await dm.blockAccount(quiet, a1);
-  assert.equal(onWire(await dm.peerActivity(a1, pairs[0].id)),
-    onWire(await dm.peerActivity(a2, pairs[1].id)), "and so does a block");
+  assert.equal(onPosts(await dm.peerActivity(a1, pairs[0].id)),
+    onPosts(await dm.peerActivity(a2, pairs[1].id)), "and so does a block");
 
   // And `newest` really is the reader's own thread rather than a channel: it
   // equals the newest id in the conversation they are in, and is 0 for one

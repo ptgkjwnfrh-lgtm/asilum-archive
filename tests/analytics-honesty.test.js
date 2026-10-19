@@ -1,5 +1,5 @@
 // tests/analytics-honesty.test.js — the /stats operating dashboards
-// (owner directive, HANDOVER-2026-08-14 backlog 5). These pin the HONESTY
+// (owner directive, 14 Aug 2026, backlog 5). These pin the HONESTY
 // rules, which are the part that can rot silently: a rate over zero
 // samples must be "not measurable", never a flattering percentage; a
 // window edge must not be reported as a real zero; and mem mode must say

@@ -1,11 +1,11 @@
 // app/api/editorial/preview/route.js — the safe link preview for the
 // composer (V.2 brief §6). GET ?url= → the plain-text snapshot
-// lib/wire/preview.js produces, or { refused } with the reason. A signed-in
+// lib/posts/preview.js produces, or { refused } with the reason. A signed-in
 // account, rate-limited: this service fetches pages on a reader's behalf
 // and must never become an open proxy.
 import { NextResponse } from "next/server";
 import { accountIdFromIdentity, resolveRequestUser } from "../../../../lib/identity.js";
-import { fetchPreview, previewAllowed } from "../../../../lib/wire/preview.js";
+import { fetchPreview, previewAllowed } from "../../../../lib/posts/preview.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../../lib/security/rateLimit.js";
 
 export const dynamic = "force-dynamic";

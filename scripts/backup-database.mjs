@@ -1,6 +1,6 @@
 // scripts/backup-database.mjs
 // Take a restorable backup of the ASILUM database (owner directive,
-// HANDOVER-2026-08-14 backlog 6).
+// 14 Aug 2026, backlog 6).
 //
 //   node scripts/backup-database.mjs [--out DIR]
 //

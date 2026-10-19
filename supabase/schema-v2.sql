@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS mood_board_uploads (
 );
 CREATE INDEX IF NOT EXISTS mood_board_uploads_user ON mood_board_uploads (user_id, created_at DESC);
 ALTER TABLE mood_board_uploads ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
--- Scoped per user (Day 13, Codex #13 follow-up), matching purchase_tickets;
+-- Scoped per user (Day 13, #13 follow-up), matching purchase_tickets;
 -- the same DDL runs lazily from lib/db/production.js for the live database.
 CREATE UNIQUE INDEX IF NOT EXISTS mood_board_uploads_user_idem
   ON mood_board_uploads (user_id, idempotency_key) WHERE idempotency_key IS NOT NULL;

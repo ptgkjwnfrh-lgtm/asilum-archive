@@ -1,3 +1,7 @@
+// tests/discovery-attribution.test.js — Discovery attribution: the label
+// follows the cross-user versus adjacent balance, never rotation, with a
+// regression guard for the old comparison that mislabelled seen items.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

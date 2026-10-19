@@ -17,7 +17,7 @@ import { giftTransition } from "../lib/wardrobe/gifts.js";
 import { clusterPins } from "../lib/places/cluster.js";
 import { connectorRegistry, CONNECTOR_STATES } from "../lib/connectors/index.js";
 import { lostness } from "../lib/analytics/lostness.js";
-import { graphemeCount, TRANSMISSION_MAX } from "../lib/wire/compose.js";
+import { graphemeCount, TRANSMISSION_MAX } from "../lib/posts/compose.js";
 
 const rows = [];
 const check = (name, ok, note = "") => rows.push({ name, result: ok === null ? "needs browser / CI" : ok ? "PASS" : "FAIL", note });
@@ -39,7 +39,7 @@ check("conflict / offline retries cannot reset the window", null, "CI Postgres: 
 // Sharing disabled / private / blocked enforced server-side incl. existing cards
 check("sharing a disabled / private / blocked profile refused server-side, existing cards included", null, "CI Postgres: 'DM stage C: a profile card is refused server-side…' (the exact copy is " + JSON.stringify(SHARE_REFUSED_COPY.slice(0, 32)) + "…)");
 // Composer layouts preserve text; overlong Transmission blocked without losing text
-check("overlong Transmission is refused by count, never cut (the composer keeps the text)", graphemeCount("x".repeat(520)) > TRANSMISSION_MAX && graphemeCount("x".repeat(500)) === TRANSMISSION_MAX, "Stage B: lib/wire/compose.js graphemeCount / TRANSMISSION_MAX; the keep-the-text half is tests/wire-composer.test.js");
+check("overlong Transmission is refused by count, never cut (the composer keeps the text)", graphemeCount("x".repeat(520)) > TRANSMISSION_MAX && graphemeCount("x".repeat(500)) === TRANSMISSION_MAX, "Stage B: lib/posts/compose.js graphemeCount / TRANSMISSION_MAX; the keep-the-text half is tests/post-composer.test.js");
 // Concurrent gift acceptance
 check("the gift state machine: only pending moves, only by the right party", giftTransition("pending", "accept", "recipient") === "accepted" && giftTransition("accepted", "accept", "recipient") === null && giftTransition("pending", "accept", "sender") === null);
 check("concurrent gift acceptance cannot give one card to two people", null, "CI Postgres: 'wardrobe gift: concurrent accepts…' (three accepts → one winner)");
@@ -59,7 +59,7 @@ check("no-result / engine-failure / unavailable states are honest", null, "searc
 // Wheel / Cover Flow alternatives
 check("the connections wheel has a list and a reduced-motion alternative; every task works without a gesture", null, "browser: ConnectionsWheel.jsx (list first; wheel optional; arrows + keyboard; prefers-reduced-motion)");
 // Sponsorship / provenance / creator / style inference distinguishable
-check("sponsorship, provenance, creator authorship and style inference are distinguishable", null, "browser: AdStrip label (Stage A), provenanceLabel (Stage C), WireCard author, search match.reasons with 'taste' apart from the literal reason (Stage D)");
+check("sponsorship, provenance, creator authorship and style inference are distinguishable", null, "browser: AdStrip label (Stage A), provenanceLabel (Stage C), PostCard author, search match.reasons with 'taste' apart from the literal reason (Stage D)");
 // Stage D's own laws, measured
 const taste = { explicit: { GORP: 1 } };
 const page = [{ id: "a", brand: "Helmut Lang", matchReason: "brand match", confidenceScore: 1, tags: { MINIMAL: 1 } }, { id: "b", brand: "x", matchReason: "tag match", confidenceScore: .4, tags: { GORP: 1 } }, { id: "c", brand: "y", matchReason: "tag match", confidenceScore: .4, tags: { STATEMENT: 1 } }];

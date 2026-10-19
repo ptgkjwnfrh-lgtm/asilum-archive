@@ -1,26 +1,35 @@
-# asilum-brain
+# *ASILUM
 
-ASILUM — a fashion moodboard whose feed is ranked by a six-bridge
-personalization engine: content match, dominant trait, co-engagement taste
-graph (Pinterest-style), popularity, exploration, and sponsored. Feeds are
-zoned — pieces you already like, pieces you'll *probably* like (taste expanded
-one hop through the aesthetic-affinity matrix), and a couple of deliberate
-far-reach explorers. It learns from favorites, board saves, shares, skips
-(fast skips count double), and on-screen dwell time.
+A fashion marketplace and discovery terminal, designed and built by Ebube
+Ogokeh (EMO).
 
-## New here? Start with the handover
+One Feed carries everything: pieces from the catalog and native storefronts,
+posts (stills, motion, transmissions, BRDCST events), places and echoes,
+packed by weight into a single stream. Underneath it, a six-bridge
+personalization engine (content match, dominant trait, a co-engagement taste
+graph, popularity, exploration and sponsored placement) ranks what each
+passenger sees, learns from favourites, saves, shares, skips and dwell, and
+explains itself through ASTERISK, a deterministic reading and memory layer
+that is not a chatbot. The Passport holds a passenger's identity, taste and
+the map of the places they have been; native commerce, the Wardrobe and
+seller payouts run on Stripe; nothing is ever faked.
 
-**`docs/HANDOVER.md` is the front door** — current state, how work is done, and
-what is open. Then `docs/CODE-MAP.md` for where every file lives, and
-`CONSTITUTION.md` for the rules that govern what may be built.
+Next.js App Router, plain JavaScript, Postgres on Supabase, with an
+in-memory fallback so the whole app runs with no database at all.
+
+## Start here
+
+**`docs/README.md` is the front door**: current state, how the codebase is
+organized, and how work is done. Then `docs/CODE-MAP.md` for where every file
+lives, and `CONSTITUTION.md` for the rules that govern what may be built.
 
 | Command | What it tells you |
 | --- | --- |
-| `npm test` | the 1,299-test unit suite (no database needed) |
+| `npm test` | the unit suite, about 1,950 tests (no database needed) |
 | `npm run build` | production build |
+| `npm run v2:check` | the V.2 gates, search latency and the feed's chunk laws |
 | `npm run deploy:check` | whether production is actually serving `main` |
-| `npm run steward` | 12 read-only health checks against the live database |
-| `npm run audit:nav` | navigability debt, measured |
+| `npm run steward` | read-only health checks against the live database |
 | `npm run docs:codemap` | regenerate `docs/CODE-MAP.md` from the tree |
 
 ## Run locally
@@ -73,29 +82,28 @@ catalog (915 items in `lib/ingest/catalog.json`) is used whenever the items
 table is empty. `node scripts/fill-met-images.mjs` re-runs the Met open-access
 enrichment (public-domain images + object links).
 
-## Pages & API
+## Pages
 
-- `/` — HOME: the big masonry feed (minimal cards; full detail on click),
-  infinite scroll, filters, community posts woven in. First visit offers a
-  coming-soon account-link prompt (`POST /api/connect` returns an honest
-  unavailable message until real OAuth adapters are wired), else the moodboard
-  + following jump-start.
-- `/hotlist` — EDITORIAL/HOTLIST: live ranking from the popularity counters.
-- `/stylist` — THE STYLIST: full outfits (taste + coherence + fit-gated via
-  the size brain); "STYLE IT ✂" on any piece anchors every look around it.
-- `/board` — MOODBOARD: view/rename/prune boards; share links
-  (`/?board=<id>`) seed the feed of whoever opens them; FOLLOW makes a board
-  a standing influence on your feed (`POST /api/follow`).
-- `/orders` — every add-to-bag event, shown as purchase/ticket history for the prototype.
-- `/stats` — the living brain viz (learns white, forgets red) + what the
-  brain has learned. Idle profiles fade on the clock (6-day half-life,
-  `lib/brain/memory.js`).
-- API: `GET /api/feed`, `POST /api/train`, `POST /api/interaction` (actions:
-  bag/share/save/favorite/dwell/skip/hide), `GET|POST|PATCH|DELETE /api/boards`,
-  `GET /api/related`, `GET /api/outfits`, `POST /api/connect`,
-  `POST /api/follow`, `GET /api/orders`, `GET /api/profile`, `GET /api/stats`,
-  `GET /api/ebay` (official Browse API; needs partnership approval and credentials),
-  `POST /api/ingest`.
+The shell is three fixtures and no header: the Info Dock (likes, bag,
+notices) at the top left, the Passport Button at the top right, and the
+Central Control Deck (FEED, SEARCH, POST, MESSAGES, ACCOUNT) at the bottom,
+with the ad ticker beneath it. Every secondary surface opens as a popup over
+the page rather than a page of its own.
+
+- `/`: the Feed. Pieces, posts, places and echoes in one packed stream; a
+  piece opens its listing popup, a double tap floats it.
+- `/board`: the Passport. The document, stamps, the map, the taste record.
+- `/profile`, `/settings`, `/orders`: the account. Wardrobe, storefront,
+  settings, tickets and receipts.
+- `/map`: the local and global fashion map.
+- `/discover`, `/stylist`, `/hotlist`, `/cover`: the open index, outfits
+  built around a piece, the ten-booth hotlist, the front cover.
+- `/u/[handle]`, `/piece/[id]`, `/store/[slug]`: a passenger, a piece, a
+  storefront.
+- `/analytics`, `/watchtower`: the business account's ledger.
+- `/admin`, `/asterisk`, `/stats`: the operator desk and the brain's own
+  instruments.
+- API routes live under `app/api/`; `docs/CODE-MAP.md` lists every one.
 
 ## Stress test
 

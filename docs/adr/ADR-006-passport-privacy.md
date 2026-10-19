@@ -2,7 +2,7 @@
 
 - Status: PROPOSED (Phase 0 → governs Phase 3)
 - Date: 2026-07-19
-- Deciders: owner + Codex review (counsel for retention: owner decision 10)
+- Deciders: owner (counsel for retention: owner decision 10)
 
 ## Context
 

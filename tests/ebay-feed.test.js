@@ -1,3 +1,7 @@
+// tests/ebay-feed.test.js — The eBay feed: configuration fails closed without
+// implying entitlement, a missing approval never calls OAuth, and a complete
+// file is staged atomically with its manifest, never published.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";

@@ -21,7 +21,7 @@
 --                            outbox row is ever written for them.
 --
 -- Numbered 58 after v57 (wire composition) on this branch; v54/v55 are
--- Codex's, v56 is the eBay feed publication branch.
+-- on other branches; v56 is the eBay feed publication branch.
 --
 -- ROLLBACK: DROP TABLE IF EXISTS listing_status_events, notifications,
 -- user_notification_prefs; DELETE FROM app_schema_migrations WHERE version = 58;

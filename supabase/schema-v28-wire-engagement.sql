@@ -1,5 +1,5 @@
 -- supabase/schema-v28-wire-engagement.sql
--- LIKES + SAVES on transmissions (owner directive, HANDOVER-2026-08-14
+-- LIKES + SAVES on transmissions (owner directive, 14 Aug 2026
 -- backlog 2). The handover's law: "person-deduped counters in the
 -- popularity style (engagers, not events). NO fabricated numbers, ever."
 --

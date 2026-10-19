@@ -786,8 +786,7 @@ button.soon:hover, a.soon:hover, .btn.soon:hover, .btn.ghost.soon:hover,
 .meta .cat { color: var(--red); font-weight: 800; }
 .meta .era::before { content: "· "; }
 .size { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; }
-.szlabel { padding: 2px 8px; border: 1px solid var(--line); letter-spacing: 0.04em; font-weight: 700; }
-.szfit { color: var(--red); font-weight: 800; }
+
 .designers { display: flex; flex-wrap: wrap; gap: 6px; }
 .dz { font-size: 11px; padding: 2px 8px; border: 1px solid var(--line); font-weight: 700; }
 /* The designer chip navigates, so it is a real <a> now (keyboard, middle-click,
@@ -833,9 +832,8 @@ a.dz:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 .mrelitem img { width: 100%; height: 110px; object-fit: cover; display: block; margin-bottom: 4px; }
 .mrelitem:hover { border-color: var(--red); }
 @media (max-width: 640px) {
-  .modal, .mscroll { flex-direction: column; }
-  .mimg { flex: none; border-right: none; border-bottom: 1px solid var(--line); }
-  .mimg img { min-height: 0; max-height: 46vh; }
+  .modal { flex-direction: column; }
+
 }
 
 /* ---- Hotlist / editorial ---- */
@@ -860,7 +858,6 @@ div.hlrow.static { cursor: default; }
   padding: var(--ed-pad-fitbtn-y, 7px) var(--ed-pad-fitbtn-x, 14px); border: 1px solid var(--line); background: var(--paper); cursor: pointer;
 }
 .fitbtn:hover, .fitbtn.active { background: var(--ink); color: var(--paper); }
-.fitnote.dim { color: var(--faint); }
 
 .statshead { margin: 30px 0 8px; font-size: var(--ed-fs-statshead, 12px); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
 table.stats { border-collapse: collapse; width: 100%; max-width: 680px; font-size: 13px; }
@@ -1038,7 +1035,7 @@ button.chip:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; 
 /* ---- Settings ---- */
 .setrow { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); padding: 12px 0; }
 .setname { font-size: var(--ed-fs-setname, 14.5px); font-weight: 900; letter-spacing: 0.03em; }
-.setstatus.on { color: var(--paper); background: var(--red); border-color: var(--red); }
+
 .legal { font-family: var(--serif); font-size: var(--ed-fs-legal, 14.5px); font-weight: 500; line-height: 1.7; color: var(--ink); max-width: 640px; }
 
 /* ---- Profile ---- */
@@ -1467,9 +1464,9 @@ input, select, textarea { background-color: var(--bg3); color: var(--ink); borde
 
 /* the wire — floating transmissions, no boxes, no counters; a
    non-uniform heavy-bar pair opens the section (Rag & Bone rules) */
-.cvwire { position: relative; padding-top: 16px; }
-.cvwire::before { content: ""; position: absolute; top: 0; left: 0; width: 34%; border-top: 5px solid var(--ink); opacity: 0.85; }
-.cvwire::after { content: ""; position: absolute; top: 9px; left: 0; width: 88%; border-top: 1px solid var(--ink); opacity: 0.12; }
+.cvposts { position: relative; padding-top: 16px; }
+.cvposts::before { content: ""; position: absolute; top: 0; left: 0; width: 34%; border-top: 5px solid var(--ink); opacity: 0.85; }
+.cvposts::after { content: ""; position: absolute; top: 9px; left: 0; width: 88%; border-top: 1px solid var(--ink); opacity: 0.12; }
 .cvcompose { display: flex; gap: 12px; margin: 10px 0 18px; }
 .cvcomposebox { flex: 1; }
 /* the composer reads a touch louder (owner order, Aug 13): bigger
@@ -1545,9 +1542,9 @@ input, select, textarea { background-color: var(--bg3); color: var(--ink); borde
 .wcomposer { margin: 6px 0 26px; }
 .wcompose { display: flex; gap: 12px; }
 .wcright { flex: 1; min-width: 0; }
-.wcright .wcap, .wedit .wcap { width: 100%; border: 0; background: var(--field-fill); border-radius: var(--radius-field); padding: 9px 14px; font-family: var(--mich); font-size: 13px; letter-spacing: 0.04em; outline: none; }
-.wcright textarea, .wedit textarea { width: 100%; border: 0; background: var(--field-fill); border-radius: var(--radius-field); padding: 10px 14px; font: inherit; font-size: 15px; resize: vertical; outline: none; }
-.wcright .wcap:focus, .wcright textarea:focus, .wedit .wcap:focus, .wedit textarea:focus { border-bottom-color: var(--sig); }
+.wcright .wcap { width: 100%; border: 0; background: var(--field-fill); border-radius: var(--radius-field); padding: 9px 14px; font-family: var(--mich); font-size: 13px; letter-spacing: 0.04em; outline: none; }
+.wcright textarea { width: 100%; border: 0; background: var(--field-fill); border-radius: var(--radius-field); padding: 10px 14px; font: inherit; font-size: 15px; resize: vertical; outline: none; }
+.wcright .wcap:focus, .wcright textarea:focus { border-bottom-color: var(--sig); }
 /* permalink focus — one transmission pinned above the wire */
 .wfocus { margin: 4px 0 30px; }
 .wpost { margin-bottom: 22px; }
@@ -1566,7 +1563,7 @@ input, select, textarea { background-color: var(--bg3); color: var(--ink); borde
     4px 0 5px color-mix(in srgb, var(--red) 20%, transparent),
     var(--glow-r);
 }
-.wedit { display: grid; gap: 6px; margin-bottom: 6px; }
+
 /* wire engagement (owner directive, Aug 14): likes + saves. The count is
    PEOPLE, not clicks, and renders only when the ledger has answered — a
    transmission nobody has touched shows the word alone, never a printed 0.
@@ -1577,15 +1574,7 @@ input, select, textarea { background-color: var(--bg3); color: var(--ink); borde
    and nothing else — no chips, no boxes, no weight change. The text
    around them must stay the author's own voice. */
 .wtag, .wmention { text-decoration: none; }
-.weng { border: 0; background: none; padding: 0; cursor: pointer; font-family: var(--mich); font-size: 10px; font-weight: 800; letter-spacing: 0.14em; }
-.weng b { margin-left: 5px; font-weight: 800; }
-.weng.on {
-  color: var(--red);
-  text-shadow:
-    -4px 0 5px color-mix(in srgb, var(--red) 20%, transparent),
-    4px 0 5px color-mix(in srgb, var(--red) 20%, transparent),
-    var(--glow-r);
-}
+
 .fwho { margin: 8px 0 46px; max-width: 560px; }
 /* the booths — ten open slots on dashed hairlines (honestly open) */
 .booth { display: flex; align-items: center; gap: 18px; padding: 9px 0; border-bottom: 1px dashed color-mix(in srgb, var(--ink) 12%, transparent); }
@@ -2010,9 +1999,7 @@ html.dc-inspecting, html.dc-inspecting * { cursor: crosshair !important; }
 }
 .gxchip.on .gxchipx:hover { color: var(--red); }
 .gxchip.on .gxchipx:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
-.gxplug.p2 { animation-duration: 6.1s; }
-.gxplug.p3 { animation-duration: 5.6s; }
-.gxplug.p4 { animation-duration: 6.7s; }
+
 @keyframes gxfloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @media (max-width: 640px) { .gxfavgrid { grid-template-columns: 1fr; } .gxwall { columns: 2 120px; } }
 
@@ -2869,18 +2856,15 @@ a.pftile:hover { box-shadow: inset 0 0 0 1px var(--sig); }
 .wlayout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 26px; align-items: start; }
 .wrail { display: grid; gap: 16px; min-width: 0; }
 .wire2 .wcomposer { margin: 0; }
-.wire2 .wmodes { margin-bottom: 10px; }
-.wire2 .wfloor { margin: 0; max-width: none; display: grid; gap: 12px; }
+
 .wcard { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 16px 18px 14px; border-radius: 18px;
   background: var(--glass-pill); box-shadow: inset 0 0 0 1px var(--glass-pill-rim); }
 .wcard .uavatar { width: 40px; height: 40px; font-size: 12px; }
-.wctop .fposthandle { font-size: 11px; }
-.wctop .whandle { font-family: var(--mich); font-size: 11px; letter-spacing: 0.1em; }
+
 .wire2 .wpost { margin: 0; }
 .wcard .wposthead { font-size: 14px; margin: 2px 0 0; }
 .wcard .fposttext { max-width: none; font-size: 14.5px; margin: 0; }
-.wire2 .wengage, .wire2 .wctls { margin-left: 0; }
-.wire2 .wfloor .empty { padding: 30px 0; }
+
 .wire2 .fwho { margin: 0; max-width: none; }
 .wire2 .elhouse, .wire2 .elads, .wire2 .elext, .wire2 .elhot { margin: 0; }
 .wire2 .eladrow { flex-direction: column; gap: 10px; }
@@ -2916,24 +2900,24 @@ a.pftile:hover { box-shadow: inset 0 0 0 1px var(--sig); }
 
 /* --- every other button, every page: the same word --- */
 [data-theme] :is(.btn, .btn.ghost.active, .fitbtn, .followbtn, .platform, .chip.clickable, .outcomes button, .unitpick button,
-  .achip, .apill, .wchip, .wtoggle, .gxbtn, .gxchip, .ppupl, .ppupload, .dhint, .mailmore, .actions2 button, .roomanthem,
+  .achip, .apill, .wchip, .wtoggle, .gxbtn, .gxchip, .ppupl, .dhint, .mailmore, .actions2 button, .roomanthem,
   .shotline-go, .cardacts button, .actions button, .tab, .fmode, .wact, .railact, .txtbtn, .cacts button, .amemhide, .modmore,
-  .mclose, .bagx, .dcx, .dcundo, .mute, .postbtn, .wctl, .weng, .bizapply, .cvmore, .cvlink, .wfocusback, .wperma, .boothsite,
+  .mclose, .bagx, .dcx, .dcundo, .mute, .postbtn, .wctl, .bizapply, .cvmore, .cvlink, .wperma, .boothsite,
   .notice-x, .pweye, .gxchipx, .buy, .buybtn, .roomreport, .amemgo) {
   background: none; border-color: transparent; box-shadow: none;
   color: var(--sig); text-shadow: var(--word-smear); }
 /* the hovered word brightens to the ink; it keeps the light */
 [data-theme] :is(.btn, .btn.ghost.active, .fitbtn, .followbtn, .platform, .chip.clickable, .outcomes button, .unitpick button,
-  .achip, .apill, .wchip, .wtoggle, .gxbtn, .gxchip, .ppupl, .ppupload, .dhint, .mailmore, .actions2 button, .roomanthem,
+  .achip, .apill, .wchip, .wtoggle, .gxbtn, .gxchip, .ppupl, .dhint, .mailmore, .actions2 button, .roomanthem,
   .shotline-go, .cardacts button, .actions button, .tab, .fmode, .wact, .railact, .txtbtn, .cacts button, .amemhide, .modmore,
-  .mclose, .bagx, .dcx, .dcundo, .mute, .postbtn, .wctl, .weng, .bizapply, .cvmore, .cvlink, .wfocusback, .wperma, .boothsite,
+  .mclose, .bagx, .dcx, .dcundo, .mute, .postbtn, .wctl, .bizapply, .cvmore, .cvlink, .wperma, .boothsite,
   .notice-x, .pweye, .gxchipx, .roomreport, .amemgo):hover:not(:disabled) {
   background: none; border-color: transparent; box-shadow: none; color: var(--ink); text-shadow: var(--word-smear); transform: none; }
 /* selected / on / current: the red word */
 [data-theme] :is(.btn, .btn.ghost.active, .fitbtn, .followbtn, .platform, .chip.clickable, .outcomes button, .unitpick button,
-  .achip, .apill, .wchip, .gxchip, .cardacts button, .actions button, .tab, .fmode, .cacts button, .wctl, .weng, .mailbtn):is(.active, .on, .cur, [aria-pressed="true"]),
+  .achip, .apill, .wchip, .gxchip, .cardacts button, .actions button, .tab, .fmode, .cacts button, .wctl, .mailbtn):is(.active, .on, .cur, [aria-pressed="true"]),
 [data-theme] :is(.btn, .btn.ghost.active, .fitbtn, .followbtn, .platform, .chip.clickable, .outcomes button, .unitpick button,
-  .achip, .apill, .wchip, .gxchip, .cardacts button, .actions button, .tab, .fmode, .cacts button, .wctl, .weng):is(.active, .on, .cur, [aria-pressed="true"]):hover {
+  .achip, .apill, .wchip, .gxchip, .cardacts button, .actions button, .tab, .fmode, .cacts button, .wctl):is(.active, .on, .cur, [aria-pressed="true"]):hover {
   background: none; border-color: transparent; box-shadow: none; color: var(--red); text-shadow: var(--word-smear-r); }
 /* the red law keeps its words: buy, home, coming soon, the clear pill */
 [data-theme] :is(.buy, .buybtn, .btn.buybtn, .chkgo, .chkpaybtn, .soon, .btn.soon, .btn.ghost.soon, .fitbtn.soon, .platform.soon, .clearpill, .apill.clearpill, .warn),
@@ -2941,7 +2925,7 @@ a.pftile:hover { box-shadow: inset 0 0 0 1px var(--sig); }
   background: none; border-color: transparent; box-shadow: none; color: var(--red); text-shadow: var(--word-smear-r); }
 /* a disabled word never advertises a click */
 [data-theme] :is(.btn, .btn.ghost.active, .fitbtn, .followbtn, .platform, .outcomes button, .unitpick button, .achip, .apill, .wchip,
-  .gxbtn, .gxchip, .mailmore, .actions2 button, .cardacts button, .actions button, .tab, .wact, .txtbtn, .postbtn, .wctl, .weng, .bizapply):disabled {
+  .gxbtn, .gxchip, .mailmore, .actions2 button, .cardacts button, .actions button, .tab, .wact, .txtbtn, .postbtn, .wctl, .bizapply):disabled {
   color: var(--grey); text-shadow: none; background: none; border-color: transparent; box-shadow: none; }
 /* the segmented rows (unit picker, card actions, the tab strip) lose their
    dividers with the boxes — the words are spaced by their own padding */
@@ -3181,8 +3165,7 @@ body { font-size: 14px; }
 .wintents { display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: center; margin: 4px 0 2px; }
 .wintentmeans { font-size: 11px; color: var(--grey); letter-spacing: 0.04em; }
 .wcats { display: flex; flex-wrap: wrap; gap: 0 10px; margin: 0 0 8px; }
-.wlanes .tab { font-family: var(--mich); font-size: 11px; letter-spacing: 0.18em; background: none; border: 0; cursor: pointer; padding: 6px 0; }
-.wcard.wpiece { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start; }
+
 .cvlead { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 26px; align-items: end; margin: 8px 0 22px; }
 .cvleadimg { display: block; aspect-ratio: 4 / 5; max-height: 560px; overflow: hidden; border: 1px solid var(--line); }
 .cvleadimg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.15) contrast(1.05); }
@@ -3201,7 +3184,7 @@ body { font-size: 14px; }
 @media (max-width: 760px) {
   .cvlead { grid-template-columns: 1fr; gap: 12px; }
   .cvleadimg { max-height: 420px; }
-  .wcard.wpiece { grid-template-columns: 88px 1fr; }
+
 }
 
 /* =====================================================================
@@ -3439,7 +3422,7 @@ body { font-size: 14px; }
 .liketitle { color: var(--ink); text-decoration: none; font-size: 14px; line-height: 1.25; }
 .liketitle:hover { color: var(--sig); }
 .likemeta { font-size: 10.5px; letter-spacing: 0.12em; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.srchrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+
 .srchsec { margin: 18px 0 0; }
 .srchgrid { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .srchcard { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -3583,8 +3566,8 @@ body { font-size: 14px; }
 .wpcpieces b { font-family: var(--mich); font-weight: 400; font-size: 10px; letter-spacing: 0.12em; }
 .wpcpieces i { font-style: normal; color: var(--grey); }
 .wpcpieceblank { display: block; aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 12px; }
-.wpcevent, .wpclink { display: grid; gap: 3px; margin: 10px 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; font-size: 13px; }
-.wpcevent b, .wpclink b { font-family: var(--mich); font-weight: 400; font-size: 12px; letter-spacing: 0.04em; }
+.wpclink { display: grid; gap: 3px; margin: 10px 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; font-size: 13px; }
+.wpclink b { font-family: var(--mich); font-weight: 400; font-size: 12px; letter-spacing: 0.04em; }
 .wpclink { grid-template-columns: auto 1fr; align-items: center; column-gap: 12px; }
 .wpclink img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; }
 .wpclinkbody { display: grid; gap: 2px; min-width: 0; }
@@ -3810,7 +3793,7 @@ body { font-size: 14px; }
 .feedstrip .card { margin: 0; }
 .feedstrip .card .body { padding-top: 4px; }
 .typechip { display: inline-block; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; font: 8px/1.5 var(--mich); letter-spacing: 0.14em; color: var(--grey); vertical-align: middle; }
-.typechip.brd { color: var(--red); border-color: var(--red); }
+
 /* media in a card is a button: tap enlarges (MediaFloat) */
 .wpcmedia { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .wpcmedia img { width: 100%; display: block; }
@@ -3855,7 +3838,7 @@ body { font-size: 14px; }
 .lstdot { width: 8px; height: 8px; padding: 0; border-radius: 50%; border: 1px solid var(--paper); background: color-mix(in srgb, var(--ink) 40%, transparent); cursor: pointer; }
 .lstdot.cur { background: var(--red); }
 .lstbody { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.lstacts button, .lstacts .savebtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--mich); font-size: 9.5px; letter-spacing: 0.12em; }
+.lstacts button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--mich); font-size: 9.5px; letter-spacing: 0.12em; }
 .lstbuy { gap: 14px; }
 /* TAGS — LEFT: RIGHT (the blueprint's Tag grammar, slice 4; lib/tagging/grammar.js,
    TagChip.jsx). Liquid Glass chip, the fine border, the card radius; Michroma,
@@ -3930,7 +3913,7 @@ body { font-size: 14px; }
 .mftext { font-size: 14px; line-height: 1.45; margin-top: 4px; }
 .mfcredit { display: block; margin-top: 6px; font-size: 9px; letter-spacing: 0.1em; opacity: 0.8; }
 .mfacts { display: flex; gap: 2px; border-top: 1px solid var(--line); padding-top: 6px; }
-.mfacts button, .mfacts .savebtn { flex: 1; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; padding: 6px 0; border: 0; background: none; color: var(--ink); cursor: pointer; font: 9px/1 var(--mich); letter-spacing: 0.14em; }
+.mfacts button { flex: 1; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; padding: 6px 0; border: 0; background: none; color: var(--ink); cursor: pointer; font: 9px/1 var(--mich); letter-spacing: 0.14em; }
 .mfacts button.on { color: var(--red); }
 .mfacts button.soon { color: var(--red); opacity: 0.7; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .mfcaption { transition: none; } }
@@ -4293,8 +4276,7 @@ body { font-size: 14px; }
 /* V.2 slice 12: the map popup (5.5) and the overview's BRDCST line (16.3) */
 .mapsheet { display: grid; gap: 10px; }
 .mapsheet .fmap { width: 100%; height: auto; }
-.mapsheetrow { display: grid; gap: 2px; font-family: var(--mich); font-size: 11px; letter-spacing: .06em; }
-.mapsheetrow b { font-weight: 700; color: var(--ink); }
+
 .mapsheetacts { display: flex; flex-wrap: wrap; gap: 14px; }
 .srchbrdcst { list-style: none; margin: 4px 0 10px; padding: 0; font-family: var(--mich); font-size: 10px; letter-spacing: .08em; }
 .srchbrdcst a { color: var(--red); text-decoration: none; }
@@ -4512,7 +4494,7 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, te
 
 /* =====================================================================
    THE RAINBOW, LOUDER (owner, 18 Oct 2026, second word: "rainbow
-   refractive reactive liquid glass, cmon claude i want it to look cool").
+   refractive reactive liquid glass … I want it to look cool").
    Three things on top of the restored glass:
    1. the lens itself splits colour (LiquidGlass.jsx prism: what passes
       under a bezel comes apart into red, green and blue);

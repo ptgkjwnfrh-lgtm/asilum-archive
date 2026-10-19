@@ -2,11 +2,11 @@
 
 **Authority.** The owner's V.2 Blueprint of 17 October 2026 (the published
 spec: 18 chapters, 345 build clauses, Terms of Service, Foundations) supersedes
-the 1 October brief (`~/Documents/ASILUM_V2_Claude_Prompt.txt`) wherever the
+the 1 October brief (the owner's V.2 brief) wherever the
 two differ. The 1 October brief's Stages A–D landed on `main` on 2 October
 (#478–#483). This matrix maps every blueprint chapter to what `main` already
 has, so the build order below is grounded in the code rather than the spec
-alone. Repository laws still bind: AGENTS.md, CONSTITUTION.md §10, the ADRs,
+alone. Repository laws still bind: docs/engineering/, CONSTITUTION.md §10, the ADRs,
 mem/pg parity, no faking, never commit to `main`.
 
 Legend — **HAVE**: exists on main and matches the blueprint. **ADAPT**: exists
@@ -18,8 +18,8 @@ must rule.
 
 | Blueprint | On main | Status |
 | --- | --- | --- |
-| One FEED, no Wire | `/` with a Feed \| Wire selector (`/?view=wire`), THE WIRE as a hub (`lib/wire/`) | **ADAPT** — fold Wire posts into the one Feed as TRANSM/STILL/MOTION cards; retire the selector |
-| Six post types TRANSM · STILL · MOTION · BRDCST · LISTING · ECHO, PLACE/SONG cards | `lib/wire/compose.js` kinds transmission/post/video with layouts; events as attachments; no ECHO, no SONG card | **ADAPT** — map kinds to the six types; **BUILD** ECHO and SONG |
+| One FEED, no Wire | `/` with a Feed \| Wire selector (`/?view=wire`), THE WIRE as a hub (`lib/posts/`) | **ADAPT** — fold Wire posts into the one Feed as TRANSM/STILL/MOTION cards; retire the selector |
+| Six post types TRANSM · STILL · MOTION · BRDCST · LISTING · ECHO, PLACE/SONG cards | `lib/posts/compose.js` kinds transmission/post/video with layouts; events as attachments; no ECHO, no SONG card | **ADAPT** — map kinds to the six types; **BUILD** ECHO and SONG |
 | Central Control Deck: Feed · Search · Post disc · Messages · Account | `lib/nav.js` four tabs (Front Cover, Feed, Map, Account) + utilities Likes/Search/Messages; `ControlCenter.jsx` | **ADAPT** — five keys; Post becomes the center disc; Front Cover and Map leave the deck |
 | Info Dock (likes, bag, bell, music circle, \|A\|) top-left; Passport Button (globe) top-right | Likes is a sheet; bag lives in the header; notifications route exists (`/api/notifications`) but no bell; no globe | **BUILD** both fixtures |
 | Ad ticker under the deck | `AdStrip` in `ControlCenter.jsx`, `lib/placements.js` | **HAVE** |
@@ -28,7 +28,7 @@ must rule.
 | Tag grammar `LEFT: RIGHT`, three visible, rest behind the product, ASTERISK-only | `lib/tagging/vocabulary.js` facets; `DESIGNER: HOUSE` pair search (`lib/search/pair.js`, `lib/people/careers.js`); provenance sticker | **BUILD** the tag renderer and selector on top of the facets; the left-side hierarchy (MAKER→HOUSE→SCENE→AESTHETIC→MATERIAL→ERA→PLACE) maps onto existing facets `brand/designer/subculture/mood/material/era/origin` |
 | Friend asterisk on mutual follow | `lib/social.js` follows are one-way; no followers tracked ("ASILUM does not track followers") | **DECIDE** — mutual follow needs follower knowledge server-side; the blueprint requires it |
 | ASTERISK governance: admins supersede, logs, pause per function, audits, 90% cap, 65% split, 75% collective, 5 min | `lib/asterisk/` deterministic reading; `lib/verification/ledger.js` caps local rules at 0.5; `/admin`; steward with hands and a ledger | **ADAPT** — the ledger/steward are the admin console seed; the confidence cap and the agent split are new policy in `lib/asterisk/` |
-| Passenger Score, ASILUM Credit, \|A\| Protection, SELL/DROP | none on main; `codex/native-storefront` (unpushed, 10.7k lines, schema v62) has storefronts, native listings, variants, reservations, Stripe Connect | **BUILD** on top of the storefront branch once it is pushed and reviewed |
+| Passenger Score, ASILUM Credit, \|A\| Protection, SELL/DROP | none on main; the native-storefront branch (unpushed, 10.7k lines, schema v62) has storefronts, native listings, variants, reservations, Stripe Connect | **BUILD** on top of the storefront branch once it is pushed and reviewed |
 
 ## 1. Navigation and popup sessions (1.1–1.35)
 
@@ -39,7 +39,7 @@ must rule.
 | Session dial = Post disc, long-press menu, central + | none | **BUILD** the disc component (see chapter 2) |
 | Resume exactly where left; sessions survive restarts; 10 per account synced | `lib/viewstate.js` registry (per viewer+route+subtab+query+filters); feed parking; fresh launch = Feed (1 Oct law) | **DECIDE** — blueprint 1.10 "resume exactly" vs 1 Oct "fresh launch starts on the Feed"; **BUILD** server persistence (a `user_sessions` table) |
 | Tab switch restores that tab's session; two-tap active tab (restore, then refresh at top) | tabs preserve position in session; no two-tap | **ADAPT** |
-| Drafts autosave with subtle notice | `lib/wire/draft.js` device-local, versioned | **HAVE** for posts; **BUILD** notice + listings/messages |
+| Drafts autosave with subtle notice | `lib/posts/draft.js` device-local, versioned | **HAVE** for posts; **BUILD** notice + listings/messages |
 | Offline-first, queued actions, conflict merge | none (online only) | **BUILD** later stage |
 | Privacy-safe session previews | none | **BUILD** with the hub |
 
@@ -69,7 +69,7 @@ must rule.
 
 | Blueprint | On main | Status |
 | --- | --- | --- |
-| BRDCST footer on posts, +1–5, pagination, map popup, ticket links | event attachments on posts (`lib/wire/compose.js` event layout), placements on the cover and ticker, `/api/places?dated=1` | **ADAPT** the attachment into the footer; **BUILD** pagination and the outreach rule |
+| BRDCST footer on posts, +1–5, pagination, map popup, ticket links | event attachments on posts (`lib/posts/compose.js` event layout), placements on the cover and ticker, `/api/places?dated=1` | **ADAPT** the attachment into the footer; **BUILD** pagination and the outreach rule |
 | Taste-then-distance outreach, 50 mi, paid radius and taste expansion, itemized quote, presets, scheduling, per-day billing, refunds, credit bonus | `lib/placements.js` (no money), `lib/hotlist.js` program, Stripe wrapper `lib/payments/stripe.js` | **BUILD** `lib/brdcst/` (targeting, pricing, campaigns) + migration |
 | ASILUM Credit: site-wide, refunds and gifts only, 2FA + device auth gifting, chosen amount at checkout | none; `lib/vault.js` buyer vault; Stripe refunds exist | **BUILD** `lib/credit/` ledger + migration |
 
@@ -86,7 +86,7 @@ must rule.
 
 | Blueprint | On main | Status |
 | --- | --- | --- |
-| SELL single-item, DROP multi-variant, native only, no integrations | `codex/native-storefront`: storefronts, native_listings, variants, inventory, Stripe Connect checkout, fees (unpushed) | **ADAPT** the branch: SELL/DROP modes, drop manager; **DECIDE** eBay-sourced discovery inventory (1 Oct §15 eBay-first) vs "only sold if from ASILUM" (blueprint 7.1). Reading: eBay listings remain discovery with external purchase tickets; only native listings sell through ASILUM checkout |
+| SELL single-item, DROP multi-variant, native only, no integrations | the native-storefront branch: storefronts, native_listings, variants, inventory, Stripe Connect checkout, fees (unpushed) | **ADAPT** the branch: SELL/DROP modes, drop manager; **DECIDE** eBay-sourced discovery inventory (1 Oct §15 eBay-first) vs "only sold if from ASILUM" (blueprint 7.1). Reading: eBay listings remain discovery with external purchase tickets; only native listings sell through ASILUM checkout |
 | Payment-page reservation, no timer, lost on inactivity, first server request wins, queue = notification only | `inventory_reservations` in v62 | **ADAPT** to the page-based rule |
 | Offers, counteroffers, 24 h restart, reminders, presets, discounts 24 h manual renew, threshold alerts | none (Wardrobe private offers are DM-first per chapter 13; no listing offers) | **BUILD** `lib/offers/` + migration |
 | Relisting with confirmation, engagement preserved | listing status events v58 | **ADAPT** |
@@ -138,7 +138,7 @@ tests and leaves the app runnable with no database (mem mode) and no keys.
    split policy, per-function pause, the audit ledger on the steward; the
    verification ledger gains Pending, 5-minute / 72-hour timing, the replica
    signal.
-6. **Native commerce.** Review and land `codex/native-storefront`, then
+6. **Native commerce.** Review and land the native-storefront branch, then
    SELL/DROP modes, the payment-page reservation, offers and discounts,
    relisting, the queue.
 7. **Protection, returns, Passenger Score, ASILUM Credit.**

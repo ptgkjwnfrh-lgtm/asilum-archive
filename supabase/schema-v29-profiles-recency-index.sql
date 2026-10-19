@@ -1,6 +1,6 @@
 -- schema-v29-profiles-recency-index.sql — index the profiles recency scan.
 --
--- Audit finding #12 (docs/audit-verified-2026-08-14.md). listProfiles runs
+-- Audit finding #12 (docs/history/audit-verified-2026-08-14.md). listProfiles runs
 --   SELECT user_id, vec FROM profiles ORDER BY updated_at DESC LIMIT 500
 -- on every similarUsers call, and no index on profiles.updated_at exists in
 -- any migration — so Postgres sorts the WHOLE table to return 500 rows. The

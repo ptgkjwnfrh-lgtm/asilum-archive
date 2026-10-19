@@ -1,3 +1,7 @@
+// tests/write-breaker.test.js — Write breakers: every write scope has a real
+// budget, a breaker fails closed once spent, and cost charges the budget in
+// proportion to the batch.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

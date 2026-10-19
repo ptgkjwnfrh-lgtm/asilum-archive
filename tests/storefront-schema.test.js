@@ -1,3 +1,7 @@
+// tests/storefront-schema.test.js — Schema v62 (native storefront): catalog
+// authority, integer money and inventory, reservation uniqueness, indexed
+// foreign keys and explicit server policies.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

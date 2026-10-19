@@ -6,7 +6,7 @@
 -- records").
 --
 -- Numbered 56: v54 (Wikipedia register) and v55 (catalog connections) are
--- Codex's, on its open branches and not yet on main; taking either number here
+-- on other open branches and not yet on main; taking either number here
 -- would collide at merge. A gap in the ledger is cheaper than a renumber.
 --
 -- 1. items gains the two columns that let a feed row say WHEN it was true:

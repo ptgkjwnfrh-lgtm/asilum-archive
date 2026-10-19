@@ -1,3 +1,7 @@
+// tests/sign-out-notice.test.js — The sign-out notice: the retired claim
+// appears nowhere, no notice is hand-typed, and every emitter imports the one
+// shared constant.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";

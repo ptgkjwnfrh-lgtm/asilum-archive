@@ -195,8 +195,10 @@ function callSites(name) {
 test("every real() in lib/ states where the result came from", () => {
   const sites = callSites("real");
   // Not vacuous: if the scanner ever stops finding call sites, this fails
-  // rather than passing with an empty list.
-  assert.ok(sites.length >= 10, `found ${sites.length} real() call sites`);
+  // rather than passing with an empty list. (The floor was 10 while the
+  // unbuilt facades in lib/recommendations and lib/visual-personalization
+  // existed; with them deleted, 8 real sites remain, so the floor is 6.)
+  assert.ok(sites.length >= 6, `found ${sites.length} real() call sites`);
 
   const anonymous = sites.filter((s) => s.args.length < 2);
   assert.deepEqual(anonymous, [],
@@ -205,7 +207,9 @@ test("every real() in lib/ states where the result came from", () => {
 
 test("every notImplemented() in lib/ names the capability it is standing in for", () => {
   const sites = callSites("notImplemented");
-  assert.ok(sites.length >= 25, `found ${sites.length} notImplemented() call sites`);
+  // The floor proves the scanner works (it was 25 while the unbuilt job,
+  // feed, vision and recommendation facades existed; 18 remain, floor 15).
+  assert.ok(sites.length >= 15, `found ${sites.length} notImplemented() call sites`);
 
   const unnamed = sites.filter((s) => s.args.length < 1);
   assert.deepEqual(unnamed, [], "an unnamed placeholder cannot be acted on");

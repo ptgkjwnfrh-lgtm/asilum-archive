@@ -1,3 +1,7 @@
+// tests/dense-tags.test.js — Dense per-piece tags (lib/tagging/dense.js): a
+// full item yields 20+ typed tags, materials only when literally in the title,
+// and the same item always yields identical rows.
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {

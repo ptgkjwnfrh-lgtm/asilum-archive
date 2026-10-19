@@ -1,5 +1,5 @@
 // tests/transmission-lifecycle.test.js — transmission edit + delete
-// (owner directive, HANDOVER-2026-08-14 backlog 1), mem mode. The law
+// (owner directive, 14 Aug 2026, backlog 1), mem mode. The law
 // under test: only the author — bound in the WHERE clause, not in caller
 // claims — can touch a transmission; deletion is a soft moderation state
 // that kills every read path including the permalink; edits stamp

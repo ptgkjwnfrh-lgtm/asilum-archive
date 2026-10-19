@@ -67,13 +67,10 @@ time is never optimized as the mission.
   duplicate routes/stores/components (no second wardrobe, no second
   Asterisk memory, no parallel taste store); no rewrites of working
   domains; `npm run build` and the test suite pass before anything ships.
-- **Git.** Never work on `main`. Branch → focused PR → Codex review →
-  merge only at the owner's explicit word. Every report: summary, files
-  changed, build/test status, remaining issues, manual tests, Codex focus.
-  > **PARTLY SUPERSEDED by Amendment A2 (Aug 5, 2026) — see §10.** The
-  > Codex-review step is retired; the reviewer is Claude. Everything else
-  > in this rule — never work on `main`, branch per change-set, merge only
-  > at the owner's explicit word, the report format — still stands.
+- **Git.** Never work on `main`. Branch → focused PR → adversarial
+  self-review → merge only at the owner's explicit word. Every report:
+  summary, files changed, build/test status, remaining issues, manual
+  tests, review focus. (Amendment A2, §10, sets how the review is done.)
   > Amendment A3 (Aug 6, 2026) adds a verification step before merging a
   > STACKED PR.
 - **Secrets.** Env only; never client-side; `service_role` never in
@@ -219,8 +216,7 @@ Every PR: objective + user journey; exists-vs-new; schema/API/event
 changes; privacy/security/moderation/rights/commercial impact; flag +
 rollback; migration/backfill notes; tests with exact results;
 screenshots for UI changes; manual test instructions; known limitations;
-doc updates; explicit review focus (Codex focus retired by A2 — state what
-the reviewer should attack). Required gates: unit/contract
+doc updates; explicit review focus (state what the review should attack). Required gates: unit/contract
 tests, Postgres integration (constraints, concurrency, RLS, Storage),
 cross-account negatives, accessibility + browser flows, load/cursor
 tests for feeds/search, production build, dependency review, Supabase
@@ -231,9 +227,9 @@ capability**.
 ## 10. Amendments (owner-issued, in force)
 
 Each entry is a decision the OWNER made after v2 was written. They were
-being carried in session memory only, so this document contradicted the
-owner for weeks — §2 still ordered a locked UI the owner had unlocked, and
-still routed reviews through Codex after that was retired. A binding
+being carried in notes only, so this document contradicted the owner for
+weeks — §2 still ordered a locked UI the owner had unlocked, and still
+named a review step after it was retired. A binding
 document that outlives its decisions is worse than no document, so
 amendments live here from now on. Superseded text above is annotated in
 place rather than deleted, so the history stays readable.
@@ -245,11 +241,10 @@ normalize button placement/interactions ("everything more synergized"),
 THEN the creative redesign. No-faking, branch+PR, build-must-pass and the
 report format are untouched by this.
 
-**A2 — CODEX REVIEW RETIRED (Aug 5, 2026).** Supersedes the "Codex review"
-step in §2 Git and "explicit Codex review focus" in §9. Claude reviews its
-own work: adversarial verification, declared-criteria batteries, and the
-harness laws. Stop posting @codex review comments. Branch + PR + CI green +
-merge at the owner's word all still stand.
+**A2 — SELF-REVIEW (Aug 5, 2026).** The external review step is retired.
+Every change is reviewed by its author, adversarially: declared-criteria
+batteries, a battery checked to fail with the fix reverted, and the test
+laws. Branch + PR + CI green + merge at the owner's word all still stand.
 
 **A3 — VERIFY A STACKED MERGE (Aug 6, 2026).** Adds a required step to §2
 Git. A stacked PR merged with `--delete-branch=false` merges into its BASE
@@ -345,7 +340,7 @@ differs, this addendum wins (the latest explicit correction beats the
 earlier text).
 
 **A6 third addendum — THE DEVICE (Oct 18, 2026, evening).** The owner,
-after the slice-14 look: "rainbow refractive reactive liquid glass, cmon …
+after the slice-14 look: "rainbow refractive reactive liquid glass, …
 I want it to look cool"; "pull from the og design language but only some of
 it"; "I want the app to feel like a physical device"; "the og passport design
 should transfer over 90% accurately"; "I miss the soft gradient of blue to

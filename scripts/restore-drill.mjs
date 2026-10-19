@@ -1,5 +1,5 @@
 // scripts/restore-drill.mjs
-// Rehearse the restore (owner directive, HANDOVER-2026-08-14 backlog 6).
+// Rehearse the restore (owner directive, 14 Aug 2026, backlog 6).
 //
 //   node scripts/restore-drill.mjs [path/to/asilum-*.dump]
 //

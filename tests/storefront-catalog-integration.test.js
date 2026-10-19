@@ -24,7 +24,7 @@ const {
 const { searchProducts } = await import("../lib/search/index.js");
 const { sourceFor, isDemoItem } = await import("../lib/social.js");
 const { bagLineKey } = await import("../lib/client.js");
-const { attachmentsFor } = await import("../lib/wire/compose.js");
+const { attachmentsFor } = await import("../lib/posts/compose.js");
 const { creditedDesigners } = await import("../lib/asterisk/memory.js");
 const { STOREFRONT_CATEGORIES } = await import("../lib/storefront/contracts.js");
 const { callRoute, loadRoute, newDevice } = await import("./helpers/route.js");

@@ -1,3 +1,7 @@
+// tests/observation-honesty.test.js — Observation honesty: no surface claims
+// ASILUM watches other tabs or sites, the observation toggle really gates
+// passive signals, and placeholder aesthetics are never shown as observed.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";

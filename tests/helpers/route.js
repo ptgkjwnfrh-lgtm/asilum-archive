@@ -3,7 +3,7 @@
 // WHY THIS EXISTS. Before it, no test in this repo ever called an API route.
 // Six test files reached routes by reading their SOURCE AS TEXT and asserting
 // with regexes (docs/audit-test-coverage-2026-08-16). That style fails in the
-// direction of passing when it should fail — HANDOVER-2026-08-15 records a
+// direction of passing when it should fail — the 15 Aug 2026 notes records a
 // guard whose `[\s\S]*?` matched an unrelated `neighbors:` fifteen lines away
 // and stayed green with the fix reverted. A handler that is actually invoked
 // cannot do that: a 401 that should be a 200 is a 401.

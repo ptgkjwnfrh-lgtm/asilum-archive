@@ -1,3 +1,7 @@
+// tests/search-dense.test.js — Dense query parsing (lib/search/denseQuery.js):
+// gender words become constraints, size phrases consume both words, and
+// climate words constrain while staying scoreable.
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {

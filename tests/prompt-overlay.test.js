@@ -1,5 +1,5 @@
 // tests/prompt-overlay.test.js — audit finding #9, verified in
-// docs/audit-verified-2026-08-14.md.
+// docs/history/audit-verified-2026-08-14.md.
 //
 // /?q=<prompt> is the search hand-off, and app/page.js tells the user exactly
 // what it means: "Asterisk is routing this edit toward X without rewriting your

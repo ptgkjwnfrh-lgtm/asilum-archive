@@ -1,5 +1,5 @@
 // app/api/editorial/engage/route.js
-// LIKES + SAVES on transmissions (owner directive, HANDOVER-2026-08-14
+// LIKES + SAVES on transmissions (owner directive, 14 Aug 2026
 // backlog 2). Person-deduped counters in the popularity style: the
 // ledger's primary key is (post_id, identity_hash, kind), so pressing
 // LIKE in a loop — or from ten tabs — moves the counter exactly once.

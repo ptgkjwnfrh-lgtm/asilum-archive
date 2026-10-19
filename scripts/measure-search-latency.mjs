@@ -1,5 +1,5 @@
 // scripts/measure-search-latency.mjs — p50 / p95 of the search engine, in
-// mem mode, over a fixed corpus (docs/v2/CLAUDE-BACKEND-HANDOFF.md asks for
+// mem mode, over a fixed corpus (the V.2 backend plan asks for
 // latency as a launch gate). A gate, not a dashboard: the thresholds are
 // declared here, before the run, and a red run is a red run.
 //

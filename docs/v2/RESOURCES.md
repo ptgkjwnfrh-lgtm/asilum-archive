@@ -1,4 +1,4 @@
-# Claude research and implementation resources
+# Research and implementation resources
 
 Curated September 19, 2026. These are primary papers, official repositories, and official provider documentation. They support an engineering direction; they do not establish ASILUM performance, data licenses, provider approval, or production configuration. Prefer the repo's existing implementation when it already satisfies the requirement. Validate provider details at implementation time.
 

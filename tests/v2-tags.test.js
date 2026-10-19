@@ -12,7 +12,7 @@ const strip = (s) => s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "
 const chip = strip(read("app/components/TagChip.jsx"));
 const listing = strip(read("app/components/ListingSheet.jsx"));
 const page = strip(read("app/page.js"));
-const card = strip(read("app/components/WireCard.jsx"));
+const card = strip(read("app/components/PostCard.jsx"));
 const search = strip(read("app/components/SearchSheet.jsx"));
 const dock = strip(read("lib/dockstate.js"));
 const related = strip(read("app/api/related/route.js"));

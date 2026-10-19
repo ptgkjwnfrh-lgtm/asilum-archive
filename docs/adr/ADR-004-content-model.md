@@ -2,7 +2,7 @@
 
 - Status: PROPOSED (Phase 0 → governs Phase 1)
 - Date: 2026-07-19
-- Deciders: owner + Codex review
+- Deciders: owner
 
 ## Context
 

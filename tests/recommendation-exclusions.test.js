@@ -1,5 +1,5 @@
 // tests/recommendation-exclusions.test.js — audit finding #8, verified in
-// docs/audit-verified-2026-08-14.md.
+// docs/history/audit-verified-2026-08-14.md.
 //
 // "A correction is a promise, not a hint" (Day 11). A user who corrects a brand
 // away with `dont-recommend-brand`, or marks a piece already-own / not-my-style,

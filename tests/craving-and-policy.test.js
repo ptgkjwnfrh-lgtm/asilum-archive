@@ -1,3 +1,8 @@
+// tests/craving-and-policy.test.js — Current cravings and feed policy:
+// cravings normalize and drop unknown controls, safe mode lowers exploration
+// without breaking ranking, and a craving steers one feed without rewriting
+// taste.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

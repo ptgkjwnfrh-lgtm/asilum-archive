@@ -1,5 +1,5 @@
 // tests/client-render-cost.test.js — audit findings #18 and #19 from
-// docs/audit-verified-2026-08-14.md.
+// docs/history/audit-verified-2026-08-14.md.
 //
 // Both are browser-side, and both are pure performance: the pixels and the DOM
 // are meant to come out the same. That leaves nothing functional for a test to

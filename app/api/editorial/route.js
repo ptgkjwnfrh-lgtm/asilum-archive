@@ -17,12 +17,12 @@ import {
 } from "../../../lib/db/production.js";
 import { accountIdFromIdentity, resolveRequestUser } from "../../../lib/identity.js";
 import { sanitizeStatement, screenStatement } from "../../../lib/profile/rooms.js";
-import { extractRefs } from "../../../lib/wire/refs.js";
+import { extractRefs } from "../../../lib/posts/refs.js";
 import { safeExternalUrl, safeImageUrl } from "../../../lib/url.js";
-import { validateComposition, attachmentsFor, eventsOf } from "../../../lib/wire/compose.js";
+import { validateComposition, attachmentsFor, eventsOf } from "../../../lib/posts/compose.js";
 import { deliverPosts } from "../../../lib/db/production/brdcst.js";
-import { fetchPreview } from "../../../lib/wire/preview.js";
-import { wireImageUrl } from "../../../lib/wire/media.js";
+import { fetchPreview } from "../../../lib/posts/preview.js";
+import { postImageUrl } from "../../../lib/posts/media.js";
 import { getMotionAsset, motionForPost } from "../../../lib/db/production/media.js";
 import { motionUrls } from "../../../lib/media/worker.js";
 import { resolveProduct } from "../../../lib/products.js";
@@ -207,7 +207,7 @@ export async function POST(req) {
     try { attachments = attachmentsFor(composition, { pieceSnapshots, eventSnapshots, linkSnapshot, videoSnapshot }); }
     catch (e) { return NextResponse.json({ error: String(e.message).slice(0, 300) }, { status: 400 }); }
     compositionRow = { postKind: v.kind, layout: v.layout, attachments,
-      imageUrl: attachments.media && attachments.media[0] ? wireImageUrl(attachments.media[0].path) : videoSnapshot && videoSnapshot.poster ? videoSnapshot.poster : safeImageUrl(body.imageUrl),
+      imageUrl: attachments.media && attachments.media[0] ? postImageUrl(attachments.media[0].path) : videoSnapshot && videoSnapshot.poster ? videoSnapshot.poster : safeImageUrl(body.imageUrl),
       externalUrl: linkSnapshot ? linkSnapshot.url : safeExternalUrl(body.externalUrl),
       productRefs: pieceSnapshots.map((p) => p.id) };
   } else if (!text) return NextResponse.json({ error: "text required" }, { status: 400 });
@@ -258,7 +258,7 @@ export async function POST(req) {
   }
 }
 
-// The lifecycle verbs (owner directive, HANDOVER-2026-08-14 backlog 1).
+// The lifecycle verbs (owner directive, 14 Aug 2026, backlog 1).
 // Both resolve the caller from proof, then let the database's WHERE
 // author_id clause be the whole authorization story: a stranger's post and
 // a missing post answer the same 404, so the API never confirms whose a

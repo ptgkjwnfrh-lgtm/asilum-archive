@@ -3,7 +3,7 @@
 > **This section supersedes everything below it where they differ.** The
 > rest of this file is the July–September record, kept for the reasoning
 > behind rules that survived; the V.2 slices (`docs/v2/slice-*.md`) and
-> `.claude/skills/asilum-ui/SKILL.md` are the current law.
+> `docs/engineering/ui.md` are the current law.
 
 - **No header.** Three fixtures: the Info Dock (top left: LIKES · BAG ·
   NOTICES), the Passport Button (top right: the globe) and the Central
@@ -279,7 +279,7 @@ the machine: curves, haze, milky glass — atmosphere over nostalgia.
     merged with device copies the server doesn't show yet — labeled
     "pending or held", never dressed as published.
   - THE TRANSMISSION LIFECYCLE (owner directive, Aug 14 — backlog 1 of
-    HANDOVER-2026-08-14): the author — and only the author, verified
+    14 Aug 2026): the author — and only the author, verified
     server-side and bound in the WHERE clause — may EDIT or DELETE
     their transmission from the floor. The controls are tiny wire
     furniture (.wctl, in the teal rule) shown only on posts the
@@ -299,7 +299,7 @@ the machine: curves, haze, milky glass — atmosphere over nostalgia.
     sanitize + screen as fresh posts — a flagged edit parks the
     transmission under review and says so in the same words.
   - WIRE ENGAGEMENT — LIKES + SAVES (owner directive, Aug 14 — backlog 2
-    of HANDOVER-2026-08-14): two counters per transmission, and both
+    of 14 Aug 2026): two counters per transmission, and both
     count PEOPLE, not events. The ledger's key is (post, person, kind),
     so pressing LIKE in a loop or from ten tabs moves the counter once;
     only another human moves it again (the v22/v23 anti-manipulation
@@ -316,7 +316,7 @@ the machine: curves, haze, milky glass — atmosphere over nostalgia.
     the same 404 the lifecycle verbs answer — it never reveals whether
     a hidden transmission exists.
   - HASHTAGS + @MENTIONS (owner directive, Aug 14 — backlog 3 of
-    HANDOVER-2026-08-14): every surface that prints a transmission
+    14 Aug 2026): every surface that prints a transmission
     renders it through ONE component (TransmissionText), so a tag
     behaves the same on the floor, the permalink, the cover wire, the
     profile's POSTS tab and /u/[handle]. Parsing happens AFTER the
@@ -339,7 +339,7 @@ the machine: curves, haze, milky glass — atmosphere over nostalgia.
     rooms.js reaches the database, so a client import of it ships `pg`
     to the browser and fails the build.
 - THE DESK (/admin — owner directive, Aug 14, backlog 4 of
-  HANDOVER-2026-08-14) is the operator surface for /api/admin, which had
+  14 Aug 2026) is the operator surface for /api/admin, which had
   been complete for weeks with no way to reach it (a business
   application could only be decided with curl). It wears the SETTINGS
   RACK's own vocabulary — .rkmod/.rkhead/.rkrow/.rkled, numbered

@@ -1,3 +1,7 @@
+// tests/culture-guidance.test.js — Culture guidance in search: era anchors
+// fold plurals and participles, match whole words outside the brand, and
+// culture summaries route to the right entities.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

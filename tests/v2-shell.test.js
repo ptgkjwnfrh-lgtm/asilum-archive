@@ -81,8 +81,8 @@ test("the fixtures are glass pills with the restrained rainbow rim, and the post
 // THE WIRE DOES NOT EXIST (owner, 18 Oct 2026: "THE WIRE DOESN'T EXIST
 // ANYMORE"). It is the Feed. No visible word may say otherwise: every page,
 // layout and component under app/ (the API's own messages included) and the
-// deck's data, read with the comments stripped. Identifiers (WireCard,
-// fetchWire, WIRE_UPLOADS_ENABLED, the "wire" data keys) are code, not copy,
+// deck's data, read with the comments stripped. Identifiers (PostCard,
+// fetchPosts, WIRE_UPLOADS_ENABLED, the "wire" data keys) are code, not copy,
 // and the word boundaries leave them alone.
 test("the Wire does not exist: no visible WIRE / Wire / the wire / wire post anywhere in the app", async () => {
   const { readdirSync, statSync } = await import("node:fs");
@@ -115,7 +115,7 @@ test("page gradients: a --bg-grad in both palettes, worn by the page, tinted per
   assert.ok(!/html, body \{[^}]*background\s*:/s.test(rules), "nothing after the page rule resets <html>'s background");
   assert.match(rules, /\[data-page="passport"\] \{ --page-tint: var\(--red\); \}/);
   assert.match(read("app/shell.js"), /document\.documentElement\.dataset\.page = page;/, "the shell names the page");
-  for (const f of ["app/components/WireCard.jsx", "app/components/PlaceCard.jsx", "app/components/MapSheet.jsx", "app/components/ListingSheet.jsx"]) {
+  for (const f of ["app/components/PostCard.jsx", "app/components/PlaceCard.jsx", "app/components/MapSheet.jsx", "app/components/ListingSheet.jsx"]) {
     assert.deepEqual(read(f).match(/#[0-9a-fA-F]{3,8}\b/g) || [], [], f + " carries no literal colour");
   }
 });

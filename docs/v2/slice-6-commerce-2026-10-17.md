@@ -1,14 +1,14 @@
 # V.2 slice 6 — native commerce (17 October 2026)
 
 The sixth vertical slice of the V.2 build (`docs/v2/BLUEPRINT-GAP-2026-10-17.md`,
-"Build order" 6): land `codex/native-storefront`, then SELL / DROP, the
+"Build order" 6): land the native-storefront branch, then SELL / DROP, the
 payment-page reservation, the availability queue, relisting, offers and
 discounts. Two commits on `v2/build`, PR #484: the merge (4830268) and the
 slice.
 
 ## Part 1 — the storefront lands
 
-`codex/native-storefront` (fc618e6, 3 Oct, one commit on main 495493b,
+the native-storefront branch (fc618e6, 3 Oct, one commit on main 495493b,
 10,712 insertions) reviewed against the constitution and merged. The branch's
 own suite was green at its base (1,679 pass, 0 fail); the merge keeps it green
 on V.2. What the landing changed and why is in the merge commit; in short the

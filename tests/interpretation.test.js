@@ -1,3 +1,7 @@
+// tests/interpretation.test.js — ASTERISK interpretation: confidence never
+// reaches 1.0 and is never one blended number, bands are labels not precision,
+// and exact catalog hits stay authoritative.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

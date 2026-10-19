@@ -1,6 +1,6 @@
 "use client";
 
-// app/admin/page.js — THE DESK (owner directive, HANDOVER-2026-08-14
+// app/admin/page.js — THE DESK (owner directive, 14 Aug 2026
 // backlog 4). The operator surface for /api/admin, which has been
 // complete for weeks with no way to reach it: business applications
 // waited on a human decision that could only be made with curl.

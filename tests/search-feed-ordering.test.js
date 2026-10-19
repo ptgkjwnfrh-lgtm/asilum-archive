@@ -1,3 +1,7 @@
+// tests/search-feed-ordering.test.js — Search result ordering: compositional
+// and cultural reads rank above literal ones, a high-score literal cannot jump
+// a composed read, and similarity only breaks true ties.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

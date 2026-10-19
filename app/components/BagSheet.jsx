@@ -8,7 +8,7 @@
 // the Bag reserves nothing, and checkout for sourced pieces belongs to the
 // source sites.
 //
-// NATIVE COMMERCE (slice 6, over codex/native-storefront): a native
+// NATIVE COMMERCE (slice 6, over the native-storefront branch): a native
 // Storefront line carries units and its own CHECK OUT THIS SELLER control,
 // which opens Stripe's hosted checkout through lib/storefront/client.js —
 // the server re-resolves price, stock and policy; the subtotal here is a

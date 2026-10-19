@@ -123,5 +123,5 @@ if (fired === 0) {
   process.exit(0);
 }
 console.log(`${fired} of ${TRIGGERS.length} deferred item(s) are now worth doing.`);
-console.log('See §"Deferred with a measurement, not a shrug" in docs/HANDOVER-2026-08-16.md.');
+console.log('See §"Deferred with a measurement, not a shrug" in the 16 Aug 2026 notes (git history).');
 process.exit(1);

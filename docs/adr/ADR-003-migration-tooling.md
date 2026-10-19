@@ -1,6 +1,6 @@
 # ADR-003: Migration tooling — keep versioned schema files + runtime assertion; adopt CLI only with owner sign-off
 
-- Status: PROPOSED (Phase 0) — CONTRADICTION FLAG for owner/Codex
+- Status: PROPOSED (Phase 0) — CONTRADICTION FLAG for the owner
 - Date: 2026-07-15
 
 ## Context
@@ -28,8 +28,8 @@ verification demands:
 
 Adopting the Supabase CLI is a REAL option (advisors integration, diff
 tooling) but is a migration-of-the-migration-system: it needs a baseline
-squash, CI changes, and Codex's agreement, since Codex authors migrations
-in this repo too. That switch, if wanted, is its own Phase 0/1 PR after an
+squash and CI changes, and every branch that authors migrations has to
+move with it. That switch, if wanted, is its own Phase 0/1 PR after an
 owner decision — not a silent side effect.
 
 ## Consequences
@@ -42,4 +42,4 @@ owner decision — not a silent side effect.
 ## Alternatives
 
 - Immediate CLI adoption: cleaner long-term, but breaks the convention
-  Codex actively uses and adds risk exactly when schema volume increases.
+  every branch actively uses and adds risk exactly when schema volume increases.

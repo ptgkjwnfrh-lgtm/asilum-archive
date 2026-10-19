@@ -1,3 +1,7 @@
+// tests/color-and-fit.test.js — Colour and fit evidence: merchant colour names
+// normalize without guessing from copy, images must corroborate a colour
+// before it is verified, and sizes resolve through the measurement brain.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

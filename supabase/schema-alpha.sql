@@ -3,7 +3,7 @@
 -- The live app runs on lib/db's tables (see supabase/schema.sql for the
 -- MVP set). Apply these only when the feature that writes them ships —
 -- empty tables invite code that pretends they're populated.
--- Shapes mirror lib/db/types.js. All user-owned tables get RLS like schema.sql.
+-- Shapes follow the entity model in lib/ALPHA-BRAIN.md. All user-owned tables get RLS like schema.sql.
 
 -- user_events GRADUATED (July 8, Day 5): now part of schema-v1-brain.sql.
 
@@ -100,7 +100,7 @@ create index if not exists feed_items_user on feed_items (user_id, served_at des
 create table if not exists recommendations (
   id bigint generated always as identity primary key,
   user_id text not null,
-  kind text not null,              -- lib/recommendations facade function name
+  kind text not null,              -- the recommender's function name
   payload jsonb not null,
   created_at timestamptz not null default now()
 );

@@ -1,4 +1,4 @@
-// scripts/v2-fixtures.mjs — write the V.2 engine fixtures Codex renders from.
+// scripts/v2-fixtures.mjs — write the V.2 engine fixtures the UI renders from.
 //
 // Every fixture is a REAL response from the real route handler in mem mode
 // (tests/helpers/route.js), or a real call to a pure engine module — never a

@@ -39,9 +39,9 @@ test("search scopes carry the brief's exact placeholders and never widen on thei
 test("Pieces and Wire are independent toggles with at least one on; ASTERISK is free", () => {
   assert.deepEqual(SEARCH_TOGGLES.map((t) => t.id), ["pieces", "wire", "asterisk"]);
   const both = { pieces: true, wire: true, asterisk: true };
-  const noWire = toggleContent(both, "wire");
-  assert.deepEqual(noWire, { pieces: true, wire: false, asterisk: true });
-  assert.deepEqual(toggleContent(noWire, "pieces"), noWire, "the last content type cannot be turned off");
+  const noPosts = toggleContent(both, "wire");
+  assert.deepEqual(noPosts, { pieces: true, wire: false, asterisk: true });
+  assert.deepEqual(toggleContent(noPosts, "pieces"), noPosts, "the last content type cannot be turned off");
   assert.equal(toggleContent(both, "asterisk").asterisk, false);
 });
 
@@ -141,7 +141,7 @@ test("the feed parks and restores through the registry; wire cards carry their i
   assert.ok(/addEventListener\("pagehide", onHide\)/.test(feed), "leaving the page parks it");
   assert.ok(/restoreFromPark\(data\.items \|\| \[\]\)/.test(feed), "the fresh feed re-finds the anchor");
   assert.ok(/className="newabove"/.test(feed), "new items above are offered, never scrolled into");
-  const wire = read("app/components/WireCard.jsx");
+  const wire = read("app/components/PostCard.jsx");
   assert.ok(/data-id=\{"post:" \+ \(p\.serverId \?\? p\.id\)\}/.test(wire), "a wire card's data-id is the id the feed lists it under");
   const cover = read("app/cover/page.js");
   assert.ok(/<PlacementsBlock \/>/.test(cover), "the cover carries the placements block");

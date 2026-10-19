@@ -1,3 +1,7 @@
+// tests/client-identity-retry.test.js — The client's identity issuance: a 429
+// or 503 is retried rather than cached for the page, and a successful identity
+// is cached so it is never re-issued per call.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

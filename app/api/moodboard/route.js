@@ -70,7 +70,7 @@ export async function POST(req) {
   let idemKey = null;
   if (kind === "upload") {
     // filenames: must be a real array of bounded strings — malformed shapes
-    // are a 400, never a throw (Codex re-review of #13).
+    // are a 400, never a throw (re-review of #13).
     if (!Array.isArray(body.filenames) || body.filenames.length < 1 || body.filenames.length > 24) {
       return NextResponse.json({ error: "filenames must be an array of 1-24 strings" }, { status: 400 });
     }
@@ -82,7 +82,7 @@ export async function POST(req) {
       names.push(n.replace(/\.[a-z0-9]+$/i, "").replace(/[-_.]+/g, " "));
     }
     text = names.join(" ");
-    // Client-generated idempotency key, REQUIRED for uploads (Codex #13
+    // Client-generated idempotency key, REQUIRED for uploads (#13
     // follow-up): a retry after a lost response returns the ORIGINAL stored
     // record instead of writing a duplicate upload + event.
     if (typeof body.uploadId !== "string" || !/^[A-Za-z0-9-]{8,64}$/.test(body.uploadId)) {

@@ -162,7 +162,7 @@ database/compute cost, they do not replace layer 1.
 
 ## Standing assumptions to re-verify each phase
 
-- Codex co-authors migrations: coordinate schema numbers (v13 next) to
+- Migrations come from more than one branch: coordinate schema numbers (v13 next) to
   avoid collisions — check remote before every migration PR.
 - `service_role` never in client bundles (grep gate in CI is a candidate).
 - All new tables default server-only until a client operation is proven

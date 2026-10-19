@@ -1,3 +1,7 @@
+// tests/storefront-flags.test.js — Storefront money flags: drafts run with no
+// keys and every money path off, test checkout needs an explicit switch, and
+// live money needs validation and explicit gates.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import {

@@ -1,3 +1,6 @@
+// tests/memory-decay.test.js — Taste memory decay: one half-life halves every
+// weight, two quarter it, and decay never flips a weight's sign.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

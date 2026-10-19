@@ -1,3 +1,7 @@
+// tests/adoption-merge.test.js — Sign-in adoption merges bridge impressions:
+// device impressions survive when the account has its own, the per-bridge cap
+// holds after summing, and every engagement keeps its impressions.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

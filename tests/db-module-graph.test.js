@@ -1,3 +1,7 @@
+// tests/db-module-graph.test.js — The lib/db module graph: every relative
+// import resolves to a real file, and the privacy export reaches the mail desk
+// by a path that resolves.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync } from "node:fs";

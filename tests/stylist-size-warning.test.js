@@ -1,3 +1,7 @@
+// tests/stylist-size-warning.test.js — The stylist's size warning: catalog
+// sizes are objects, sizes compare as strings, and a passenger is warned when
+// a look does not fit them.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

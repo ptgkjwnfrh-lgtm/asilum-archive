@@ -106,7 +106,7 @@ test("warm users get a real nearness map bounded by the artifact", () => {
 });
 
 // ---- the owner's ruling, option 2 (21 Aug) ----------------------------------
-// docs/vector-gamma-ruling-2026-08-21.md: the core slate RANKS uncorroborated
+// docs/history/vector-gamma-ruling-2026-08-21.md: the core slate RANKS uncorroborated
 // similarity lower without SCORING it lower. These pin the seam — that the
 // explanation side is untouched and only the ranking key moved. Get this
 // backwards and the anti-forgery ordering silently inverts, which is exactly

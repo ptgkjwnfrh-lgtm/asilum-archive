@@ -1,3 +1,7 @@
+// tests/feed-rotation.test.js — Feed rotation memory: sized to the pool so a
+// reader can reach all of it, an undersized memory confines the reader, and
+// the memory holds distinct ids.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

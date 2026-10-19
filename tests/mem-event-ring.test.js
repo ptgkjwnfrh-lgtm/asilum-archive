@@ -1,3 +1,7 @@
+// tests/mem-event-ring.test.js — The memory-mode event ring: one flooding user
+// cannot evict another, each user is capped keeping the most recent, and reads
+// return newest first like Postgres.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

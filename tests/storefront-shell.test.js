@@ -1,5 +1,5 @@
 // tests/storefront-shell.test.js — the native Storefront inside the V.2
-// shell (codex/native-storefront landed on v2/build, slice 6). The branch
+// shell (the native-storefront branch landed on v2/build, slice 6). The branch
 // wrote its checkout into the shell's bag panel and the feed page's modal;
 // slices 1–3 retired both. On V.2 the bag is a popup (BagSheet), the piece
 // is the LISTING popup (ListingSheet), and ONE client opens native checkout

@@ -1,3 +1,7 @@
+// tests/skip-dwell-timing.test.js — Skip timing: a fast skip counts about
+// 1.75x a slow one, a skip with no timing counts as considered, and the ratio
+// is exactly the declared multiplier.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

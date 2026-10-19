@@ -16,7 +16,7 @@
 -- same transaction (lib/db/dm.js, this PR). The two orderings that used to
 -- produce an orphan produce the same clean end state instead.
 --
--- Serious finding of docs/dm-open-findings-2026-08-23.md. It is the same
+-- Serious finding of docs/history/dm-open-findings-2026-08-23.md. It is the same
 -- lesson as v40's idempotency ordering, one table over: the ordering of a
 -- check against the write it guards IS the law, not an implementation detail.
 --

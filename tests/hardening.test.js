@@ -1,3 +1,7 @@
+// tests/hardening.test.js — Input hardening: bag activity is intent not a
+// purchase, product snapshots drop executable URLs and unknown tags, and
+// source ids are namespaced safely.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

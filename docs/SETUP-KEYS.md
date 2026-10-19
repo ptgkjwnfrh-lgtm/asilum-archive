@@ -43,7 +43,7 @@ Ingested eBay listings take the seed pipeline — `inferTags()` into the
 brain vector — and the taste profile learns from what people do with them.
 Whether a deterministic tag-and-graph recommender is "training algorithms"
 on eBay Content is counsel's question (the same one
-`docs/epn-terms-check-2026-08-22.md` raised for EPN). Keying the adapter is
+`docs/history/epn-terms-check-2026-08-22.md` raised for EPN). Keying the adapter is
 the owner's ruling that it is not, or that the risk is accepted.
 
 Sequence (owner + agent):

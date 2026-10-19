@@ -38,7 +38,7 @@
 import { useEffect, useState } from "react";
 import { authorizedFetch, getUid, postJSON } from "../../lib/client.js";
 import {
-  READING_ROOM, fetchWire, fetchPost, addPost, editPost, deletePost, timeAgo, getProfileInfo,
+  READING_ROOM, fetchPosts, fetchPost, addPost, editPost, deletePost, timeAgo, getProfileInfo,
   fetchEngagement, toggleEngagement,
 } from "../../lib/social.js";
 import { Avatar, WhoToFollowList } from "../components/UserBits.jsx";
@@ -48,7 +48,7 @@ import GlassPane from "../components/GlassPane.jsx";
 import SaveButton from "../components/SaveButton.jsx";
 import ModelTag from "../components/ModelTag.jsx";
 import { thumbFor } from "../../lib/client.js";
-import { SAMPLE_POSTS, WIRE_CATEGORIES, WIRE_INTENTS, readWireRefs } from "../../lib/model/media.js";
+import { SAMPLE_POSTS, WIRE_CATEGORIES, WIRE_INTENTS, readPostRefs } from "../../lib/model/media.js";
 
 // The identity chain (owner order, Aug 13): every byline is a link —
 // your own to /profile, anyone else's to their /u/[handle] page — and a
@@ -79,7 +79,7 @@ function PostByline({ p }) {
 
 const BOOTHS = Array.from({ length: 10 }, (_, i) => i + 1);
 
-export default function TheWirePage() {
+export default function HotlistPage() {
   const [posts, setPosts] = useState(null);
   const [postsLive, setPostsLive] = useState(true);
   const [house, setHouse] = useState(null);
@@ -95,7 +95,7 @@ export default function TheWirePage() {
   const [pieces, setPieces] = useState([]);
   const [caption, setCaption] = useState("");
   const [text, setText] = useState("");
-  const [wireNote, setWireNote] = useState("");
+  const [postNote, setPostNote] = useState("");
   // ?post=<id> pins one transmission above the wire. undefined = no
   // permalink requested; null = looking it up; false = honestly absent.
   const [focus, setFocus] = useState(undefined);
@@ -149,12 +149,12 @@ export default function TheWirePage() {
       .finally(() => setReportBusy(false));
   }
 
-  function loadWire() {
+  function loadPosts() {
     authorizedFetch("/api/feed?user=" + encodeURIComponent(getUid() || "guest") + "&limit=12")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setPieces(((d && d.items) || []).slice(0, 8)))
       .catch(() => {});
-    fetchWire("user")
+    fetchPosts("user")
       .then((w) => {
         setPosts(w.posts);
         setPostsLive(w.live);
@@ -172,7 +172,7 @@ export default function TheWirePage() {
     const on = !(kind === "like" ? now?.youLike : now?.youSave);
     toggleEngagement(p.serverId, kind, on).then((r) => {
       if (r.ok) setEngagement((prev) => ({ ...prev, [String(p.serverId)]: r.counts }));
-      else setWireNote(r.error || "the Feed could not be reached");
+      else setPostNote(r.error || "the Feed could not be reached");
     });
   }
 
@@ -195,20 +195,20 @@ export default function TheWirePage() {
     const t = editText.trim();
     if (!p || !t) return;
     editPost(p, t, editCaption.trim()).then((r) => {
-      setWireNote(!r.ok
+      setPostNote(!r.ok
         ? (r.error || "the edit could not reach the Feed")
         : r.held ? (r.note || "your edit is saved and paused for a human review") : "");
       setEditing(null);
-      loadWire();
+      loadPosts();
       loadMine();
     });
   }
 
   function doDelete(p) {
     deletePost(p).then((r) => {
-      setWireNote(r.ok ? "" : (r.error || "the delete could not reach the Feed"));
+      setPostNote(r.ok ? "" : (r.error || "the delete could not reach the Feed"));
       setConfirmDel(null);
-      loadWire();
+      loadPosts();
       loadMine();
       // if the deleted transmission was pinned by permalink, it is now
       // honestly gone — say so rather than keep showing it.
@@ -220,9 +220,9 @@ export default function TheWirePage() {
     setStamp(new Date().toLocaleDateString("en-US", {
       year: "numeric", month: "long", day: "numeric",
     }).toUpperCase());
-    loadWire();
+    loadPosts();
     loadMine();
-    fetchWire("asilum")
+    fetchPosts("asilum")
       .then((w) => { setHouse(w.posts); setHouseLive(w.live); })
       .catch(() => { setHouse([]); setHouseLive(false); });
     const sp = new URLSearchParams(window.location.search);
@@ -273,17 +273,17 @@ export default function TheWirePage() {
         const d = await res.json().catch(() => null);
         if (!res.ok) {
           // The server's own words — it knows why better than this page does.
-          setWireNote((d && (d.error || d.note)) || "the Feed did not accept that transmission");
+          setPostNote((d && (d.error || d.note)) || "the Feed did not accept that transmission");
           return;
         }
         addPost(t, info, cap);
-        setWireNote(d && d.held ? (d.note || "your transmission is saved and paused for a human review") : "");
+        setPostNote(d && d.held ? (d.note || "your transmission is saved and paused for a human review") : "");
         setText("");
         setCaption("");
-        loadWire();
+        loadPosts();
         loadMine();
       })
-      .catch(() => setWireNote("the shared wire could not be reached — nothing was published"));
+      .catch(() => setPostNote("the shared wire could not be reached — nothing was published"));
   }
 
   // THE HOTLIST's ten booths — the rail's pane (9 Sep). Same roster, same
@@ -295,7 +295,7 @@ export default function TheWirePage() {
   const lanePosts = (posts || []).filter((p) => {
     if (lane === "mine") return !!p.mine;
     if (lane === "foryou") return true;
-    return readWireRefs(p.tags || []).category === lane;
+    return readPostRefs(p.tags || []).category === lane;
   });
   const samples = lane === "mine" ? [] : SAMPLE_POSTS.filter((sp) => lane === "foryou" || sp.category === lane);
   const stream = [];

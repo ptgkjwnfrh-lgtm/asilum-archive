@@ -26,7 +26,7 @@ import path from "node:path";
 import * as L from "../lib/media/index.js";
 import * as MU from "../lib/music/index.js";
 import * as M from "../lib/db/production/media.js";
-import { validateComposition, attachmentsFor, kindOf } from "../lib/wire/compose.js";
+import { validateComposition, attachmentsFor, kindOf } from "../lib/posts/compose.js";
 import { postType } from "../lib/feed/types.js";
 import { SAMPLE_POSTS, SAMPLE_MOTION } from "../lib/model/media.js";
 import { RECORD_KINDS, validateRecordInput } from "../lib/db/production/records.js";

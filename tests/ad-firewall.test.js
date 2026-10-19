@@ -1,3 +1,7 @@
+// tests/ad-firewall.test.js — The ad firewall: only genuinely active sponsored
+// content is fenced as sponsored, the public product strips sponsorship, and
+// engagement events record whether they were sponsored.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

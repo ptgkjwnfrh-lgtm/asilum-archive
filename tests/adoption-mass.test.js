@@ -1,3 +1,7 @@
+// tests/adoption-mass.test.js — Sign-in adoption weighs each device by its
+// evidence: a barely used device cannot halve an account, an established one
+// dominates a thin account, equal evidence averages 50/50.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

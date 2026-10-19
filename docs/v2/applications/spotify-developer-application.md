@@ -25,7 +25,7 @@ account, the legal entity, a phone number), it is marked **OWNER**.
 3. In the app's **Settings**, copy the **Client ID** and the **Client secret**
    into the deployment's environment as `SPOTIFY_CLIENT_ID` and
    `SPOTIFY_CLIENT_SECRET` (dashboard → Copy → `pbpaste` → the env file; never
-   through chat, per `.claude/skills/database-safety`). Set `SITE_ORIGIN`.
+   through chat, per `docs/engineering/database-safety.md`). Set `SITE_ORIGIN`.
 
 ## Development mode and the extension request
 

@@ -15,7 +15,7 @@
 //   * /profile printed "0 FOLLOWERS" for a quantity no code anywhere measures,
 //     and counted bag brands under a label sitting beside FOLLOWING.
 //
-// The authority is docs/metric-definitions-2026-08-17.md. These tests are that
+// The authority is docs/history/metric-definitions-2026-08-17.md. These tests are that
 // document made executable.
 //
 // The source-reading tests here are bound (`[^)]*`, `[^<]*`, single lines) on

@@ -2,7 +2,7 @@
 
 - Status: PROPOSED (Phase 0 → governs Phase 3)
 - Date: 2026-07-19
-- Deciders: owner + Codex review (model enablement: owner decision 5)
+- Deciders: owner (model enablement: owner decision 5)
 
 ## Context
 

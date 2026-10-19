@@ -22,7 +22,7 @@ import { ColorEvidenceLine, OriginLine, OriginSticker, ProductFitLine, useFitBra
 
 // The poster's transmissions, wire-cut: caption headers, permalinked
 // timestamps (server posts always have server ids here).
-function WirePosts({ posts, live }) {
+function PostList({ posts, live }) {
   return (
     <>
       {!live && (
@@ -86,7 +86,7 @@ export default function UserPage({ params }) {
         {wire && wire.live && wire.posts.length === 0 && (
           <div className="empty">no transmissions yet.</div>
         )}
-        {wire && <WirePosts posts={wire.posts} live={wire.live} />}
+        {wire && <PostList posts={wire.posts} live={wire.live} />}
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function UserPage({ params }) {
             speaks for them.
           </p>
           <h3 className="statshead">IN THE FEED</h3>
-          <WirePosts posts={wire.posts} live={wire.live} />
+          <PostList posts={wire.posts} live={wire.live} />
         </div>
       );
     }

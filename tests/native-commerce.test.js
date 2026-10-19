@@ -1,5 +1,5 @@
 // tests/native-commerce.test.js — NATIVE COMMERCE (V.2 Blueprint, owner,
-// 17 Oct 2026, chapters 7 and 8; slice 6 over codex/native-storefront).
+// 17 Oct 2026, chapters 7 and 8; slice 6 over the native-storefront branch).
 // The law (lib/storefront/commerce.js) is pure; the rows
 // (lib/db/production/commerce.js) run on the memory store; the routes are
 // called through the test harness. Laws held:

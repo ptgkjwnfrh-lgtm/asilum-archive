@@ -71,7 +71,7 @@ fetchProductById, checkAvailability, normalizeSourceProduct, syncProducts`.
 `normalize.js` converts any raw source product into the ASILUM shape and
 derives typed tags; `sync.js` runs enabled adapters → upserts items → writes
 product_images + product_tags → logs to source_sync_logs. Trigger via
-`/api/admin` `sync.run` (no cron yet — see lib/background-jobs stubs).
+`/api/admin` `sync.run` (run on demand; the steward and the sweeps are the scheduled jobs).
 
 Availability: `checkAvailability` per adapter; results land in
 product_availability_checks and reflect onto `items.availability_status` /

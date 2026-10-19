@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// scripts/stage-ebay-feed.mjs — Stages the eBay feed: downloads and verifies
+// the entitled feed file into a manifest (lib/ingest/ebayFeed.js) without
+// publishing it. Run with `npm run ebay:feed`.
 import { parseArgs } from "node:util";
 import { feedReadiness, stageEbayFeed } from "../lib/ingest/ebayFeed.js";
 

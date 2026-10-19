@@ -5,7 +5,7 @@
 -- DMCA agent and named moderators exist, so no attachment table is created —
 -- the consent STATE ships here, the pipeline does not.
 --
--- Rationale and the full cut list: docs/dm-core-decisions-2026-08-23.md.
+-- Rationale and the full cut list: docs/history/dm-core-decisions-2026-08-23.md.
 -- Keys are the bare auth uuid (ADR-002). Device identities cannot hold a row.
 --
 -- WHY THE LAWS ARE TRIGGERS AND NOT APPLICATION CHECKS. The route is not the

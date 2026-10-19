@@ -29,8 +29,8 @@ import { saveProfile } from "../lib/db/core/profiles.js";
 import { putUserRecord } from "../lib/db/production/records.js";
 import { listNotifications, resetMemoryListingStatus } from "../lib/db/production/listingStatus.js";
 import { listPlaces, PLACES, placeRating, mapsUrl, milesLabel } from "../lib/places/registry.js";
-import { eventsOf, validateComposition, attachmentsFor } from "../lib/wire/compose.js";
-import { addEvent, removeEvent, newDraft } from "../lib/wire/draft.js";
+import { eventsOf, validateComposition, attachmentsFor } from "../lib/posts/compose.js";
+import { addEvent, removeEvent, newDraft } from "../lib/posts/draft.js";
 import { callRoute, loadRoute, newDevice } from "./helpers/route.js";
 
 const T0 = Date.parse("2026-10-18T00:00:00Z");

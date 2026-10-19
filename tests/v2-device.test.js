@@ -33,8 +33,8 @@ test("expanding a compacted description loads it in from >>>>>>: the caption, th
   const ch = strip(read("app/components/Chevrons.jsx"));
   assert.match(ch, /prefers-reduced-motion: reduce/, "reduced motion: the text is simply there");
   assert.match(ch, /aria-label=\{t\}/, "the full text is the accessible name from the first frame");
-  assert.match(strip(read("app/components/WireCard.jsx")), /<ChevronText as="span" className="wpccap full" text=\{p\.text\} play=\{more\} \/>/, "a tapped caption");
-  assert.match(strip(read("app/components/WireCard.jsx")), /<ChevronText className="fine" text=\{\[String\(event\.kind/, "an opened BRDCST event");
+  assert.match(strip(read("app/components/PostCard.jsx")), /<ChevronText as="span" className="wpccap full" text=\{p\.text\} play=\{more\} \/>/, "a tapped caption");
+  assert.match(strip(read("app/components/PostCard.jsx")), /<ChevronText className="fine" text=\{\[String\(event\.kind/, "an opened BRDCST event");
   assert.match(strip(read("app/components/MapSheet.jsx")), /<ChevronText as="p" text=\{place\.organizer\} \/>/, "the place's description");
   assert.match(strip(read("app/components/PersonOverview.jsx")), /<ChevronText as="p" className="povsum" text=\{person\.summary\} \/>/, "Read more → the overview");
   assert.match(strip(read("app/components/ListingSheet.jsx")), /<ChevronText className="cclbl" text=\{"BEHIND THE PRODUCT"/, "behind the product");

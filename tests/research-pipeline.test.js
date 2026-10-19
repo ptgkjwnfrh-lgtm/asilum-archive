@@ -1,3 +1,7 @@
+// tests/research-pipeline.test.js — The ASTERISK research pipeline: validation
+// is atomic and names the defect, proposal names are canonicalized before
+// lookup, and kinds come from the live catalog.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

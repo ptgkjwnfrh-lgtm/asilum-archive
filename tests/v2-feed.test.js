@@ -5,13 +5,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { validateComposition, attachmentsFor, ECHO_TTL_MS, ECHO_MIN_MS } from "../lib/wire/compose.js";
+import { validateComposition, attachmentsFor, ECHO_TTL_MS, ECHO_MIN_MS } from "../lib/posts/compose.js";
 import { captionInk } from "../lib/feed/caption.js";
 
 const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 const strip = (s) => s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
 const page = strip(read("app/page.js"));
-const card = strip(read("app/components/WireCard.jsx"));
+const card = strip(read("app/components/PostCard.jsx"));
 const listing = strip(read("app/components/ListingSheet.jsx"));
 const media = strip(read("app/components/MediaFloat.jsx"));
 const echo = strip(read("app/components/EchoRail.jsx"));
@@ -20,7 +20,7 @@ const host = strip(read("app/components/SheetHost.jsx"));
 const css = read("app/globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("there is no Wire: the selector, the lanes, the in-page composer and the hotlist rail are gone", () => {
-  assert.ok(!/view=wire|THE WIRE|streamlanes|WireComposer|HotlistStrip|streamrail/.test(page));
+  assert.ok(!/view=wire|THE WIRE|streamlanes|PostComposer|HotlistStrip|streamrail/.test(page));
   assert.ok(!existsSync(new URL("../app/components/HotlistStrip.jsx", import.meta.url)), "the rail component is deleted");
   for (const sel of [".feedview", ".streamlanes", ".streamrail", ".hotstrip", ".whot", ".modal.lg", ".mscroll", ".mimg", ".mbody"]) {
     assert.ok(!css.includes("\n" + sel + " ") && !css.includes("\n" + sel + "{") && !css.includes("\n" + sel + "."), sel + " has no rule left");
@@ -83,7 +83,7 @@ test("ECHO: 24 hours, stored on the row, filtered when expired, viewed sequentia
   assert.match(echo, /export const ECHO_STEP_MS = 5000;/);
   assert.match(echo, /onPointerDown=\{\(\) => hold\(true\)\}/, "hold pauses");
   assert.match(echo, /\.filter\(\(p\) => echoLive\(p\)\)/, "the viewer shows live echoes only");
-  const composer = strip(read("app/components/WireComposer.jsx"));
+  const composer = strip(read("app/components/PostComposer.jsx"));
   assert.match(composer, /echo: !!c\.echo/, "the composer sends the mark");
   const sel = strip(read("app/components/PostSelection.jsx"));
   assert.ok(!/echo:/.test(sel.split("const SOON")[1].split("};")[0]), "ECHO is no longer soon");

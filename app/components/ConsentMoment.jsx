@@ -1,7 +1,7 @@
 "use client";
 
 // app/components/ConsentMoment.jsx — D4's first-visit consent moment
-// (ruled 20 Aug 2026; spec docs/d4-consent-spec-2026-08-20.md). Shell-
+// (ruled 20 Aug 2026; spec docs/history/d4-consent-spec-2026-08-20.md). Shell-
 // mounted so it covers both landing laws and every deep link; renders
 // while the device is UNANSWERED — or its state is UNKNOWABLE (fail-open,
 // 20 Aug) — and unanswered = unobserved is enforced server-side, so

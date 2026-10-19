@@ -7,7 +7,7 @@
 //        separate; merchant-verified fulfilment is always unknown today.
 // Law 3: allowed actions are derived from server state, mirroring exactly
 //        the user-driven transitions the ticket store permits.
-// The fixtures below are the representative states Codex renders from.
+// The fixtures below are the representative states the UI renders from.
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

@@ -1,4 +1,4 @@
-// Reason-specific learning (V.2, 19 Sep 2026, docs/v2/CLAUDE-BACKEND-HANDOFF.md
+// Reason-specific learning (V.2, 19 Sep 2026, the V.2 backend plan
 // § Immediate learning work; CONTRACTS.md § Learning events).
 //
 // Law 1: a reason changes ONLY its lane. "Too expensive" changes price

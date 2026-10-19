@@ -2,7 +2,7 @@
 //
 // There is no jsdom in this repo, so these rules were untestable while they
 // lived inside MailDesk.jsx. Each one below is a finding from
-// docs/dm-open-findings-2026-08-23.md, written from its Reproduce section.
+// docs/history/dm-open-findings-2026-08-23.md, written from its Reproduce section.
 
 import test from "node:test";
 import { dmStoreSource } from "./helpers/dm-source.mjs";

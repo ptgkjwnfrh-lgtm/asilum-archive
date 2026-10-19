@@ -1,7 +1,7 @@
 # ASILUM launch checklist — 19 August 2026
 
 One list, gate-ordered: a gate opens when everything above it is done.
-Sources of truth it consolidates: HANDOVER-2026-08-18 (owner queue),
+Sources of truth it consolidates: the 18 Aug 2026 notes (owner queue),
 designer-program/ONBOARDING.md §0, SETUP-KEYS.md §5, risk-campaign §7/§8.
 **Owner** = only you can do it. **Agent** = say the word and it runs.
 

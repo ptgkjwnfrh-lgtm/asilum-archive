@@ -1,3 +1,7 @@
+// tests/taste-class.test.js — Taste class: opposite convictions never share a
+// class, a rejected aesthetic never names it, and positive convictions still
+// classify.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

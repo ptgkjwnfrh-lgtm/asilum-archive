@@ -1,5 +1,5 @@
 // tests/perf-read-paths.test.js — the performance family from
-// docs/audit-verified-2026-08-14.md: findings #11, #14, #15, #17, #20.
+// docs/history/audit-verified-2026-08-14.md: findings #11, #14, #15, #17, #20.
 //
 // None of these is a correctness defect, so the bar for every one of them is
 // that the ANSWER does not move. Where the fix is a cache, the test proves the

@@ -1,7 +1,7 @@
 // tests/mem-pg-parity.test.js — the audit's law 4, made executable.
 //
 // "mem and Postgres are one system with two implementations, and mem is
-// the one being exercised." (HANDOVER-2026-08-08.) Preview deploys, local
+// the one being exercised." (the 8 Aug 2026 notes.) Preview deploys, local
 // dev, and 520 of 532 tests run mem, so a divergence ships green. These
 // pin the two divergences confirmed by the Aug 14 verification pass, in
 // the backend that would otherwise hide them.

@@ -86,7 +86,7 @@ test("the four controls the register found are covered by name", () => {
   // generic scan above is ever loosened.
   // `.composer2 textarea` left the list with V.2 slice 2: no component renders
   // .composer2 any more and its rules are deleted (the one composer is
-  // WireComposer, covered by the generic scan above).
+  // PostComposer, covered by the generic scan above).
   for (const sel of [".search", ".controls input[type='text']", ".usearch input"]) {
     const has = ALL.some((r) =>
       r.selector.split(",").some((c) => c.trim().startsWith(sel) && c.includes(":focus")));

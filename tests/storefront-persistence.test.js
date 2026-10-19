@@ -1,3 +1,8 @@
+// tests/storefront-persistence.test.js — Storefront persistence: free
+// ownership with a moderated public allowlist, variant replacement that never
+// orphans reserved stock, and reservations that replay idempotently and never
+// overdraw.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";

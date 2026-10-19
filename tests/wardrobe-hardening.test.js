@@ -1,3 +1,6 @@
+// tests/wardrobe-hardening.test.js — Wardrobe hardening: pieces a passenger
+// already owns never become purchase intent.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { purchasableLookItems } from "../lib/wardrobe/purchase.js";

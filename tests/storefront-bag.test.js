@@ -1,3 +1,7 @@
+// tests/storefront-bag.test.js — The bag with native items: legacy and native
+// pieces share one versioned bag without id collisions, and a missing price
+// stays missing, never zero.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

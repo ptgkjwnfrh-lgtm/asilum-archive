@@ -33,7 +33,7 @@ import MessagesSheet from "./MessagesSheet.jsx";
 import OverviewSheet from "./OverviewSheet.jsx";
 import BagSheet from "./BagSheet.jsx";
 import NoticesSheet from "./NoticesSheet.jsx";
-import WireComposer from "./WireComposer.jsx";
+import PostComposer from "./PostComposer.jsx";
 import SessionCarousel from "./SessionCarousel.jsx";
 import PostSelection from "./PostSelection.jsx";
 import ListingSheet from "./ListingSheet.jsx";
@@ -50,7 +50,7 @@ const VIEWS = {
   overview: { title: "OVERVIEW", render: (p) => <OverviewSheet {...p} /> },
   bag: { title: "BAG", render: (p) => <BagSheet {...p} /> },
   notices: { title: "NOTICES", render: (p) => <NoticesSheet {...p} /> },
-  post: { title: "POST", render: (p) => <WireComposer compact {...p} />, heavy: true },
+  post: { title: "POST", render: (p) => <PostComposer compact {...p} />, heavy: true },
   postselect: { title: "POST", render: (p) => <PostSelection {...p} />, roomy: true },
   sessions: { title: "SESSIONS", render: (p) => <SessionCarousel {...p} />, roomy: true },
   // THE ONE FEED (slice 3): the LISTING popup over the softened Feed; STILL

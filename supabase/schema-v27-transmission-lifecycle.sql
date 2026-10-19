@@ -1,5 +1,5 @@
 -- supabase/schema-v27-transmission-lifecycle.sql
--- Transmission edit + delete (owner directive, HANDOVER-2026-08-14
+-- Transmission edit + delete (owner directive, 14 Aug 2026
 -- backlog 1): the author — and only the author, server-verified — may
 -- edit or retire their own transmission.
 --

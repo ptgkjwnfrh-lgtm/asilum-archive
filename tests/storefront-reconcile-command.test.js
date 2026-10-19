@@ -1,3 +1,7 @@
+// tests/storefront-reconcile-command.test.js — The Stripe reconciliation
+// command: refuses a live key before any network call, requires the durable
+// app database, and fails loudly naming any held attempts.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

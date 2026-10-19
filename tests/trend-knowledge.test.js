@@ -1,3 +1,7 @@
+// tests/trend-knowledge.test.js — Trend knowledge: active only inside its
+// dated window, matching needs product-level evidence, and the model's trend
+// context keeps its provenance.
+
 import test from "node:test";
 import assert from "node:assert/strict";
 

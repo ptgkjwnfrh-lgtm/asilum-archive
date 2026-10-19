@@ -1,3 +1,7 @@
+// tests/tag-rank.test.js — Discover's tag ranking: inclusion stays exact-match
+// only, the pool equals the exact filter, and affinity bleed only breaks
+// exact-score ties.
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rankByInterpretationTags, scoreByInterpretationTags } from "../lib/discover/tagRank.js";
