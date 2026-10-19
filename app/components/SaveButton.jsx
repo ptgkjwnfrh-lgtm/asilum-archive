@@ -7,8 +7,11 @@
 
 import { useEffect, useState } from "react";
 import { isSaved, toggleSave } from "../../lib/save.js";
+import Icon from "./Icons.jsx";
 
-export default function SaveButton({ kind, id, title, image, href, meta, tags, item, className = "", labels = ["SAVE", "SAVED"] }) {
+// `icon` draws the word as an outline glyph (the Feed's hourglass, 18 Oct
+// reference); the word stays as the accessible name and the tooltip.
+export default function SaveButton({ kind, id, title, image, href, meta, tags, item, className = "", labels = ["SAVE", "SAVED"], icon = null }) {
   const [on, setOn] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -36,8 +39,10 @@ export default function SaveButton({ kind, id, title, image, href, meta, tags, i
       aria-label={(on ? "saved — remove from passport: " : "save to passport: ") + title}
       onClick={click}
       disabled={busy}
+      title={icon ? (on ? labels[1] : labels[0]) : undefined}
     >
-      {on ? labels[1] : labels[0]}
+      {icon ? <Icon name={icon} size={20} /> : null}
+      <span className={icon ? "idlabel" : undefined}>{on ? labels[1] : labels[0]}</span>
     </button>
   );
 }

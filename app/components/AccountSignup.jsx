@@ -15,6 +15,7 @@
 // never stack), and the shell's SIGN IN button opens it on demand from any
 // page via the "asilum:signup-open" event.
 
+import { ETHNICITY_OPTIONS, ETHNICITY_WHY } from "../../lib/identity/commerce.js";
 import { useEffect, useRef, useState } from "react";
 import { useOverlayDismiss } from "./dismiss.js";
 import { UNDER_AGE_MESSAGE, checkAge } from "../../lib/age.js";
@@ -29,13 +30,14 @@ const PASSPORT_MANIFEST = [
   "moodboards + saved pieces",
   "wardrobe + measurements",
   "follows, corrections, purchase tickets",
+  "one free native Storefront draft when you are ready to sell",
 ];
 
 // What each kind actually gets. Written as the difference, not as a pitch:
-// someone choosing here is choosing which half of the product exists for them,
-// and the storefront half REMOVES things.
+// someone choosing here is choosing Passport surfaces or the business
+// analytics/watchtower. Native Storefront no longer forces that trade.
 const BUSINESS_MANIFEST = [
-  "a storefront profile you lay out yourself",
+  "one free native Storefront profile, also available to Passport accounts",
   "analytics — reach, clicks, follows, foot traffic, earnings",
   "the watch tower — what this catalog's readers already wear",
   "direct messages, always open (readers can close theirs; you cannot)",
@@ -43,7 +45,7 @@ const BUSINESS_MANIFEST = [
 
 const KINDS = [
   { id: "passport", icon: "✚", name: "PASSPORT", what: "you are here to look" },
-  { id: "business", icon: "▤", name: "BUSINESS", what: "you are here to sell" },
+  { id: "business", icon: "▤", name: "BUSINESS", what: "you operate a brand" },
 ];
 
 function markSeen() {
@@ -56,6 +58,10 @@ export default function AccountSignup() {
   const [mode, setMode] = useState("create"); // create | signin
   const [kind, setKind] = useState("passport"); // passport | business
   const [birthDate, setBirthDate] = useState(""); // "YYYY-MM-DD", creation only
+  // slice 10b (A6 (7), 14.11): the home town for the Passport's anchors; an optional, consented ethnicity
+  const [hometown, setHometown] = useState("");
+  const [ethnicity, setEthnicity] = useState("");
+  const [ethnicityConsent, setEthnicityConsent] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -164,6 +170,17 @@ export default function AccountSignup() {
     } catch { /* the gate already refused under-age; this is the record */ }
   }
 
+  /** The home town and the ethnicity ride to the account's identity row (v68) AFTER the account exists; a refusal is the record's, not the account's. */
+  async function recordIdentity(accountUuid) {
+    if (!accountUuid || (!hometown.trim() && !ethnicity)) return;
+    try {
+      await authorizedFetch("/api/account/identity", {
+        method: "PUT", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ user: "sb-" + accountUuid, hometown: hometown.trim() ? { name: hometown.trim() } : null, ethnicity: ethnicity || null, ethnicityConsent }),
+      });
+    } catch { /* the account exists; the Passport asks again in onboarding */ }
+  }
+
   async function recordKind(accountUuid) {
     if (kind === "passport") return; // the default; nothing to record
     if (!accountUuid) return;
@@ -214,12 +231,13 @@ export default function AccountSignup() {
         // The kind is recorded AFTER the account exists and is NOT allowed to
         // fail the signup. If this call does not land the account is a
         // passport, which is the safe direction — a business can be corrected
-        // at the desk, whereas silently handing someone a storefront they did
-        // not ask for cannot be undone by them.
+        // at the desk, whereas silently removing Passport surfaces in favor of
+        // analytics/watchtower cannot be undone by them here.
         markSeen();
         const uuid = data.session.user?.id || data.user?.id;
         await recordAge(uuid);
         await recordKind(uuid);
+        await recordIdentity(uuid);
         setDone("created");
       } else if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
         // Supabase returns a stub user for an address that already holds an
@@ -331,7 +349,7 @@ export default function AccountSignup() {
           <>
             <div className="psub">{creating ? "OPEN AN ACCOUNT" : "SIGN IN"}</div>
             <h2>
-              {creating && business ? "Open a storefront" : "Hold your Passport"}
+              {creating && business ? "Open a business ledger" : "Hold your Passport"}
               <span style={{ color: "var(--red)" }}>.</span>
             </h2>
 
@@ -356,8 +374,8 @@ export default function AccountSignup() {
 
             <p className="deck">
               {creating && business
-                ? "a storefront account trades the passport for a ledger: who reaches you, what they already wear, and what they buy. you get analytics and the watch tower instead of the stylist and discovery."
-                : "an account keeps your Passport — the map of taste this device is building — safe across devices. private by default, inspectable any time, erasable in one move."}
+                ? "a business account trades Passport discovery and stylist surfaces for a brand ledger: who reaches you, what they already wear, and what they buy. Native Storefront itself is free and available to either account kind."
+                : "an account keeps your Passport — the map of taste this device is building — safe across devices. It can also open one free native Storefront without giving the Passport up."}
             </p>
 
             <ul className="signuplist">
@@ -388,11 +406,40 @@ export default function AccountSignup() {
             ) : null}
 
             {creating ? (
+              <label className="accountemail">home town — where you grew up
+                <input
+                  type="text"
+                  value={hometown}
+                  placeholder="city, country"
+                  maxLength={120}
+                  onChange={(event) => setHometown(event.target.value)}
+                />
+                <span className="agenote">
+                  the Passport asks what 12-year-old you listened to on the bus; your home town and birthday pick the suggestions. never shown to anyone.
+                </span>
+              </label>
+            ) : null}
+
+            {creating ? (
+              <label className="accountemail">ethnicity — optional
+                <select value={ethnicity} onChange={(event) => { setEthnicity(event.target.value); if (!event.target.value) setEthnicityConsent(false); }} aria-label="ethnicity, optional">
+                  <option value="">prefer not to say</option>
+                  {ETHNICITY_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+                {ethnicity ? (
+                  <span className="agenote">
+                    <input type="checkbox" checked={ethnicityConsent} onChange={(event) => setEthnicityConsent(event.target.checked)} aria-label="consent to storing ethnicity" /> {ETHNICITY_WHY}
+                  </span>
+                ) : null}
+              </label>
+            ) : null}
+
+            {creating ? (
               <label className="accountemail">name — optional
                 <input
                   type="text"
                   value={name}
-                  placeholder="what should the magazine call you?"
+                  placeholder="what should ASILUM call you?"
                   maxLength={80}
                   onChange={(event) => setName(event.target.value)}
                 />

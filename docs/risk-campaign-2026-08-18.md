@@ -1,7 +1,7 @@
 # ASILUM risk campaign — 18 August 2026
 
-Provenance: the owner supplied 200 numbered items — "100 ways ASiLUM could go
-wrong" (F1–F100) and "100 reasons investors would reject ASiLUM" (I1–I100) —
+Provenance: the owner supplied 200 numbered items — "100 ways ASILUM could go
+wrong" (F1–F100) and "100 reasons investors would reject ASILUM" (I1–I100) —
 plus their own synthesis: the 200 collapse into five objections (unfocused /
 commerce loop not real / revenue model can't carry the ops / cross-border trust
 + compliance exposure / vision ahead of evidence), and the single most

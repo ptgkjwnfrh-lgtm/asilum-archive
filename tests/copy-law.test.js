@@ -52,13 +52,8 @@ test("the app is a personalized fashion terminal, and nothing calls it the old n
 
   // Positive: the descriptor a reader meets in prose and metadata.
   assert.match(read("app/layout.js"), /personalized fashion terminal/);
-  // The wordmark LOCKUP is shortened to "FASHION TERMINAL" (owner order, 17 Aug)
-  // — a lockup is not a sentence, and the three-word version could not be spaced
-  // cleanly inside the ASILUM width. The prose descriptor above is unchanged.
-  assert.match(read("app/shell.js"), /"FASHION TERMINAL"\.split\(""\)/);
-  // Split per CHARACTER: per-word gave two huge gaps and tight words.
-  assert.ok(!/"FASHION TERMINAL"\.split\(" "\)/.test(read("app/shell.js")),
-    "the lockup must spread per glyph, not per word");
+  // (17 Oct) the wordmark is "*ASILUM" alone — tests/brand-name.test.js owns the lockup.
+  assert.match(read("app/page.js"), /<Wordmark \/>/, "the feed prints the wordmark");
 });
 
 test("no public mention of the learning bridges", () => {
@@ -95,17 +90,20 @@ test("the engine is called The Asterisk system in prose", () => {
   assert.match(read("app/page.js"), /The Asterisk system routed this edit/);
 });
 
-test("the ticker carries the house lines when nothing is followed", () => {
-  const shell = read("app/shell.js");
+test("the ticker carries the house lines when nothing eligible runs", () => {
+  // (V.2, 17 Oct) the marquee left with the header; the deck's ad ticker
+  // carries the house lines as its fallback (lib/dock.js HOUSE_LINES).
+  const dock = read("lib/dock.js");
+  const cc = read("app/components/ControlCenter.jsx");
   // Verbatim, including the owner's spacing in "A S I L U M".
   for (const line of [
     "ARE YOU SEEKING A S I L U M",
     "DISCOVERY - COMMERCE - COMMUNITY",
     "DISCOVER FROM ARCHIVES ACROSS THE WORLD",
   ]) {
-    assert.ok(shell.includes(`"${line}"`), `the ticker must carry: ${line}`);
+    assert.ok(dock.includes(`"${line}"`), `the ticker must carry: ${line}`);
   }
-  // And they are the FALLBACK — a followed brand or reader still wins the ticker.
-  assert.match(shell, /const tickerRun = tickerItems\.length \?/);
-  assert.match(shell, /<span>\{TICKER\}<\/span>/);
+  // And they are the FALLBACK — a placement, a draft or a listed event still wins the strip.
+  assert.match(cc, /HOUSE_LINES\[i % HOUSE_LINES\.length\]/);
+  assert.match(cc, /const cur = items && items\.length \? items\[i % items\.length\] : null;/);
 });

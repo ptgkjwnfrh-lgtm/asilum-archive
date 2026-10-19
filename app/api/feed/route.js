@@ -239,9 +239,12 @@ export async function GET(req) {
     } catch { tuned = null; }
   }
 
-  const { split, items, epsilonActive, epsilonAuto, safeMode, zones, quotas, catalog } = buildFeed(
+  // V.2 14.9 (slice 10c): the passenger's |A| in the Info Dock turns exploration off; off beats reactivation
+  const explorationOff = userId ? (await getMemoryPreferences(userId).catch(() => ({ explorationOff: false }))).explorationOff === true : false;
+  const { split, items, epsilonActive, epsilonAuto, safeMode, zones, quotas, catalog, exploration } = buildFeed(
     {
       profile,
+      explorationOff,
       epsilonActive: epsilonParam || craving.novelty === "wildcard",
       edges, popularity, boardVec, contextVec, crossUser, novelty: craving.novelty,
       tunedSplit: tuned,
@@ -304,7 +307,10 @@ export async function GET(req) {
         // Remember what this serve WAS, so the examination beacon is
         // attributed from the server's record rather than the client's word.
         // A request with no cursor is a page's first load: pinned in the ring.
-        return recordServe(served, serveId, items, { pin: !cursorParam });
+        const next = recordServe(served, serveId, items, { pin: !cursorParam });
+        // V.2 14.10 (slice 10c): the exploration ramp steps once per chunk served while active, and resets when it ends
+        next._meta = { ...(next._meta || {}), explorationStep: exploration && exploration.active ? exploration.step : 0 };
+        return next;
       }));
     }
     await Promise.all(writes);
@@ -323,6 +329,7 @@ export async function GET(req) {
     serveId,
     epsilonActive,
     epsilonAuto,
+    exploration,
     safeMode,
     guidanceEnabled,
     boardSeeded: !!boardVec,

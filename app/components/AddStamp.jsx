@@ -122,7 +122,7 @@ export default function AddStamp({ onStamped }) {
             onClick={() => { setKind(k.id); setPick(null); setQ(""); setNote(""); }}>{k.label}</button>
         ))}
       </div>
-      <p className="fine">{KINDS.find((k) => k.id === kind).hint}. images are stamped at the upload station; wire posts from their card.</p>
+      <p className="fine">{KINDS.find((k) => k.id === kind).hint}. images are stamped at the upload station; posts from their card in the Feed.</p>
       <input
         type="search"
         aria-label={kind === "person" ? "a passenger's handle" : "find something to stamp"}

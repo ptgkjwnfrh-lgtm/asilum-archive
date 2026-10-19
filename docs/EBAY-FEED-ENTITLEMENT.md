@@ -46,7 +46,7 @@ https://developer.ebay.com/api-docs/buy/buy-requirements.html).
 
 Paste-ready answers (edit the bracketed parts only):
 
-> **Application name:** ASILUM magazine
+> **Application name:** ASILUM
 > **Developer account:** [the eBay developer username that owns the keyset]
 > **Website:** https://www.asilummagazine.com
 > **Description:** ASILUM is a fashion discovery magazine and catalog. It

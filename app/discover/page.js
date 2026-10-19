@@ -7,6 +7,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { confidenceBand } from "../../lib/asterisk/confidence.js";
 import { getUid, postJSON, authorizedFetch, thumbFor, bagAdd, brainEnabled, aspectFor } from "../../lib/client.js";
+import { isNativeItem, startNativeCheckout } from "../../lib/storefront/client.js";
 import { followedBrands, setFollowBrand, isDemoItem, DEMO_LABEL } from "../../lib/social.js";
 import { readConstraints, releaseConstraint } from "../../lib/search/constraints.js";
 import TicketFlow from "../components/TicketFlow.jsx";
@@ -37,9 +38,16 @@ export default function DiscoverPage() {
 
   // Real checkout (18 Aug): only reachable from a server-stamped
   // purchasable item; refusals render the server's own words.
-  function startPurchase(item) {
-    // The housing (/checkout) is the ONE buyer flow — fee, ticket, source
-    // hand-off, with the piece on screen throughout (owner order, 20 Aug).
+  async function startPurchase(item) {
+    // NATIVE COMMERCE (slice 6): a Storefront listing opens Stripe's hosted
+    // checkout through the one client (lib/storefront/client.js); the
+    // server's words are shown on a refusal. External records keep their
+    // ticket / source hand-off housing.
+    if (isNativeItem(item)) {
+      const r = await startNativeCheckout(item, { user: getUid() });
+      if (!r.ok) setBuyNote(r.error);
+      return;
+    }
     window.location.href = "/checkout?item=" + encodeURIComponent(item.id);
   }
   const [baggedIds, setBaggedIds] = useState(() => new Set());
@@ -324,6 +332,10 @@ export default function DiscoverPage() {
     }).catch(() => {});
   }
 
+  const demoOnly = items.length > 0 && items.every(isDemoItem);
+  const hasDemo = items.some(isDemoItem);
+  const hasNative = items.some((item) => item.commerce_rail === "native_storefront");
+
   return (
     <div className="wrap">
       <PageMast word="DISCOVER" sub={dtab === "places" ? "AROUND YOU" : "SEARCH · THE OPEN INDEX"} />
@@ -336,7 +348,10 @@ export default function DiscoverPage() {
       )}
       {dtab === "search" && (<>
       <p className="demoline" role="note">
-        <b>DEMO ARCHIVE</b> — synthetic sample records with placeholder imagery; nothing is real inventory or for sale. the search is real; the clothes are not.
+        {demoOnly ? <><b>DEMO ARCHIVE</b> — these results are synthetic sample records with placeholder imagery, not inventory.</>
+          : hasDemo ? <><b>MIXED OPEN INDEX</b> — native Storefront inventory appears beside clearly marked synthetic sample records.</>
+            : hasNative ? <><b>NATIVE OPEN INDEX</b> — Storefront products use the shared catalog, bag and product detail.</>
+              : <><b>OPEN INDEX</b> — every result names its source and availability.</>}
         {" "}{guideOn ? "The Asterisk system is using your Passport to route every search toward your style." : "The Asterisk system is paused, so results stay general."}{" "}{total ? total + " pieces." : ""}
       </p>
       <div className={"searchguide " + (guideOn ? "on" : "off")}>

@@ -53,7 +53,7 @@ export default function AsteriskDock({
     readTokens();
     const themeWatch = new MutationObserver(() => { readTokens(); if (rm) draw(); });
     themeWatch.observe(document.documentElement, {
-      attributes: true, attributeFilter: ["data-theme", "data-model", "class"],
+      attributes: true, attributeFilter: ["data-theme", "class"],
     });
 
     // ---- 3D line field: latitude rings + meridians as ASCII lines,

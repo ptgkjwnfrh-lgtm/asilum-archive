@@ -1,3 +1,33 @@
+# Design language — V.2 (owner's blueprint, 17 October 2026)
+
+> **This section supersedes everything below it where they differ.** The
+> rest of this file is the July–September record, kept for the reasoning
+> behind rules that survived; the V.2 slices (`docs/v2/slice-*.md`) and
+> `.claude/skills/asilum-ui/SKILL.md` are the current law.
+
+- **No header.** Three fixtures: the Info Dock (top left: LIKES · BAG ·
+  NOTICES), the Passport Button (top right: the globe) and the Central
+  Control Deck (bottom: FEED · SEARCH · POST disc · MESSAGES · ACCOUNT).
+  The wordmark lives on the Feed's masthead; the house lines run in the
+  deck's ad strip.
+- **Palette.** Light: white paper, `#1d5fd6` blue ink, teal `--sig` for
+  links, a green-teal `--red` accent. Dark: `#070b0c` paper, `#6e9cff`
+  links, `#8cf0a6` accent. Token NAMES are unchanged so the rules keep
+  working; the values are the blueprint's. No CRT: scanline, grid, glow
+  and wash tokens are neutral. Theme follows the device unless pinned.
+- **Type.** Michroma (`--mich`) for labels, keys and headings; Inter
+  (`--helv`) for reading. Share Tech Mono is retired.
+- **Rainbow Liquid Glass, restrained.** A one-pixel conic rim on the
+  fixtures (`--iris`); reduced-transparency drops the blur.
+- **Popups, sessions, the Disc, haptics:** `knowledge/ui/interaction.md`.
+- **What is gone** (and must stay gone — `tests/v2-shell.test.js`): the
+  top header and its ticker, the destination row, the ORB HUB / MODULE
+  RAIL interfaces (`data-model`), the account / bag / search panels, the
+  CRT chrome (`.os-crt`, `.os-blob`, `.os-plus`, `.os-frame`,
+  `.os-status`), the thumb bar.
+
+---
+
 # Design language — Fashion Intelligence OS
 
 ASILUM is not an e-commerce site, a Pinterest clone, or a SaaS dashboard.

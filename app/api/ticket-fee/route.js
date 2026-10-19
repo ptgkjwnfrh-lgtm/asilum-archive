@@ -1,5 +1,5 @@
 // app/api/ticket-fee/route.js
-// The §6 referral lane's money door. ASILUM charges the founders fee ALONE;
+// The §6 referral lane's money door. ASILUM charges the passenger fee ALONE;
 // the real purchase — payment, tax, shipping — completes on the source. The
 // fee buys the purchase ticket. Card data never touches this server: the
 // housing mounts Stripe's Payment Element (their iframes), and returning
@@ -15,11 +15,12 @@
 
 import { NextResponse } from "next/server";
 import { resolveRequestUser } from "../../../lib/identity.js";
+import { gate } from "../../../lib/identity/gate.js";
 import { readJsonRequest } from "../../../lib/security/json.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import {
   startTicketFee, confirmTicketFeeWithSavedCard, reconcileOrder, getOrder, getTicketByFeeOrder,
-  ticketFeeCents, refusalReason, FOUNDERS_FEE_RATE, ORDER_CURRENCY_DEFAULT,
+  ticketFeeCents, refusalReason, PASSENGER_FEE_RATE, PASSENGER_FEE_FLAT_CENTS, ORDER_CURRENCY_DEFAULT,
 } from "../../../lib/orders.js";
 import { publicBuyerProfile, upsertBuyerIdentity, getBuyerProfile } from "../../../lib/vault.js";
 import { resolveProduct, publicProduct } from "../../../lib/products.js";
@@ -61,6 +62,15 @@ export async function POST(req) {
   const quota = await consumeRateLimit({ scope: "checkout", subject: user, limit: 10, windowMs: 60 * 60 * 1000 });
   if (!quota.allowed) return NextResponse.json(rateLimitResponse(quota), { status: 429 });
 
+  // Native Storefront goods have their own connected-account rail and exact
+  // passenger-fee policy. They must never create a historical referral ticket
+  // or inherit its passenger fee, even if a client calls this route directly.
+  const item = await resolveProduct(itemId);
+  if (!item) return NextResponse.json({ error: "product not found" }, { status: 404 });
+  if (item.commerce_rail === "native_storefront") {
+    return NextResponse.json({ error: "native Storefront items require native checkout" }, { status: 409 });
+  }
+
   // First-purchase identity: accepted only while the vault holds none.
   if (body.profile && typeof body.profile === "object") {
     const existing = await getBuyerProfile(user);
@@ -81,15 +91,21 @@ export async function POST(req) {
     }
   }
 
-  const result = await startTicketFee({ user, itemId, consent: body.consent === true });
+  { const g = await gate(req, String(body.user || ""), { needs: ["age"] }); if (!g.ok) return NextResponse.json(g.body, { status: g.status }); } // Terms 2.2: 18+ buys
+  const result = await startTicketFee({ user, itemId, consent: body.consent === true, creditCents: Number(body.creditCents) || 0 });
   if (result.status !== 200) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
-  const item = await resolveProduct(itemId);
   const pub = item ? publicProduct(item) : null;
+  if (result.paidByCredit) {
+    // the fee was covered by Credit: paid, the ticket open, nothing charged
+    const ticket = await getTicketByFeeOrder(result.orderId).catch(() => null);
+    return NextResponse.json({ order: result.orderId, mode: "credit", fee_cents: result.feeCents, credit_cents: result.creditCents, charged_cents: 0, total_today_cents: 0, currency: result.currency, ticket: ticketOut(ticket) });
+  }
   return NextResponse.json({
     order: result.orderId,
     mode: result.savedCard ? "saved" : "element",
+    credit_cents: result.creditCents || 0,
     // The saved path confirms server-side; the secret stays server-held.
     clientSecret: result.savedCard ? null : result.clientSecret,
     savedCard: result.savedCard,
@@ -133,6 +149,9 @@ export async function GET(req) {
   if (itemParam) {
     const item = await resolveProduct(itemParam);
     if (!item) return NextResponse.json({ error: "product not found" }, { status: 404 });
+    if (item.commerce_rail === "native_storefront") {
+      return NextResponse.json({ error: "native Storefront items require native checkout" }, { status: 409 });
+    }
     const pub = publicProduct(item);
     const amountCents = Math.round(Number(item.price) * 100);
     const feeCents = ticketFeeCents(amountCents);
@@ -144,10 +163,13 @@ export async function GET(req) {
         },
         amount_cents: amountCents,
         fee_cents: feeCents,
-        floored: feeCents > Math.round(amountCents * FOUNDERS_FEE_RATE),
+        floored: false,
+        policy: { flatCents: PASSENGER_FEE_FLAT_CENTS, rate: PASSENGER_FEE_RATE, label: "$1 + 1.5% passenger fee" },
         currency: String(item.currency || ORDER_CURRENCY_DEFAULT).toLowerCase(),
         source_name: item.source_name || null,
         refusal: refusalReason(item),
+        // 5.32 / 10.5 (slice 11): Credit may pay the fee first; the balance the page may offer
+        credit_cents: await import("../../../lib/db/production/credit.js").then((m) => m.creditBalance(user)).catch(() => 0),
       },
       profile: await publicBuyerProfile(user),
     });

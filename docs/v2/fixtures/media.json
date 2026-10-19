@@ -1,0 +1,215 @@
+{
+  "gate": {
+    "request": "GET /api/editorial/motion (no WIRE_VIDEO_ENABLED)",
+    "status": 200,
+    "body": {
+      "available": false,
+      "reason": "wire images are not enabled on this deployment",
+      "law": {
+        "maxBytes": 104857600,
+        "maxMs": 180000,
+        "minMs": 1000,
+        "maxEdge": 3840,
+        "mimes": [
+          "video/mp4",
+          "video/webm"
+        ],
+        "codecs": {
+          "mp4": [
+            "avc1",
+            "avc3"
+          ],
+          "webm": [
+            "V_VP8",
+            "V_VP9"
+          ]
+        },
+        "speeds": [
+          0.5,
+          0.75,
+          1,
+          1.25,
+          1.5,
+          2
+        ],
+        "qualities": [
+          "adaptive",
+          "highest",
+          "lowest"
+        ],
+        "qualityNote": "one rendition — the author's own encoding plays; a quality ladder arrives with a transcoder",
+        "captionTracks": 5,
+        "vttMaxBytes": 204800
+      },
+      "worker": {
+        "transcoder": false,
+        "renditions": 1,
+        "admits": {
+          "mp4": [
+            "avc1",
+            "avc3"
+          ],
+          "webm": [
+            "V_VP8",
+            "V_VP9"
+          ]
+        },
+        "maxBytes": 104857600,
+        "maxMs": 180000,
+        "minMs": 1000,
+        "maxEdge": 3840,
+        "sentence": "no transcoder on this deployment: an H.264 MP4 or a VP8/VP9 WebM plays as uploaded; anything else is refused by name, never converted"
+      }
+    }
+  },
+  "beginDevice": {
+    "request": "POST /api/editorial/motion { action: begin, mime, bytes, durationMs } as a device",
+    "status": 403,
+    "body": {
+      "error": "video rides on a signed-in account",
+      "code": "ACCOUNT_REQUIRED",
+      "note": "sign in on PROFILE — a device on its own cannot publish"
+    }
+  },
+  "probeSample": {
+    "file": "public/model/motion-test-pattern.mp4",
+    "probe": {
+      "ok": true,
+      "container": "mp4",
+      "brands": [
+        "mp42",
+        "isom",
+        "mp41",
+        "mp42"
+      ],
+      "fastStart": true,
+      "durationMs": 6000,
+      "width": 320,
+      "height": 180,
+      "codec": "avc1",
+      "audio": true,
+      "rotation": 0,
+      "tracks": 2
+    },
+    "verdict": {
+      "ok": true,
+      "code": "ready",
+      "facts": {
+        "container": "mp4",
+        "codec": "avc1",
+        "durationMs": 6000,
+        "width": 320,
+        "height": 180,
+        "rotation": 0,
+        "audio": true,
+        "fastStart": true,
+        "bytes": 46133
+      },
+      "note": null
+    }
+  },
+  "captions": {
+    "request": "GET /api/editorial/motion?captions=<id>&lang=en",
+    "status": 200,
+    "contentType": "text/vtt; charset=utf-8",
+    "text": "WEBVTT\n\nNOTE a creator-provided caption on the generated test pattern (slice 9): there is no speech and no music to transcribe — the sound is a generated test tone — so the cues describe what is on screen.\n\n00:00.000 --> 00:02.000\nA generated test pattern. A test tone swells and fades.\n\n00:02.000 --> 00:04.000\nA white bar crosses a slow hue sweep.\n\n00:04.000 --> 00:06.000\nThe lower third stays dark for the caption's ink.\n"
+  },
+  "mine": {
+    "request": "GET /api/editorial/motion?user=<uid>",
+    "status": 200,
+    "body": {
+      "available": false,
+      "reason": "wire images are not enabled on this deployment",
+      "law": {
+        "maxBytes": 104857600,
+        "maxMs": 180000,
+        "minMs": 1000,
+        "maxEdge": 3840,
+        "mimes": [
+          "video/mp4",
+          "video/webm"
+        ],
+        "codecs": {
+          "mp4": [
+            "avc1",
+            "avc3"
+          ],
+          "webm": [
+            "V_VP8",
+            "V_VP9"
+          ]
+        },
+        "speeds": [
+          0.5,
+          0.75,
+          1,
+          1.25,
+          1.5,
+          2
+        ],
+        "qualities": [
+          "adaptive",
+          "highest",
+          "lowest"
+        ],
+        "qualityNote": "one rendition — the author's own encoding plays; a quality ladder arrives with a transcoder",
+        "captionTracks": 5,
+        "vttMaxBytes": 204800
+      },
+      "worker": {
+        "transcoder": false,
+        "renditions": 1,
+        "admits": {
+          "mp4": [
+            "avc1",
+            "avc3"
+          ],
+          "webm": [
+            "V_VP8",
+            "V_VP9"
+          ]
+        },
+        "maxBytes": 104857600,
+        "maxMs": 180000,
+        "minMs": 1000,
+        "maxEdge": 3840,
+        "sentence": "no transcoder on this deployment: an H.264 MP4 or a VP8/VP9 WebM plays as uploaded; anything else is refused by name, never converted"
+      },
+      "mine": [
+        {
+          "id": "<uuid>",
+          "ownerId": "<uid>",
+          "path": "<uid>/<uuid>.mp4",
+          "container": "mp4",
+          "mime": "video/mp4",
+          "declaredBytes": 26879,
+          "bytes": 46133,
+          "durationMs": 6000,
+          "width": 320,
+          "height": 180,
+          "rotation": 0,
+          "codec": "avc1",
+          "audio": true,
+          "fastStart": true,
+          "poster": null,
+          "captions": [
+            {
+              "lang": "en",
+              "label": "English",
+              "default": true,
+              "cues": 3
+            }
+          ],
+          "state": "ready",
+          "refusalCode": null,
+          "refusalNote": null,
+          "createdAt": "<iso>",
+          "verifiedAt": "<iso>",
+          "updatedAt": "<iso>",
+          "url": null,
+          "posterUrl": null
+        }
+      ]
+    }
+  }
+}

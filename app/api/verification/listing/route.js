@@ -23,6 +23,17 @@ import { readJsonRequest } from "../../../../lib/security/json.js";
 
 export const dynamic = "force-dynamic";
 
+// PASSENGERS NEVER SEE THE MACHINERY (V.2 Blueprint, ASTERISK governance,
+// slice 5): the public badge keeps its states and plain-language reasons;
+// confidence, the fraud flag, the evidence request and the deadline exist
+// only in the admin console.
+function publicBadge(badge) {
+  if (!badge) return badge;
+  const { fraud: _fraud, evidenceRequest: _req, resolveBy: _by, checks, ...rest } = badge;
+  const strip = (c) => (c ? { status: c.status, detail: c.detail ?? null, ...(c.reviewer !== undefined ? { reviewer: c.reviewer, at: c.at } : {}) } : c);
+  return { ...rest, checks: checks ? { source: strip(checks.source), ai: strip(checks.ai), human: strip(checks.human) } : null };
+}
+
 function admin(req) {
   const token = process.env.ADMIN_TOKEN;
   if (!token || token.length < 16) return { ok: false, status: 503, error: "admin disabled — set ADMIN_TOKEN (16+ chars)" };
@@ -38,7 +49,7 @@ export async function GET(req) {
   if (budget && budget.allowed === false) return NextResponse.json({ error: "busy — try again shortly" }, { status: 429 });
   const [rows, records] = await Promise.all([getItems(ids), latestVerifications(ids)]);
   return NextResponse.json({
-    items: ids.map((id) => { const it = rows.get(id); return it ? { id, badge: badgeFor(records.get(id) || null, it) } : { id, missing: true }; }),
+    items: ids.map((id) => { const it = rows.get(id); return it ? { id, badge: publicBadge(badgeFor(records.get(id) || null, it)) } : { id, missing: true }; }),
   });
 }
 
@@ -56,6 +67,8 @@ export async function POST(req) {
   if (!human && body.run !== true) return NextResponse.json({ error: "run: true or human: pass|fail" }, { status: 400 });
   try {
     const record = await runChecks(item, { human, reviewer: human ? auth.actor : null });
+    // a paused (or handed) authentication function appends nothing: the listing waits in the admin queue
+    if (record && record.queued) return NextResponse.json({ ok: false, queued: true, reason: record.reason }, { status: 202 });
     return NextResponse.json({ ok: true, record, badge: badgeFor(record, item), evidenceVersion: evidenceVersionOf(item) });
   } catch (error) {
     return NextResponse.json({ error: String(error.message || error).slice(0, 200) }, { status: 503 });

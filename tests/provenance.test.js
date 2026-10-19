@@ -62,6 +62,23 @@ test("a record with no live link is a sample, whatever it calls itself", () => {
   assert.equal(originEvidence(null).status, DEMO);
 });
 
+test("a server-marked native listing is real inventory without a fabricated source URL", () => {
+  const native = {
+    id: "native-one", title: "lamp", price: 100, price_cents: 10_000,
+    commerce_rail: "native_storefront", source_name: "asilum-native",
+    native_listing_id: "lst-one", storefront_slug: "night-objects",
+    inventory_available: 1, native_checkout_ready: true, availability_status: "available",
+  };
+  const evidence = originEvidence(native);
+  assert.equal(evidence.status, UNVERIFIED);
+  assert.equal(evidence.brandIsClaim, true);
+  assert.match(evidence.note, /seller's description/);
+  const payload = publicProduct(native);
+  assert.equal(payload.commerce_rail, "native_storefront");
+  assert.equal(payload.inventory_available, 1);
+  assert.equal(payload.purchasable, true);
+});
+
 test("every public payload carries its provenance", () => {
   // Stamped server-side beside `purchasable`, so no client re-derives the rule
   // and drifts from it.

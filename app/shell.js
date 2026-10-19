@@ -1,389 +1,73 @@
 "use client";
 
 // app/shell.js
-// The magazine shell around every page: one fixed top header — wordmark at
-// full size, the always-moving ticker, big search/bag/sign-in — with the
-// seven destinations in a row directly under it (owner order, Aug 12: the
-// left sidebar is gone). Account controls live on PROFILE so identity has
-// one obvious home.
+// The shell around every page (V.2 Blueprint, owner, 17 Oct 2026). Three
+// fixtures and nothing else: the INFO DOCK at the top left (likes, bag,
+// notices), the PASSPORT BUTTON at the top right (the globe), and the
+// CENTRAL CONTROL DECK at the bottom (FEED · SEARCH · POST · MESSAGES ·
+// ACCOUNT, with the ad ticker beneath). Secondary surfaces rise over the
+// root from SheetHost. The magazine header — wordmark, marquee, big
+// search/bag/sign-in, the destination row and the liquid-glass refraction
+// drawn for it — left with the blueprint; the wordmark lives on as
+// app/components/Wordmark.jsx on the Feed's masthead, and the house lines
+// of the marquee run in the deck's ticker (lib/dock.js HOUSE_LINES).
+//
+// What stays here is identity: the server-issued device cookie, the
+// Supabase session, adoption on sign-in, and what kind of account is
+// reading. Account controls live on PROFILE so identity has one obvious
+// home.
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
-  thumbFor, bagList, bagRemove, clearFitProfile, getUid, setUid, brainEnabled,
-  authorizedFetch, SIGN_OUT_NOTICE,
+  clearFitProfile, getUid, setUid, authorizedFetch, SIGN_OUT_NOTICE,
 } from "../lib/client.js";
-import {
-  searchUsers, sourceFor, followedBrands, followedUsers,
-} from "../lib/social.js";
 import { getSupabase } from "../lib/supabase.js";
-import { Avatar, FollowButton } from "./components/UserBits.jsx";
-import { ColorEvidenceLine, OriginLine, ProductFitLine, useFitBrain } from "./components/ProductSignals.jsx";
-import { AsteriskGuidanceToggle } from "./components/AsteriskMemory.jsx";
 import ConsentMoment from "./components/ConsentMoment.jsx";
-import { useClickAway, useEscape } from "./components/dismiss.js";
-import { canRefract, drawRefractionMap, LiquidGlassDefs, createPageBend, restrictLens, bottomBand } from "./components/LiquidGlass.jsx";
 import AccountSignup from "./components/AccountSignup.jsx";
 import DesignConsole from "./components/DesignConsole.jsx";
-import Notice from "./components/Notice.jsx";
-import MailDesk from "./components/MailDesk.jsx";
 import { DEFAULT_KIND } from "../lib/accounts.js";
-import { navFor, ACCOUNT_MENU } from "../lib/nav.js";
 import SavePrompt from "./components/SavePrompt.jsx";
 import ControlCenter from "./components/ControlCenter.jsx";
 import SheetHost from "./components/SheetHost.jsx";
-
-// Seven destinations — the complete mental model of the OS. Every legacy
-// route stays reachable: STYLIST rides under DISCOVER, ORDERS under PROFILE,
-// STATS/UPLOAD under PASSPORT, and the brain/control-room pages highlight
-// their parent subsystem.
-
-
-// What the ticker carries when the account follows nothing yet (owner order,
-// 17 Aug). It used to advertise the machinery — "THE TASTE ENGINE IS LIVE —
-// SIX BRIDGES, ONE FEED" — which is both a product claim and a public mention
-// of the learning bridges. These are the house lines instead. The spacing in
-// "A S I L U M" is the owner's and is deliberate; do not close it up.
-const TICKER_PLACEHOLDERS = [
-  "ARE YOU SEEKING A S I L U M",
-  "DISCOVERY - COMMERCE - COMMUNITY",
-  "DISCOVER FROM ARCHIVES ACROSS THE WORLD",
-];
-const TICKER = TICKER_PLACEHOLDERS.join(" — ") + " — ";
-
-// THE MENISCUS (owner order, 8 Sep, fifth pass: "the words refracting on
-// the liquid surface when I hover — an extremely subtle detail"). The cursor
-// pulls a shallow dome in the surface over the word it rests on; rays
-// through a dome bend towards its centre, so the word beneath magnifies a
-// hair towards the cursor (the map pulls each sample towards the middle,
-// linearly — a spherical cap's slope grows with radius — eased to nothing
-// at the rim so there is no ring), each colour a touch differently. The
-// dome trails the pointer (liquid lag) and dies down when it leaves. The
-// picture is drawn once: R = x pull, G = y pull, 128 = none; outside the
-// dome the filter floods a flat 128 grey, which colour management leaves
-// alone (see drawRefractionMap).
-const DOME = 72; // px across
-let domeHref = null;
-function domePicture() {
-  if (domeHref) return domeHref;
-  const n = 64;
-  const c = document.createElement("canvas");
-  c.width = n; c.height = n;
-  const ctx = c.getContext("2d");
-  if (!ctx) return null;
-  const img = ctx.createImageData(n, n);
-  const d = img.data;
-  for (let y = 0; y < n; y++) {
-    for (let x = 0; x < n; x++) {
-      const dx = (x + 0.5) / n * 2 - 1, dy = (y + 0.5) / n * 2 - 1;
-      const r = Math.hypot(dx, dy);
-      // full pull to 55% of the radius, eased to 0 at the rim
-      const t = r >= 1 ? 0 : r <= 0.55 ? 1 : 1 - ((r - 0.55) / 0.45) ** 2 * (3 - 2 * ((r - 0.55) / 0.45));
-      const i = (y * n + x) * 4;
-      d[i] = Math.round(128 - dx * t * 127);
-      d[i + 1] = Math.round(128 - dy * t * 127);
-      d[i + 2] = 128;
-      d[i + 3] = r >= 1 ? 0 : 255;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  domeHref = c.toDataURL("image/png");
-  return domeHref;
-}
-const DOME_SCALES = [3.2, 3.7, 4.2]; // px of pull at full strength, R/G/B — 2.0 was invisible, 5.0 obvious
+import InfoDock from "./components/InfoDock.jsx";
+import { MusicHost } from "./components/MusicCircle.jsx";
+import { hydrateMediaPreferences } from "../lib/media/preferences.js";
+import PassportButton from "./components/PassportButton.jsx";
+import { useGlassReactive } from "./components/LiquidGlass.jsx";
 
 export default function Shell({ children }) {
-  const fit = useFitBrain();
   const pathname = usePathname();
-  const router = useRouter();
-  const [bag, setBag] = useState([]);
-  const [bagOpen, setBagOpen] = useState(false);
-  const [bagHow, setBagHow] = useState(false);
-  // LIQUID GLASS (owner order, 8 Sep, fourth pass — "exactly like Apple's").
-  // Three things live here, all as CSS variables and attributes so nothing
-  // re-renders:
-  //   1. the pane deepens once the page scrolls under it (data-glass="deep");
-  //   2. the REFRACTION — Chromium can run an SVG filter as a backdrop-filter,
-  //      so the pane's outer bezel bends what scrolls beneath it through a
-  //      displacement map drawn here from the pane's own size and corner
-  //      radius (squircle bezel + Snell's law; R = x shift, G = y shift, 128 =
-  //      none). Other engines keep the blur and never see the attribute;
-  //   3. the LAMPS — .glass-light is a sibling UNDER the pane, kept to the
-  //      pane's rect, carrying the current destination's coloured glow, the
-  //      hovered word's glow (it glides between words) and the pointer's
-  //      shine. The pane blurs and bends that light: a glow stick in water.
-  // Reduced motion keeps pane, lamps and refraction; only the gliding stops
-  // (globals.css) and the pointer shine is dropped.
-  const headRef = useRef(null);
-  const lightRef = useRef(null);
-  const mapRef = useRef(null);
-  const weightRef = useRef(null);
-  const domeRef = useRef(null);       // the feImage of the meniscus
-  const domeMapsRef = useRef([]);     // its three feDisplacementMaps
-  const placeCurrentRef = useRef(null);
-  useEffect(() => {
-    const el = headRef.current;
-    const light = lightRef.current;
-    if (!el || !light) return;
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const onScroll = () => { el.dataset.glass = window.scrollY > 24 ? "deep" : ""; };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    // where a word sits, as a percentage of the pane
-    const centreOf = (node) => {
-      const r = el.getBoundingClientRect();
-      const b = node.getBoundingClientRect();
-      return {
-        x: `${((b.left + b.width / 2 - r.left) / Math.max(1, r.width)) * 100}%`,
-        y: `${((b.top + b.height / 2 - r.top) / Math.max(1, r.height)) * 100}%`,
-      };
-    };
-    const placeCurrent = () => {
-      const cur = el.querySelector(".snav.cur");
-      if (!cur) { light.style.setProperty("--cs", "0"); return; }
-      const c = centreOf(cur);
-      light.style.setProperty("--cx", c.x);
-      light.style.setProperty("--cy", c.y);
-      light.style.setProperty("--cs", "1");
-    };
-    placeCurrentRef.current = placeCurrent;
-
-    // the lamp layer follows the pane's rect; the refraction map is redrawn
-    // for the pane's size (Chromium only — see canRefract)
-    const refract = canRefract();
-    if (refract && domeRef.current) {
-      const pic = domePicture(); // drawn here, not in render: the server has no canvas
-      if (pic) domeRef.current.setAttribute("href", pic);
-    }
-    // WHERE THE ENGINE CANNOT BEND A BACKDROP (Safari; a Chromium without GPU
-    // compositing) the page bends under the strip instead: what passes under
-    // its bottom edge — cards, cover letters, headlines, rows — takes the
-    // strip's map in its own coordinates (createPageBend), re-placed on
-    // every scroll frame. The strip's own map is drawn either way.
-    const STRIP_OPEN = { top: false, left: false, right: false, bottom: true };
-    const pageBend = refract ? null : createPageBend({
-      id: "lg-refract", el, mapRef, open: STRIP_OPEN,
-      // (9 Sep) the masthead's second line, the upload station's masthead,
-      // thick rule and panes, the settings rack's rows and heads, the
-      // profile's sections, the stylist's rows and the passport's sections
-      // joined the list — on Safari the owner saw no warp at all on the new
-      // pages, because nothing on them was in it.
-      selector: ".card, .cvlook, .mrelitem, .cvmastline, .cvherobrand, .cvindex, .hlrow, .elrow, .headline, .headsub, .deck, .cvkick, .cvstory, "
-        + ".gxmastblock, .gxthick, .gxhead, .gxfoot, .rkhead, .rkrow, .pfsec, .otfrow, .ppsec, .demobanner",
-    });
-    let raf = 0;
-    let lastSize = "";
-    const fit = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      light.style.top = `${r.top}px`;
-      light.style.left = `${r.left}px`;
-      light.style.width = `${r.width}px`;
-      light.style.height = `${r.height}px`;
-      if (mapRef.current && weightRef.current && r.width > 0 && r.height > 0) {
-        const w = Math.round(r.width), h = Math.round(r.height);
-        const size = `${w}x${h}`;
-        if (size !== lastSize) {
-          lastSize = size;
-          const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-          drawRefractionMap(mapRef.current, weightRef.current, w, h, radius, STRIP_OPEN);
-          // the lens chain works only in the bottom band — the clear middle
-          // costs nothing on every scroll frame
-          restrictLens(document.getElementById("lg-refract"), bottomBand(w, h));
-        }
-        if (refract) el.dataset.refract = "1";
-        else pageBend.place(r);
-      }
-      placeCurrent();
-    };
-    const ro = new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(fit); });
-    ro.observe(el);
-    fit();
-    // alternate frames (9 Sep, the owner's Safari lag): WebKit re-rasterises
-    // every bent element on each placement; trailing the edge by one frame
-    // halves that, and the strip's own map needs no re-draw on a scroll
-    let skipBend = false;
-    const onPageScroll = () => { if (!pageBend || raf) return; skipBend = !skipBend; if (!skipBend) raf = requestAnimationFrame(fit); };
-    if (pageBend) window.addEventListener("scroll", onPageScroll, { passive: true });
-
-    // THE MENISCUS on the hovered word: a shallow dome in the surface that
-    // follows the pointer with lag and dies down on leave. One filter
-    // (#lg-ripple) serves whichever word is lit; its dome picture is moved
-    // by x/y in the word's own user space and its pull scaled by strength.
-    const dome = { word: null, x: 0, y: 0, tx: 0, ty: 0, k: 0, tk: 0, raf: 0 };
-    const domeTick = () => {
-      dome.raf = 0;
-      const img = domeRef.current;
-      if (!img || !dome.word) return;
-      dome.x += (dome.tx - dome.x) * 0.22;
-      dome.y += (dome.ty - dome.y) * 0.22;
-      dome.k += (dome.tk - dome.k) * 0.16;
-      img.setAttribute("x", (dome.x - DOME / 2).toFixed(1));
-      img.setAttribute("y", (dome.y - DOME / 2).toFixed(1));
-      domeMapsRef.current.forEach((m, i) => m && m.setAttribute("scale", (DOME_SCALES[i] * dome.k).toFixed(2)));
-      const settled = Math.abs(dome.tx - dome.x) < 0.2 && Math.abs(dome.ty - dome.y) < 0.2 && Math.abs(dome.tk - dome.k) < 0.01;
-      if (dome.tk === 0 && dome.k < 0.02) {
-        delete dome.word.dataset.ripple;
-        dome.word = null;
-        dome.k = 0;
-        return;
-      }
-      if (!settled) dome.raf = requestAnimationFrame(domeTick);
-    };
-    const domeWake = () => { if (!dome.raf) dome.raf = requestAnimationFrame(domeTick); };
-    const domeAim = (e) => {
-      if (!dome.word) return;
-      const b = dome.word.getBoundingClientRect();
-      dome.tx = e.clientX - b.left;
-      dome.ty = e.clientY - b.top;
-      domeWake();
-    };
-    const domeOn = (word, e) => {
-      if (still || !refract || !domeRef.current) return;
-      if (dome.word && dome.word !== word) delete dome.word.dataset.ripple;
-      dome.word = word;
-      const b = word.getBoundingClientRect();
-      dome.tx = e ? e.clientX - b.left : b.width / 2;
-      dome.ty = e ? e.clientY - b.top : b.height / 2;
-      if (dome.k < 0.02) { dome.x = dome.tx; dome.y = dome.ty; }
-      dome.tk = 1;
-      word.dataset.ripple = "1";
-      domeWake();
-    };
-    const domeOff = () => { if (dome.word) { dome.tk = 0; domeWake(); } };
-
-    // the hovered word's lamp glides to it; the wordmark lights red
-    let lit = null;
-    const onOver = (e) => {
-      const word = e.target.closest && e.target.closest("a, button");
-      if (!word || !el.contains(word) || word === lit) return;
-      lit = word;
-      domeOn(word, e);
-      const c = centreOf(word);
-      // the lamp sits under the pane; the pane's bezel reflects it, so both
-      // carry the word's place and colour
-      for (const n of [el, light]) {
-        n.dataset.lamp = word.classList.contains("wordmark") ? "red" : "";
-        n.style.setProperty("--lx", c.x);
-        n.style.setProperty("--ly", c.y);
-        n.style.setProperty("--ls", "1");
-      }
-    };
-    const onOut = (e) => {
-      const to = e.relatedTarget;
-      if (to && to.closest && to.closest("a, button") && el.contains(to)) return;
-      lit = null;
-      domeOff();
-      for (const n of [el, light]) n.style.setProperty("--ls", "0");
-    };
-    el.addEventListener("pointerover", onOver);
-    el.addEventListener("pointerout", onOut);
-
-    // the pointer's shine, on the pane and in the water beneath it
-    const onMove = (e) => {
-      domeAim(e);
-      const r = el.getBoundingClientRect();
-      const x = `${((e.clientX - r.left) / Math.max(1, r.width)) * 100}%`;
-      const y = `${((e.clientY - r.top) / Math.max(1, r.height)) * 100}%`;
-      for (const n of [el, light]) {
-        n.style.setProperty("--gx", x);
-        n.style.setProperty("--gy", y);
-        n.style.setProperty("--gs", "1");
-      }
-    };
-    const onLeave = () => { el.style.setProperty("--gs", "0"); light.style.setProperty("--gs", "0"); };
-    if (!still) {
-      el.addEventListener("pointermove", onMove);
-      el.addEventListener("pointerleave", onLeave);
-    }
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      ro.disconnect();
-      window.removeEventListener("scroll", onPageScroll);
-      if (pageBend) pageBend.dispose();
-      if (raf) cancelAnimationFrame(raf);
-      el.removeEventListener("pointerover", onOver);
-      el.removeEventListener("pointerout", onOut);
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerleave", onLeave);
-      if (dome.raf) cancelAnimationFrame(dome.raf);
-      placeCurrentRef.current = null;
-    };
-  }, []);
-  // the current destination moved: move its lamp
-  useEffect(() => { placeCurrentRef.current?.(); }, [pathname]);
-  const bagPanelRef = useRef(null);
-  const bagToggleRef = useRef(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [guideOn, setGuideOn] = useState(true);
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState(null);
-  const [follows, setFollows] = useState({ brands: [], users: [] });
-  const [authUser, setAuthUser] = useState(null);
-  const debounceRef = useRef(null);
-  const searchRequestRef = useRef({ id: 0, controller: null });
   const pendingAdoptionRef = useRef(null);
   const deviceIdentityRef = useRef(null);
 
   useEffect(() => {
-    // Landing law (owner order, 19 Aug): on DESKTOP the terminal opens on
-    // the FRONT COVER — the magazine leads; mobile opens straight to the
-    // rack (CATALOG). This lives in the SHELL because the shell mounts
-    // exactly once per hard entry and persists across soft navs (the page
-    // mounts in a later Suspense commit, so a page-level check loses the
-    // race to this stamp — measured, not assumed). Only a true entry
-    // landing on "/" redirects: the sessionStorage stamp survives
-    // refreshes mid-visit, in-app CATALOG clicks never re-run this effect,
-    // and deep links (?item=, ?board=, any query) never bounce.
-    // replace(), not push — back must leave the site, not loop.
-    try {
-      const entered = window.sessionStorage.getItem("asilum-entered");
-      window.sessionStorage.setItem("asilum-entered", "1");
-      if (!entered && pathname === "/" && !window.location.search) {
-        // innerWidth reads 0 while a restoring/backgrounded tab has no
-        // layout yet (measured here, not assumed) — a zero must defer the
-        // desktop/mobile call, never decide it. Bounded frames; if layout
-        // never reports, mobile's answer (stay on the rack) is the safe one.
-        let frames = 0;
-        const decide = () => {
-          const width = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
-          if (!width && frames++ < 60) { window.requestAnimationFrame(decide); return; }
-          if (width > 760) router.replace("/cover");
-        };
-        decide();
-      }
-    } catch {}
     // Clear the stale "connected" flag from the old simulated import — no
     // real connection exists until a real OAuth adapter ships.
     try { window.localStorage.removeItem("asilum-connected"); } catch {}
-    const sync = () => setBag(bagList());
-    const syncFollows = () => setFollows({ brands: followedBrands(), users: followedUsers() });
-    sync();
-    syncFollows();
-    window.addEventListener("asilum:bag", sync);
-    window.addEventListener("asilum:follow", syncFollows);
-    // Follows changed in another tab or before a stale render: re-sync.
-    window.addEventListener("storage", syncFollows);
-    window.addEventListener("focus", syncFollows);
-    return () => {
-      window.removeEventListener("asilum:bag", sync);
-      window.removeEventListener("asilum:follow", syncFollows);
-      window.removeEventListener("storage", syncFollows);
-      window.removeEventListener("focus", syncFollows);
-    };
+    // the media preferences' account copy wins a fresh device (3.10, slice 9)
+    hydrateMediaPreferences();
+    window.addEventListener("asilum:identity", hydrateMediaPreferences);
   }, []);
 
+  // THE REACTIVE RAINBOW (owner, 18 Oct 2026): one listener set for the
+  // whole app drives the glass of the fixtures, the deck and the popup
+  // (LiquidGlass.jsx useGlassReactive); reduced motion keeps it still.
+  useGlassReactive();
+
+  // PAGE GRADIENTS (owner, 18 Oct 2026): the page names itself on <html> so
+  // its gradient takes the destination's own light (--page-tint in
+  // globals.css). The Feed is the default; nothing else reads the attribute.
   useEffect(() => {
-    const syncGuide = () => setGuideOn(brainEnabled());
-    syncGuide();
-    window.addEventListener("asilum:brain", syncGuide);
-    return () => window.removeEventListener("asilum:brain", syncGuide);
-  }, []);
+    const p = String(pathname || "/");
+    const page = p === "/" ? "feed" : p.startsWith("/passport") || p.startsWith("/board") ? "passport" : p.startsWith("/profile") || p.startsWith("/settings") || p.startsWith("/analytics") ? "account" : p.startsWith("/map") ? "map" : "other";
+    document.documentElement.dataset.page = page;
+  }, [pathname]);
 
-  // Theme follows the device unless the owner picked one in SETTINGS.
-  // The pre-paint script (app/layout.js) resolves the first frame; this
-  // listener keeps an un-pinned session in step with a live OS switch.
+  // Theme follows the device unless the owner picked one in SETTINGS
+  // (blueprint 2.24). The pre-paint script (app/layout.js) resolves the
+  // first frame; this listener keeps an un-pinned session in step with a
+  // live OS switch.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: light)");
     const followDevice = () => {
@@ -397,51 +81,12 @@ export default function Shell({ children }) {
     return () => mq.removeEventListener("change", followDevice);
   }, []);
 
-  useEffect(() => () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    searchRequestRef.current.id++;
-    searchRequestRef.current.controller?.abort();
-  }, []);
-
-  // One dismissal contract (synergy phase 1): Escape and click-away both
-  // close the bag panel; the toggle button still toggles.
-  useEscape(() => setBagOpen(false), bagOpen);
-  useClickAway(bagPanelRef, () => setBagOpen(false), { active: bagOpen, excludeRef: bagToggleRef });
-
-  // THE ACCOUNT CIRCLE (V.2): one door for PROFILE, ORDERS, SETTINGS and the
-  // sign-in/out verb. Signed out it still opens — SETTINGS (the theme) must
-  // be reachable without an account — but every row that needs a person says
-  // so rather than pretending.
-  const [acctOpen, setAcctOpen] = useState(false);
-  const acctPanelRef = useRef(null);
-  const acctToggleRef = useRef(null);
-  useEscape(() => setAcctOpen(false), acctOpen);
-  useClickAway(acctPanelRef, () => setAcctOpen(false), { active: acctOpen, excludeRef: acctToggleRef });
-  useEffect(() => { setAcctOpen(false); }, [pathname]);
-  async function signOutHere() {
-    setAcctOpen(false);
-    try {
-      const sb = await getSupabase();
-      if (!sb) return;
-      const { error } = await sb.auth.signOut({ scope: "local" });
-      if (error) throw error;
-      // The shell's own SIGNED_OUT listener publishes SIGN_OUT_NOTICE — one
-      // emitter, one wording (Aug 8).
-    } catch { setAuthNotice("could not sign out — try again"); }
-  }
-
-  // A search that is already open must be re-ranked immediately when the
-  // switch changes; stale personalized results must never sit under OFF.
-  useEffect(() => {
-    if (searchOpen && q.trim()) onSearchInput(q);
-  }, [guideOn]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // ---- What kind of account is reading this? ----
-  // Held in state rather than read per-render: the nav must not flicker from
+  // Held in state rather than read per-render: the deck must not flicker from
   // passport to business on every navigation. It starts at the default and
-  // corrects itself once, which means a business briefly sees passport tabs on
+  // corrects itself once, which means a business briefly sees passport keys on
   // a cold load — acceptable, because the ROUTE GUARD is server-side and the
-  // tabs are only the invitation. A 503 (the store is unreadable) deliberately
+  // keys are only the invitation. A 503 (the store is unreadable) deliberately
   // leaves the last known kind in place instead of downgrading to passport.
   const [accountKind, setAccountKind] = useState(DEFAULT_KIND);
   useEffect(() => {
@@ -478,9 +123,9 @@ export default function Shell({ children }) {
       } catch { /* offline: hold what we have */ }
     }
     readKind();
-    // Signing in changes which account is reading, and therefore the nav. The
+    // Signing in changes which account is reading, and therefore the deck. The
     // first version asked once on mount, so a business that signed in kept the
-    // passport tabs until a hard reload.
+    // passport keys until a hard reload.
     const again = () => { readKind(); };
     window.addEventListener("asilum:account-kind", again);
     window.addEventListener("asilum:identity", again);
@@ -490,7 +135,6 @@ export default function Shell({ children }) {
       window.removeEventListener("asilum:identity", again);
     };
   }, []);
-  const nav = navFor(accountKind);
 
   // ---- Server-issued device identity + Supabase magic-link auth. ----
   async function ensureDeviceIdentity() {
@@ -515,7 +159,6 @@ export default function Shell({ children }) {
       if (!active) return;
       if (!sb) { activateDevice(); return; }
       const r = sb.auth.onAuthStateChange((event, session) => {
-        if (active) setAuthUser(session?.user || null);
         if (event === "INITIAL_SESSION") {
           if (session) onSignedIn(session);
           else activateDevice();
@@ -631,380 +274,29 @@ export default function Shell({ children }) {
     } catch {}
   }
 
-  // ---- Multi-search: brands / pieces / aesthetics / users ----
-  function onSearchInput(text) {
-    setQ(text);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    searchRequestRef.current.id++;
-    searchRequestRef.current.controller?.abort();
-    searchRequestRef.current.controller = null;
-    if (!text.trim()) { setResults(null); return; }
-    const requestId = searchRequestRef.current.id;
-    debounceRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      searchRequestRef.current.controller = controller;
-      try {
-        const query = new URLSearchParams({
-          q: text.trim(),
-          user: getUid() || "",
-          brain: guideOn ? "1" : "0",
-        });
-        const [searchResponse, suggestResponse] = await Promise.all([
-          authorizedFetch("/api/search?" + query.toString(), { signal: controller.signal }),
-          fetch("/api/suggest?q=" + encodeURIComponent(text.trim()), { signal: controller.signal }),
-        ]);
-        if (!searchResponse.ok) throw new Error("search unavailable");
-        const [d, s] = await Promise.all([
-          searchResponse.json(),
-          suggestResponse.ok ? suggestResponse.json() : Promise.resolve({ suggestions: [] }),
-        ]);
-        if (requestId !== searchRequestRef.current.id) return;
-        setResults({
-          brands: Array.isArray(d.brands) ? d.brands : [],
-          items: Array.isArray(d.items) ? d.items : [],
-          aesthetics: Array.isArray(d.aesthetics) ? d.aesthetics : [],
-          users: searchUsers(text).slice(0, 4),
-          suggestions: Array.isArray(s.suggestions) ? s.suggestions : [],
-          note: typeof d.note === "string" ? d.note : null,
-        });
-      } catch (error) {
-        if (requestId === searchRequestRef.current.id && error?.name !== "AbortError") {
-          setResults(null);
-        }
-      } finally {
-        if (requestId === searchRequestRef.current.id) {
-          searchRequestRef.current.controller = null;
-        }
-      }
-    }, 220);
-  }
-  function submitSearch(e) {
-    if (e.key !== "Enter" || !q.trim()) return;
-    window.location.href = "/discover?q=" + encodeURIComponent(q.trim());
-  }
-  function closeSearch() {
-    // Delayed so option mousedown handlers win over blur.
-    setTimeout(() => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      searchRequestRef.current.id++;
-      searchRequestRef.current.controller?.abort();
-      searchRequestRef.current.controller = null;
-      setSearchOpen(false);
-      setResults(null);
-      setQ("");
-    }, 180);
-  }
-
-  // Bag is intent only; checkout, fees, and shipping belong to source sites.
-  const subtotal = bag.reduce((s, x) => s + (x.price || 0), 0);
-  const nSources = new Set(bag.map((x) => sourceFor(x))).size;
-
-  // Ticker: the brands and people you follow, clickable — brands land on
-  // DISCOVER pre-searched, people land on their page. Default copy until you
-  // follow something.
-  const tickerItems = [];
-  for (const b of follows.brands) tickerItems.push({ label: b.toUpperCase(), href: "/discover?q=" + encodeURIComponent(b) });
-  for (const h of follows.users) tickerItems.push({ label: h.toUpperCase(), href: "/u/" + encodeURIComponent(h) });
-  const tickerRun = tickerItems.length ? (
-    <>
-      <a className="mqhome" href="/">*ASILUM MAGAZINE</a>
-      {tickerItems.map((t, i) => (
-        <a className="mqlink" key={t.label + i} href={t.href}> — {t.label}</a>
-      ))}
-      <span> — </span>
-    </>
-  ) : (
-    <span>{TICKER}</span>
-  );
-
   return (
     <div className="shell">
-      {/* Keyboard/screen-reader users jump past the header.
+      {/* Keyboard/screen-reader users jump past the fixtures.
           Visually hidden until focused — no visual-identity change. */}
       <a className="skiplink" href="#main">skip to content</a>
-      <div className="os-blob b1" aria-hidden="true" />
-      <div className="os-blob b2" aria-hidden="true" />
-      <div className="os-blob b3" aria-hidden="true" />
-      <div className="os-blob b4" aria-hidden="true" />
-      {/* the plus field: holographic pluses at 5%, both themes (owner, 9 Sep) */}
-      <div className="os-plus" aria-hidden="true" />
-      {/* thin non-uniform hairlines + small outline squares slightly
-          bordering the page (owner reference language, Aug 12) */}
-      <div className="os-frame" aria-hidden="true"><i /><i /><i /><i /></div>
 
-      {/* the lamps under the glass, then the glass (see the effect above) */}
-      <div className="glass-light" ref={lightRef} aria-hidden="true" />
-      <LiquidGlassDefs id="lg-refract" mapRef={mapRef} weightRef={weightRef} />
-      <svg className="glass-defs" aria-hidden="true" focusable="false">
-        {/* THE MENISCUS: the hovered word seen through a shallow dome the
-            cursor pulls in the surface (see domePicture). Flat grey outside
-            the dome = no pull; the dome's picture is placed at x/y in the
-            word's user space by shell.js; the three pulls differ a touch so
-            the glyph edges disperse. */}
-        <filter id="lg-ripple" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse" x="-12%" y="-50%" width="124%" height="200%">
-          <feFlood floodColor="rgb(128,128,128)" result="flat" />
-          <feImage ref={domeRef} x="0" y="0" width={DOME} height={DOME} preserveAspectRatio="none" result="dome" />
-          <feComposite in="dome" in2="flat" operator="over" result="rmap" />
-          <feDisplacementMap ref={(n) => { domeMapsRef.current[0] = n; }} in="SourceGraphic" in2="rmap" scale="0" xChannelSelector="R" yChannelSelector="G" result="dR" />
-          <feDisplacementMap ref={(n) => { domeMapsRef.current[1] = n; }} in="SourceGraphic" in2="rmap" scale="0" xChannelSelector="R" yChannelSelector="G" result="dG" />
-          <feDisplacementMap ref={(n) => { domeMapsRef.current[2] = n; }} in="SourceGraphic" in2="rmap" scale="0" xChannelSelector="R" yChannelSelector="G" result="dB" />
-          <feColorMatrix in="dR" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cR" />
-          <feColorMatrix in="dG" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cG" />
-          <feColorMatrix in="dB" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="cB" />
-          <feComposite in="cR" in2="cG" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="cRG" />
-          <feComposite in="cRG" in2="cB" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
-        </filter>
-      </svg>
-      <header className="tophead slim" ref={headRef}>
-        <div className="thbar">
-          {/* MAGAZINE is justified to the exact width of ASILUM above it (owner
-              order, 17 Aug) — one letter per span, spread by flex, so the line
-              is flush at both ends at EVERY size instead of guessing at a
-              letter-spacing that only lands at one font-size. See .wordmark em.
-              aria-label pins the accessible name so splitting the word cannot
-              make a screen reader spell it out. */}
-          <a className="wordmark" href="/" title="the feed"
-             aria-label="*ASILUM magazine — the feed">
-            <i>*</i>ASILUM
-            <em aria-hidden="true">
-              {"MAGAZINE".split("").map((ch, i) => <span key={i}>{ch}</span>)}
-            </em>
-            {/* Split per CHARACTER, not per word. With three words and
-                space-between you get two enormous gaps and tightly-set words —
-                which is exactly what looked wrong. Spread every glyph instead
-                and the letter gaps come out even, while the space character
-                still carries its own width plus a gap either side, so the two
-                words stay two words. NBSP because a plain space collapses. */}
-            <small aria-hidden="true">
-              {"FASHION TERMINAL".split("").map((ch, i) => (
-                <span key={i}>{ch === " " ? "\u00A0" : ch}</span>
-              ))}
-            </small>
-          </a>
-          <div className="marquee">
-            <div className="mq">
-              {tickerRun}
-              {tickerRun}
-            </div>
-          </div>
-          <div className="topright">
-            <button ref={bagToggleRef} className="tbtn" onClick={() => setBagOpen((o) => !o)}>
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.6 5h10.8l-.9 9H3.5z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M5.4 5V4a2.6 2.6 0 0 1 5.2 0v1" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
-              BAG ({bag.length})
-            </button>
-            {!authUser && (
-              <button
-                className="tbtn tbsignin"
-                onClick={() =>
-                  window.dispatchEvent(new CustomEvent("asilum:signup-open", { detail: { mode: "signin" } }))
-                }
-              >
-                SIGN IN
-              </button>
-            )}
-            {/* The account circle (V.2): the initial when signed in, a ring
-                when not. It opens the person's own drawers — PROFILE,
-                ORDERS, SETTINGS — which left the destination row so the
-                row could be four words. */}
-            <button
-              ref={acctToggleRef}
-              className={"tbtn tbav" + (acctOpen ? " on" : "")}
-              onClick={() => setAcctOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={acctOpen}
-              aria-label={authUser ? "your account — signed in" : "account menu"}
-              title={authUser ? (authUser.email || authUser.id) : "account"}
-            >
-              <span className="tbavatar">{authUser ? String(authUser.email || "•").slice(0, 1).toUpperCase() : "◉"}</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* THE CONTROL CENTER (V.2 brief, 1 Oct): the four tabs and the three
-          utilities at the thumb on every size, the scoped search, the
-          Sponsored strip — ControlCenter.jsx. The one sheet (Likes, Search,
-          Messages, an overview) rises over the root from SheetHost. */}
+      {/* THE FIXTURES (blueprint): the Info Dock top left, the Passport
+          Button top right, the Central Control Deck at the thumb. The one
+          sheet (Likes, Bag, Notices, Search, Messages, Post, an overview)
+          rises over the root from SheetHost. */}
+      <InfoDock />
+      <MusicHost />
+      <PassportButton kind={accountKind} pathname={pathname} />
       <ControlCenter kind={accountKind} pathname={pathname} />
       <SheetHost />
-
-      {acctOpen && (
-        <div ref={acctPanelRef} className="panel acctpanel" role="menu" aria-label="account">
-          <div className="phead">{authUser ? (authUser.email || "SIGNED IN") : "YOUR ACCOUNT"}</div>
-          {ACCOUNT_MENU.map((m) => (
-            <a key={m.href} role="menuitem" className={"acctrow" + ((pathname || "").startsWith(m.href) ? " cur" : "")} href={m.href}>
-              <b>{m.label}</b><span>{m.meta}</span>
-            </a>
-          ))}
-          {authUser ? (
-            <button role="menuitem" className="acctrow" onClick={signOutHere}><b>SIGN OUT</b><span>this device</span></button>
-          ) : (
-            <button role="menuitem" className="acctrow" onClick={() => { setAcctOpen(false); window.dispatchEvent(new CustomEvent("asilum:signup-open", { detail: { mode: "signin" } })); }}>
-              <b>SIGN IN</b><span>keep your passport across devices</span>
-            </button>
-          )}
-        </div>
-      )}
 
       <AccountSignup />
       <SavePrompt />
       <DesignConsole />
 
-      {searchOpen && results && (
-        <div className="searchpanel">
-          <div className={"searchguide " + (guideOn ? "on" : "off")}>
-            <b className="red">*</b> ASTERISK {guideOn ? "IS GUIDING" : "IS PAUSED"}
-            <span>{guideOn ? " · ordered through your Passport" : " · general results"}</span>
-          </div>
-          {results.note && (
-            <div className="searchnote">
-              <b className="red">*</b> {results.note}
-            </div>
-          )}
-          {(results.suggestions || []).length > 0 && (
-            <>
-              <div className="psub">SUGGESTIONS</div>
-              {results.suggestions.slice(0, 6).map((s) => (
-                <a className="shit" key={s.label} href={"/discover?q=" + encodeURIComponent(s.label)}>
-                  {s.label}
-                  <em style={{ marginLeft: 8 }}>{s.why === "did you mean" ? "did you mean" : s.kind}</em>
-                </a>
-              ))}
-            </>
-          )}
-          {results.brands.length > 0 && (
-            <>
-              <div className="psub">BRANDS</div>
-              {results.brands.map((b) => (
-                <a className="shit" key={b} href={"/discover?q=" + encodeURIComponent(b)}>{b}</a>
-              ))}
-            </>
-          )}
-          {results.items.length > 0 && (
-            <>
-              <div className="psub">PIECES</div>
-              {results.items.map((it) => (
-                <a className="shit item" key={it.id} href={"/?item=" + encodeURIComponent(it.id)}>
-                  <img src={it.img || thumbFor(it)} alt="" />
-                  <span>{it.title}</span>
-                  <em>{it.src}{it.price ? ` · ${it.currency || "USD"} ${it.price}` : ""}</em>
-                  <ColorEvidenceLine item={it} />
-                  <OriginLine item={it} />
-                  <ProductFitLine item={it} fit={fit} />
-                </a>
-              ))}
-            </>
-          )}
-          {results.aesthetics.length > 0 && (
-            <>
-              <div className="psub">AESTHETICS</div>
-              {results.aesthetics.map((t) => (
-                <a className="shit" key={t} href={"/discover?q=" + encodeURIComponent(t.toLowerCase())}>{t}</a>
-              ))}
-            </>
-          )}
-          {results.users.length > 0 && (
-            <>
-              <div className="psub">USERS</div>
-              {results.users.map((u) => (
-                <div className="urow" key={u.handle}>
-                  <Avatar name={u.name} />
-                  <div className="uinfo">
-                    <div className="uname">{u.name}</div>
-                    <div className="uhandle">{u.handle}</div>
-                  </div>
-                  <FollowButton handle={u.handle} />
-                </div>
-              ))}
-            </>
-          )}
-          {!results.brands.length && !results.items.length && !results.aesthetics.length && !results.users.length && (
-            <div className="pempty">nothing in the archive for that — press enter to search the full racks on DISCOVER.</div>
-          )}
-        </div>
-      )}
-
-      {bagOpen && (
-        <div ref={bagPanelRef} className="panel bagpanel">
-          <div className="phead">BAG</div>
-          {bag.length === 0 ? (
-            <div className="pempty">
-              Bag empty<br />
-              <span style={{ fontSize: 12 }}>The brain notices what you carry.</span>
-            </div>
-          ) : (
-            <>
-              {bag.map((x) => (
-                <div className="bagrow" key={x.id}>
-                  <img src={x.img || thumbFor(x)} alt="" />
-                  <div className="baginfo">
-                    <div className="bagttl">{x.title}</div>
-                    <div className="bagprice">{sourceFor(x)} · {x.currency || "USD"} {x.price}</div>
-                    <ColorEvidenceLine item={x} />
-                    <OriginLine item={x} />
-                    <ProductFitLine item={x} fit={fit} />
-                  </div>
-                  <button className="bagx" onClick={() => bagRemove(x.id)}>×</button>
-                </div>
-              ))}
-              <div className="bagfees">
-                <div><span>SUBTOTAL</span><b>USD {Math.round(subtotal)}</b></div>
-                <div><span>SOURCES</span><b>{nSources}</b></div>
-                <div className="bagfinal"><span>CHECKOUT</span><b>ON SOURCE SITES</b></div>
-              </div>
-              <button className="btn ghost wide" onClick={() => setBagHow((v) => !v)}>
-                HOW PURCHASES WORK
-              </button>
-              {bagHow && (
-                <Notice onDismiss={() => setBagHow(false)}>
-                  ASILUM does not charge or ship. Open a piece to view its
-                  source or create a purchase request.
-                </Notice>
-              )}
-            </>
-          )}
-          <a className="btn ghost wide" href="/orders" style={{ display: "block", textAlign: "center" }}>
-            VIEW ORDERS & TICKETS →
-          </a>
-        </div>
-      )}
-
       <main id="main" className="main">{children}</main>
 
       <ConsentMoment />
-
-      <OsStatus bagCount={bag.length} guideOn={guideOn} pathname={pathname || "/"} />
-      <div className="os-crt" aria-hidden="true"><div className="os-roll" /></div>
     </div>
   );
 }
-
-/* ---- OS chrome components (redesign/os-shell) ---- */
-
-// Live clock + honest readouts. Everything shown is real client state:
-// the route, the bag count, whether ASTERISK guidance is on.
-function OsStatus({ bagCount, guideOn, pathname }) {
-  const [now, setNow] = useState("");
-  useEffect(() => {
-    const pad = (n) => String(n).padStart(2, "0");
-    const tick = () => {
-      const d = new Date();
-      setNow(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`);
-    };
-    tick();
-    const iv = setInterval(tick, 1000);
-    return () => clearInterval(iv);
-  }, []);
-  return (
-    <footer className="os-status" aria-label="system status">
-      <div className="st">
-        <span className={"os-rec" + (guideOn ? "" : " off")} />
-        <b>{guideOn ? "ASTERISK GUIDING" : "ASTERISK PAUSED"}</b>
-      </div>
-      <div className="st">ROUTE <b>{pathname}</b></div>
-      <div className="st">BAG <b>{bagCount}</b></div>
-      <div className="st"><span className="os-clock" suppressHydrationWarning>{now}</span></div>
-    </footer>
-  );
-}
-

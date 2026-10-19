@@ -11,6 +11,7 @@ import { sourceFor } from "../../../lib/social.js";
 import {
   searchProducts,
 } from "../../../lib/search/index.js";
+import { parseTagQuery } from "../../../lib/tagging/grammar.js";
 import { resolveRequestUser } from "../../../lib/identity.js";
 import { consumeRateLimit, consumeGlobalBudget, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import { requestSubject } from "../../../lib/security/request.js";
@@ -59,6 +60,11 @@ async function discover(req, requestId) {
   let offset = Math.min(10_000, Math.max(0, parseInt(searchParams.get("offset"), 10) || 0));
   const limit = Math.max(1, Math.min(96, parseInt(searchParams.get("limit"), 10) || 48));
   const cursor = (searchParams.get("cursor") || "").slice(0, 512);
+  // PINNED TAGS (V.2 slice 4): `pins=silver: jewelry|gothic:` — each one a
+  // tag-shaped filter on the search, parsed by the grammar, six at most.
+  // (`tags=` is the older interpretation-pill re-ranking below; a pin is a
+  // filter on the engine's pool, not a re-ordering of its rack.)
+  const tagFilters = (searchParams.get("pins") || "").slice(0, 400).split("|").map(parseTagQuery).filter(Boolean).slice(0, 6);
 
   let pool = [];
   let items = [];
@@ -73,7 +79,7 @@ async function discover(req, requestId) {
     guidanceEnabled = !!userId &&
       (await getMemoryPreferences(userId).catch(() => ({ guidanceEnabled: false }))).guidanceEnabled !== false;
     const result = await searchProducts(q, {
-      userId, brain: guidanceEnabled, limit: 2000,
+      userId, brain: guidanceEnabled, limit: 2000, tagFilters,
     });
     // FORWARD THE READING (Aug 21). The engine writes a disclosure for almost
     // every query — which word it could not match, which house it read a word
@@ -159,7 +165,7 @@ async function discover(req, requestId) {
   // a page that skips or repeats. `offset` stays for older clients.
   const binding = bindingOf({
     q, source, brands: searchParams.get("brands") || "", tag, category, sort,
-    tags: searchParams.get("tags") || "", guidanceEnabled, demo,
+    tags: searchParams.get("tags") || "", pins: searchParams.get("pins") || "", guidanceEnabled, demo,
     subject: guidanceEnabled ? requestSubject(req) : null,
   });
   const snapshotId = snapshotOf(items.map((item) => item.id));

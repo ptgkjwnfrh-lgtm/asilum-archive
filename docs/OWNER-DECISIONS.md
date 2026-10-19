@@ -144,6 +144,7 @@ Answer sheet at the bottom — ten lines, fill and return.
 - **Default:** manual-only (identical to the recommendation — this one is
   effectively decided by inaction; the memo just asks you to make it
   official).
+- **SUPERSEDED 18 Oct 2026 by CONSTITUTION A6 (3):** Spotify and Apple Music are to be pursued (applications prepared last in the build; the owner submits). The 2 Oct ruling stands only as history:
 - **DECIDED 2 Oct 2026 (owner: "take the wheel"): manual-only, permanently.**
   Automatic profiling is abandoned. The connector registry
   (`lib/connectors/index.js`) states it: `artist-stamps` available from
@@ -277,3 +278,29 @@ counsel; 4/9 are register updates until their features go public.
 - No listing carries a badge today. `npm run verify:listings` lands passing
   listings PENDING; a review is `POST /api/verification/listing { itemId,
   human: pass|fail }` with the admin token.
+
+## 12. The 18 October 2026 rulings — DECIDED (CONSTITUTION A6)
+
+The owner's word on the open rows of `docs/v2/BLUEPRINT-GAP-2026-10-17.md`,
+given in one message on 18 Oct 2026 and recorded verbatim in spirit:
+
+- **Fees:** $1 + 1.5% passenger fee on every purchase (supersedes the 1%
+  founders fee); the $30 activation only for DROP; SELL is subject only to
+  the processor's fees, which ASILUM does not control.
+- **Friend asterisk:** followers are tracked server-side; the refusal is
+  lifted. The asterisk is a plain typographic mark, never the boxed |A|.
+- **|A|:** a box with the letter A in it.
+- **Music:** apply for Spotify and Apple Music developer access — last in
+  the build. ASILUM prepares; the owner's hand signs what a service requires
+  of the account holder.
+- **BRDCST pricing:** best judgment — profitable, affordable to a small band.
+  `lib/brdcst/index.js PRICE` is the figure.
+- **MOTION limits:** the slice 9 figures stand.
+- **Onboarding:** account creation collects birth date, home town and an
+  optional, explained, erasable ethnicity; 14.11's questions ("what was
+  12-year-old you listening to on the bus ride to school") use them to
+  suggest a popular artist for the passenger's cohort, and more questions of
+  that kind gather identity anchors. The passenger confirms or corrects
+  every suggestion; nothing is assumed.
+- **Everything that is law but not yet in motion is to be built**, the
+  identity work included, with the fewest questions back to the owner.

@@ -195,7 +195,7 @@ export default function StatsPage() {
             </tbody>
           </table>
 
-          <h4 className="opshead">THE WIRE · last {ops.wire?.days ?? 14} days</h4>
+          <h4 className="opshead">THE FEED · POSTS · last {ops.wire?.days ?? 14} days</h4>
           <div className="splitbar">
             <span className="chip">visible transmissions <b>{ops.wire?.visible ?? "—"}</b></span>
             <span className="chip">posters this week <b>{ops.wire?.postersThisWeek ?? "—"}</b></span>
@@ -211,7 +211,7 @@ export default function StatsPage() {
                   <td>{d.posts}</td>
                 </tr>
               ))}
-              {(ops.wire?.daily || []).length === 0 && <tr><td colSpan={2}>the wire has been quiet</td></tr>}
+              {(ops.wire?.daily || []).length === 0 && <tr><td colSpan={2}>the Feed has been quiet</td></tr>}
             </tbody>
           </table>
 

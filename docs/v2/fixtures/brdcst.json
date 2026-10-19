@@ -1,0 +1,207 @@
+{
+  "quote": {
+    "request": "GET /api/brdcst?quote=1&radiusMi=100&tasteBreadth=0.25&durationDays=7&eventId=pfw-menswear-fw-2027&tags=ARCHIVAL",
+    "status": 200,
+    "body": {
+      "quote": {
+        "ok": true,
+        "errors": [],
+        "currency": "usd",
+        "targeting": {
+          "radiusMi": 100,
+          "tasteBreadth": 0.25,
+          "durationDays": 7,
+          "matchFloor": 0.112
+        },
+        "days": 7,
+        "perDayCents": 575,
+        "lines": [
+          {
+            "id": "base",
+            "label": "BASE",
+            "perDayCents": 300,
+            "cents": 2100
+          },
+          {
+            "id": "duration",
+            "label": "7 DAYS",
+            "perDayCents": null,
+            "cents": null
+          },
+          {
+            "id": "geo",
+            "label": "REACH +50 MI",
+            "perDayCents": 150,
+            "cents": 1050
+          },
+          {
+            "id": "taste",
+            "label": "TASTE +25%",
+            "perDayCents": 125,
+            "cents": 875
+          }
+        ],
+        "totalCents": 4025
+      },
+      "forecast": {
+        "measured": true,
+        "audience": {
+          "low": 0,
+          "high": 0,
+          "counted": 0
+        },
+        "impressions": {
+          "atMost": 0,
+          "basis": "one footer per matching passenger per active day"
+        },
+        "coverage": {
+          "radiusMi": 100,
+          "center": {
+            "lat": 48.8566,
+            "lng": 2.3522,
+            "label": "Paris"
+          }
+        },
+        "note": "estimates — impressions, attendance and results are not guaranteed (Terms 15.2)"
+      },
+      "event": {
+        "id": "pfw-menswear-fw-2027",
+        "name": "Paris Fashion Week® Menswear Fall/Winter 2027-2028",
+        "sample": false,
+        "city": "Paris",
+        "live": true
+      },
+      "law": {
+        "baseRadiusMi": 50,
+        "maxRadiusMi": 500,
+        "durations": [
+          1,
+          3,
+          7,
+          14,
+          30
+        ],
+        "price": {
+          "baseDayCents": 300,
+          "geoCentsPerMileDay": 3,
+          "tasteMaxCentsPerDay": 500,
+          "currency": "usd"
+        },
+        "refundBonus": {
+          "days": 2,
+          "miles": 45
+        },
+        "billing": "per day — any day with an active BRDCST counts in full",
+        "refund": "completely unused days; credit first with the bonus, the original method after declining"
+      },
+      "payment": "credit only — no card provider is configured"
+    }
+  },
+  "createAsDevice": {
+    "request": "POST /api/brdcst { action: create, … } from a device identity",
+    "status": 403,
+    "body": {
+      "error": "buying, selling, running a BRDCST and ASILUM Credit need a signed-in account — a device alone cannot carry a birth date (Terms 2.2)",
+      "code": "ACCOUNT_REQUIRED"
+    }
+  },
+  "draft": {
+    "request": "createCampaign for an 18+ account (the store; the route is the same call behind the gate)",
+    "campaign": {
+      "id": "<uuid>",
+      "ownerId": "<uid>",
+      "postId": null,
+      "eventIds": [
+        "pfw-menswear-fw-2027"
+      ],
+      "eventName": "Paris Fashion Week® Menswear Fall/Winter 2027-2028",
+      "eventKind": "runway",
+      "eventStartsAt": "2027-01-19",
+      "center": {
+        "lat": 48.8566,
+        "lng": 2.3522
+      },
+      "tags": [],
+      "radiusMi": 100,
+      "tasteBreadth": 0.25,
+      "durationDays": 7,
+      "scheduledStart": null,
+      "quote": {
+        "ok": true,
+        "errors": [],
+        "currency": "usd",
+        "targeting": {
+          "radiusMi": 100,
+          "tasteBreadth": 0.25,
+          "durationDays": 7,
+          "matchFloor": 0.112
+        },
+        "days": 7,
+        "perDayCents": 575,
+        "lines": [
+          {
+            "id": "base",
+            "label": "BASE",
+            "perDayCents": 300,
+            "cents": 2100
+          },
+          {
+            "id": "duration",
+            "label": "7 DAYS",
+            "perDayCents": null,
+            "cents": null
+          },
+          {
+            "id": "geo",
+            "label": "REACH +50 MI",
+            "perDayCents": 150,
+            "cents": 1050
+          },
+          {
+            "id": "taste",
+            "label": "TASTE +25%",
+            "perDayCents": 125,
+            "cents": 875
+          }
+        ],
+        "totalCents": 4025
+      },
+      "perDayCents": 575,
+      "totalCents": 4025,
+      "billedDays": 0,
+      "bonusDays": 0,
+      "bonusMiles": 0,
+      "creditCents": 0,
+      "orderId": null,
+      "paidAt": null,
+      "paidVia": null,
+      "startsAt": null,
+      "endsAt": null,
+      "state": "draft",
+      "paymentFailedAt": null,
+      "lastReminderAt": null,
+      "remindersMuted": false,
+      "cancelledAt": null,
+      "cancelReason": null,
+      "cancelledBy": null,
+      "refund": null,
+      "createdAt": "<iso>",
+      "updatedAt": "<iso>"
+    }
+  },
+  "payIdle": {
+    "request": "payCampaign { creditCents: 0 } with no STRIPE_SECRET_KEY",
+    "status": 503,
+    "body": {
+      "error": "card payment is idle — no payment provider is configured; the broadcast waits in Drafts",
+      "code": "PAYMENT_IDLE"
+    }
+  },
+  "ticker": {
+    "request": "GET /api/brdcst?ticker=1 (anonymous: no taste to match)",
+    "status": 200,
+    "body": {
+      "placements": []
+    }
+  }
+}

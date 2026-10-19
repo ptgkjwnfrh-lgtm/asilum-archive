@@ -14,6 +14,7 @@
 
 import { NextResponse } from "next/server";
 import { resolveRequestUser } from "../../../lib/identity.js";
+import { gate } from "../../../lib/identity/gate.js";
 import { readJsonRequest } from "../../../lib/security/json.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import { startCheckout, reconcileOrder, getOrder } from "../../../lib/orders.js";
@@ -23,21 +24,30 @@ import { getItems } from "../../../lib/db/index.js";
 export const dynamic = "force-dynamic";
 
 function publicOrder(order) {
+  const native = order.commerce_rail === "native_storefront";
   const out = {
     id: order.id,
     kind: order.kind || "sale",
+    ...(native ? { commerce_rail: "native_storefront" } : {}),
     item_id: order.item_id,
     status: order.status,
     amount_cents: order.amount_cents,
     fee_cents: order.fee_cents || 0,
     // What the buyer actually paid ASILUM: a sale charges piece + fee; a
     // ticket fee charges the fee ALONE (the piece is paid at the source).
-    total_cents: (order.kind === "ticket_fee")
+    total_cents: native
+      ? Number(order.buyer_total_cents || 0)
+      : (order.kind === "ticket_fee")
       ? (order.fee_cents || 0)
       : (order.amount_cents || 0) + (order.fee_cents || 0),
     currency: order.currency,
     created_at: order.created_at,
   };
+  if (native) {
+    out.merchandise_cents = Number(order.merchandise_cents || 0);
+    out.passenger_fee_cents = Number(order.passenger_fee_cents || 0);
+    out.storefront_fee_cents = 0;
+  }
   // Present only while the session is still open at Stripe (reconcile read
   // it seconds ago) — the reader finishes paying instead of re-buying.
   if (order._resumeUrl) out.resume_url = order._resumeUrl;
@@ -49,17 +59,40 @@ export async function POST(req) {
   if (parsed.response) return parsed.response;
   const body = parsed.body;
   const user = await resolveRequestUser(req, String(body.user || ""));
+  { const g = await gate(req, String(body.user || ""), { needs: ["age"] }); if (!g.ok) return NextResponse.json(g.body, { status: g.status }); } // Terms 2.2: 18+ buys
   if (!user) return NextResponse.json({ error: "authentication required" }, { status: 401 });
   const itemId = String(body.itemId || "").slice(0, 80);
   if (!itemId) return NextResponse.json({ error: "itemId required" }, { status: 400 });
+  const variantId = body.variantId == null || body.variantId === ""
+    ? null : String(body.variantId).slice(0, 64);
+  const quantity = body.quantity == null ? 1 : Number(body.quantity);
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 25) {
+    return NextResponse.json({ error: "quantity must be an integer from 1 to 25" }, { status: 400 });
+  }
+  const requestKey = body.idempotencyKey == null || body.idempotencyKey === ""
+    ? null : String(body.idempotencyKey).slice(0, 64);
   const quota = await consumeRateLimit({ scope: "checkout", subject: user, limit: 10, windowMs: 60 * 60 * 1000 });
   if (!quota.allowed) return NextResponse.json(rateLimitResponse(quota), { status: 429 });
 
-  const result = await startCheckout({ user, itemId });
+  const result = await startCheckout({
+    user,
+    itemId,
+    variantId,
+    quantity,
+    requestKey,
+  });
   if (result.status !== 200) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
-  return NextResponse.json({ order: result.orderId, url: result.url });
+  return NextResponse.json({
+    order: result.orderId,
+    url: result.url,
+    ...(result.commerceRail ? {
+      commerceRail: result.commerceRail,
+      quantity: result.quantity,
+      quote: result.quote,
+    } : {}),
+  });
 }
 
 export async function GET(req) {

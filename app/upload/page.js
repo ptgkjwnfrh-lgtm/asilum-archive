@@ -467,7 +467,7 @@ export default function UploadPage() {
       </div>
 
       <footer className="gxcolo" aria-label="colophon">
-        *ASILUM MAGAZINE TRAINING ANNEX · {stamp} · {tiles.length} PIN{tiles.length === 1 ? "" : "S"} ON THIS DEVICE · {placeRows.length} CIT{placeRows.length === 1 ? "Y" : "IES"} ON THE GLOBE · EVERY VALUE ON THIS PAGE IS REAL STATE — NOTHING IS STAGED
+        *ASILUM TRAINING ANNEX · {stamp} · {tiles.length} PIN{tiles.length === 1 ? "" : "S"} ON THIS DEVICE · {placeRows.length} CIT{placeRows.length === 1 ? "Y" : "IES"} ON THE GLOBE · EVERY VALUE ON THIS PAGE IS REAL STATE — NOTHING IS STAGED
       </footer>
 
       {resetOpen && (

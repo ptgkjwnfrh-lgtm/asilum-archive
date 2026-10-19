@@ -4,8 +4,8 @@
 // Reusable social atoms: monogram avatar, "Who to follow" module, and the
 // user search bar. All follow state is local until real accounts exist.
 
-import { useState } from "react";
-import { DEMO_SOCIAL_ENABLED, MOCK_USERS, searchUsers, followedUsers, setFollowUser } from "../../lib/social.js";
+import { useEffect, useState } from "react";
+import { DEMO_SOCIAL_ENABLED, MOCK_USERS, searchUsers, followedUsers, setFollowUser, fetchFriends, isFriend } from "../../lib/social.js";
 
 /** Monogram avatar — up to two initials. No image, so nothing to fail to
  *  load and no request to a third party for a picture of a person. */
@@ -18,6 +18,26 @@ export function Avatar({ name }) {
 /** Follow toggle. Optimistic: the local state flips at once and the write
  *  syncs behind it, because a follow that waits for a round-trip feels broken.
  *  Seeds its initial state from the local follow list on first render. */
+/** The viewer's friends, read once and refreshed on a follow (lib/social.js fetchFriends). */
+export function useFriends() {
+  const [friends, setFriends] = useState(null);
+  useEffect(() => {
+    let live = true;
+    const load = () => fetchFriends().then((f) => { if (live) setFriends(f.friends); });
+    load();
+    window.addEventListener("asilum:friends", load);
+    return () => { live = false; window.removeEventListener("asilum:friends", load); };
+  }, []);
+  return friends;
+}
+
+/** A name with the friend asterisk when the viewer and this handle follow each other: *handle. */
+export function FriendName({ handle, children, className = "" }) {
+  const friends = useFriends();
+  const friend = isFriend(handle, friends);
+  return <span className={("friendname" + (friend ? " friend" : "") + " " + className).trim()}>{friend ? <i className="friendmark" aria-label="friend">*</i> : null}{children ?? handle}</span>;
+}
+
 export function FollowButton({ handle }) {
   const [on, setOn] = useState(() => followedUsers().includes(handle));
   return (
@@ -53,7 +73,7 @@ export function WhoToFollowList({ compact = false, withSearch = false }) {
           <a href={"/u/" + encodeURIComponent(u.handle)}><Avatar name={u.name} /></a>
           <a className="uinfo" href={"/u/" + encodeURIComponent(u.handle)}>
             <div className="uname">{u.name}</div>
-            <div className="uhandle">{u.handle} · {u.tags.join(" / ").toLowerCase()}</div>
+            <div className="uhandle"><FriendName handle={u.handle} /> · {u.tags.join(" / ").toLowerCase()}</div>
           </a>
           <FollowButton handle={u.handle} />
         </div>
@@ -92,7 +112,7 @@ export function UserSearch({ placeholder = "search users…" }) {
               <a href={"/u/" + encodeURIComponent(u.handle)}><Avatar name={u.name} /></a>
               <a className="uinfo" href={"/u/" + encodeURIComponent(u.handle)}>
                 <div className="uname">{u.name}</div>
-                <div className="uhandle">{u.handle}</div>
+                <div className="uhandle"><FriendName handle={u.handle} /></div>
               </a>
               <FollowButton handle={u.handle} />
             </div>

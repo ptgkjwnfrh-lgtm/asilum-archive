@@ -87,7 +87,8 @@ test("the hand-off replaces rather than pushes", () => {
 
 test("sharing emits the stable path, and the old query link still works", () => {
   const page = read("app/page.js");
-  assert.match(page, /"\/piece\/" \+ encodeURIComponent\(item\.id\)/,
+  // (V.2 slice 3) the share lives in lib/feed/actions.js, for the LISTING popup
+  assert.match(read("lib/feed/actions.js"), /"\/piece\/" \+ encodeURIComponent\(item\.id\)/,
     "a new share is the URL that previews correctly");
   // Links already shared must not rot: the query-parameter handler stays.
   assert.match(page, /const sharedItem = sp\.get\("item"\)/,

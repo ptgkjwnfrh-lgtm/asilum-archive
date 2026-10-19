@@ -37,6 +37,8 @@ import TransmissionText from "../components/TransmissionText.jsx";
 import BusinessAccountPanel from "../components/BusinessAccount.jsx";
 import { WardrobeTab } from "../components/WardrobeTab.jsx";
 import { RoomEditor } from "../components/ProfileRoom.jsx";
+import StorefrontTab from "../components/StorefrontTab.jsx";
+import { ScoreLine } from "../components/ScoreSheet.jsx";
 import {
   ColorEvidenceLine, OriginLine, ProductFitLine, refreshFitProfile, useFitBrain,
 } from "../components/ProductSignals.jsx";
@@ -107,10 +109,14 @@ export default function ProfilePage() {
     return () => window.removeEventListener("asilum:follow", read);
   }, []);
 
-  // The shell's ACCOUNT link lands on /profile#access — open that tab, on
-  // fresh mounts AND on hash-only changes while already here.
+  // ACCOUNT and the one native STOREFRONT live as Profile subviews. Open a
+  // named subview on fresh mounts and hash-only changes while already here;
+  // every other fragment keeps the normal POSTS default.
   useEffect(() => {
-    const onHash = () => { if (window.location.hash === "#access") setTab("account"); };
+    const onHash = () => {
+      if (window.location.hash === "#access") setTab("account");
+      if (window.location.hash === "#storefront") setTab("storefront");
+    };
     onHash();
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
@@ -279,6 +285,8 @@ export default function ProfilePage() {
             <p>{info.bio || "taste under construction."}</p>
             <PassportPreview />
             <div className="pfline"><span>HANDLE</span><b>{info.handle || "—"}</b></div>
+            {/* the Passenger Score (slice 7): one five-star score on Account and Passport only */}
+            <div className="pfline"><span>PASSENGER SCORE</span><b><ScoreLine subject={getUid()} name={info.handle || null} /></b></div>
             <div className="pfline"><span>MEMBER SINCE</span><b>{since || "—"}</b></div>
             <div className="pfline"><span>PIECES IN THE CLOSET</span><b>{bagHistory.length}</b></div>
             <div className="pfline"><span>YOUR ROOM</span><b><button type="button" className="wperma" onClick={() => setTab("room")}>OPEN →</button></b></div>
@@ -290,6 +298,7 @@ export default function ProfilePage() {
             {[
               ["posts", "POSTS"], ["bag", "CLOSET"], ["brands", "BRANDS"],
               ["wardrobe", "WARDROBE"], ["room", "ROOM"], ["sizing", "SIZING"],
+              ["storefront", "STOREFRONT"],
               ["account", "ACCOUNT"],
             ].map(([k, label]) => (
               <button key={k} className={"tab" + (tab === k ? " cur" : "")} onClick={() => setTab(k)}>
@@ -302,7 +311,7 @@ export default function ProfilePage() {
             {tab === "posts" && (
               <>
                 {posts.length === 0 && (
-                  <div className="empty">no transmissions yet — the composer lives on <a className="wperma" href="/hotlist">THE WIRE →</a></div>
+                  <div className="empty">no transmissions yet — the POST disc on the deck publishes one into <a className="wperma" href="/">THE FEED →</a></div>
                 )}
                 {/* the grid (Instagram): one square per transmission — the
                     caption header, the text clamped, the time. A server post's
@@ -335,6 +344,7 @@ export default function ProfilePage() {
             {tab === "wardrobe" && <WardrobeTab />}
             {tab === "room" && <RoomEditor />}
             {tab === "sizing" && <MeasurementsEditor />}
+            {tab === "storefront" && <StorefrontTab />}
             {tab === "account" && (
               <>
                 <ProfileAccess />

@@ -59,14 +59,14 @@ test("the card declares the size a large summary card needs", () => {
   assert.match(src, /export const alt =/);
 });
 
-test("the card carries the same honesty the catalog page does", () => {
+test("the card distinguishes native inventory from the labeled demo archive", () => {
   const src = card();
   // A shared link reaches people who have not seen the page's DEMO banner, so
   // the disclosure rides on the card. The owner's comp REPLACED the longer
   // "taste engine is real" line with the DISCOVERY/COMMERCE/COMMUNITY strip but
   // kept this one — so this is the line that is load-bearing, and if it ever has
   // to go, docs/seo-notes.md changes in the same commit.
-  assert.match(src, /A DEMO ARCHIVE OF SYNTHETIC SAMPLE RECORDS/);
+  assert.match(src, /NATIVE STOREFRONTS \+ LABELED DEMO ARCHIVE/);
   // And it must not claim inventory. `real` appears in the honest sentence, so
   // the check is for the specific promises, not for a bare word.
   for (const claim of ["shop now", "buy now", "in stock", "free shipping"]) {
@@ -100,7 +100,7 @@ test("the card loads the real brand faces, as files Satori can actually read", (
   // the generator's built-in face for exactly that reason; the TTFs now sit
   // beside the WOFF2s. A `fontFamily` here is only meaningful if the file it
   // names is passed in, so both halves are asserted together.
-  for (const file of ["michroma.ttf", "sharetech.ttf"]) {
+  for (const file of ["michroma.ttf", "inter.ttf"]) {
     assert.ok(existsSync(ROOT + "public/fonts/" + file), `public/fonts/${file} must exist`);
     assert.match(code, new RegExp(`readFileSync\\(join\\(FONT_DIR, "${file}"\\)\\)`));
   }
@@ -108,7 +108,7 @@ test("the card loads the real brand faces, as files Satori can actually read", (
 
   // Both faces reach ImageResponse, not just one.
   assert.match(code, /name: "Michroma", data: MICHROMA/);
-  assert.match(code, /name: "STM", data: STM/);
+  assert.match(code, /name: "Inter", data: INTER/);
 
   // Michroma ships ONE weight. Asking for 700 makes Satori synthesise a face the
   // site never shows — `.headline` is weight 400 and leans on tracking instead.
@@ -118,12 +118,12 @@ test("the card loads the real brand faces, as files Satori can actually read", (
 test("the fonts are real TrueType files, not renamed WOFF2", () => {
   // A copy that silently kept the .woff2 bytes under a .ttf name would fail at
   // build with an opaque Satori error. The sfnt version is four bytes.
-  for (const file of ["michroma.ttf", "sharetech.ttf"]) {
+  for (const file of ["michroma.ttf", "inter.ttf"]) {
     const head = readFileSync(ROOT + "public/fonts/" + file).subarray(0, 4);
     assert.equal(head.toString("hex"), "00010000", `${file} must be TrueType-flavoured sfnt`);
   }
   // Both are SIL OFL and redistributed here, so the licences ship with them.
-  for (const lic of ["OFL-michroma.txt", "OFL-sharetechmono.txt"]) {
+  for (const lic of ["OFL-michroma.txt", "OFL-inter.txt"]) {
     const text = read("public/fonts/" + lic);
     assert.match(text, /SIL OPEN FONT LICENSE/i, `${lic} must be the OFL text`);
   }
@@ -136,21 +136,19 @@ test("the card's type hierarchy is the site's, read off globals.css", () => {
   // The stylesheet's own mapping. If a token is ever repointed, these fail and
   // the card gets looked at rather than quietly diverging from the page.
   assert.match(css, /--mich:\s*"Michroma"/, "--mich is the wordmark/headline face");
-  assert.match(css, /--helv:\s*"STM"/, "--helv is the body face");
+  assert.match(css, /--helv:\s*"Inter"/, "--helv is the body face (V.2)");
   assert.match(css, /@font-face \{ font-family: "Michroma"/);
-  assert.match(css, /@font-face \{ font-family: "STM"/);
+  assert.match(css, /@font-face \{ font-family: "Inter"/);
 
   // .headline is Michroma at weight 400 with tracking — the card's wordmark
   // follows it rather than inventing a treatment.
   assert.match(css, /\.headline \{ font-family: var\(--mich\)/);
 
-  // Wordmark and kicker in Michroma; the page-body voice carries the rest.
-  // .wordmark em is the site's own treatment of the word MAGAZINE — heavily
-  // tracked, in the main font since the OSD face was retired. The card's
-  // "magazine.com" follows it rather than importing the comp's grotesque.
-  assert.match(css, /\.wordmark em \{ display: flex; [^}]*font-family: var\(--helv\)/);
+  // Wordmark and kicker in Michroma; the page-body voice carries the rest
+  // (the sub-line "asilum.com" is Inter, like the page body; the MAGAZINE
+  // lockup line it once followed is retired — owner, 17 Oct 2026).
 
   const michromaUses = [...src.matchAll(/fontFamily: "Michroma"/g)].length;
   assert.equal(michromaUses, 4, "the kicker, the asterisk, the wordmark, the strip");
-  assert.match(src, /fontFamily: "STM"/, "the container sets the body voice");
+  assert.match(src, /fontFamily: "Inter"/, "the container sets the body voice");
 });

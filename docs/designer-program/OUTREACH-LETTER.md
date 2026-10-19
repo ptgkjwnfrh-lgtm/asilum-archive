@@ -11,11 +11,11 @@ attachment on the first touch.
 
 ## The letter (email)
 
-**Subject:** a booth on *ASILUM magazine
+**Subject:** a booth on *ASILUM
 
 [NAME] —
 
-I run *ASILUM magazine — a personalized fashion terminal. A small,
+I run *ASILUM — a personalized fashion terminal. A small,
 invite-only catalog where a taste engine routes independent work to readers
 who are already looking for it. Discovery, commerce, community, one place.
 
@@ -52,14 +52,14 @@ If you want in — or just want to look first — reply with your store link.
 Fifteen minutes and you can be live.
 
 [OWNER NAME]
-*ASILUM magazine
+*ASILUM
 https://www.asilummagazine.com
 
 ---
 
 ## The DM (when email isn't the door)
 
-i run *ASILUM magazine — an invite-only fashion terminal where a taste
+i run *ASILUM — an invite-only fashion terminal where a taste
 engine routes independent work to readers already looking for it.
 [PERSONAL LINE — same rule: one true sentence about their work.]
 assembling a founding cohort of 5–10 designers: you keep 100% of your

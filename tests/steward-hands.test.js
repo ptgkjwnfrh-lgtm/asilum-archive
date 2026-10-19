@@ -336,6 +336,19 @@ test("vercel.json schedules the steward daily at the run route", async () => {
   assert.match(cron.schedule, /^\d+ \d+ \* \* \*$/, "daily — the hobby plan allows nothing finer");
 });
 
+// EVERY cron, not only the steward's (18 Oct 2026): slice 11 declared the
+// sweeps hourly ("7 * * * *"); the Hobby plan refuses anything finer than
+// daily and Vercel rejected every deployment from that commit on, silently
+// from the branch's point of view. A finer schedule is a plan change, made on
+// purpose, with this test changed alongside it.
+test("vercel.json: every cron is daily at most — the plan refuses finer and fails the deployment", async () => {
+  const { readFileSync } = await import("node:fs");
+  const v = JSON.parse(readFileSync(ROOT + "vercel.json", "utf8"));
+  assert.ok((v.crons || []).length >= 2, "the steward and the sweeps are declared");
+  for (const c of v.crons || []) assert.match(c.schedule, /^\d+ \d+ \* \* \*$/, c.path + " runs once a day");
+  assert.ok((v.crons || []).some((c) => c.path === "/api/sweeps"), "the sweeps still run");
+});
+
 // ---------------------------------------------------------------------------
 // movement
 // ---------------------------------------------------------------------------

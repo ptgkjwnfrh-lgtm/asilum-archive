@@ -11,7 +11,7 @@ delete process.env.DATABASE_URL;
 
 const {
   refusalReason, startCheckout, startTicketFee, applyStripeWebhook, refundOrder,
-  foundersFeeCents, FOUNDERS_FEE_RATE, FOUNDERS_FEE_FLOOR_CENTS, getTicketByFeeOrder,
+  passengerFeeCents, PASSENGER_FEE_RATE, PASSENGER_FEE_FLAT_CENTS, getTicketByFeeOrder,
 } = await import("../lib/orders.js");
 const {
   createOrderWithEvent, attachOrderSession, attachOrderPaymentIntent, applyOrderEvent, getOrder,
@@ -43,6 +43,20 @@ test("refusalReason: availability and price gate a real-sourced item", () => {
 
 test("refusalReason: a live-sourced, available, priced item passes", () => {
   assert.equal(refusalReason(REAL_ITEM), null);
+});
+
+test("refusalReason: native rows require explicit inventory, integer price and checkout readiness", () => {
+  const native = {
+    id: "native-one", commerce_rail: "native_storefront", source_name: "asilum-native",
+    native_listing_id: "lst-one", price_cents: 1_000, inventory_available: 1,
+    native_checkout_ready: true, availability_status: "available",
+  };
+  assert.equal(refusalReason(native), null);
+  assert.match(refusalReason({ ...native, inventory_available: 0 }), /availability/);
+  assert.match(refusalReason({ ...native, native_checkout_ready: false }), /not enabled/);
+  assert.match(refusalReason({ ...native, price_cents: 10.5 }), /authoritative price/);
+  assert.match(refusalReason({ ...native, commerce_rail: null }), /demo archive/,
+    "missing URLs stay demo unless the full native discriminator is present");
 });
 
 test("startCheckout without a key answers 503 before touching anything", async () => {
@@ -116,24 +130,22 @@ test("listOrdersForUser: newest first, own orders only, capped", async () => {
   assert.deepEqual(await listOrdersForUser(""), []);
 });
 
-test("founders fee: 1% with the 50¢ flat floor (re-ruled 20 Aug 2026)", () => {
-  assert.equal(FOUNDERS_FEE_RATE, 0.01);
-  assert.equal(FOUNDERS_FEE_FLOOR_CENTS, 50); // one number everywhere; 31¢/50¢ split retired
-  assert.equal(foundersFeeCents(10000), 100); // the ruling's own example: $100 → $1
-  assert.equal(foundersFeeCents(8050), 81);   // half-cent rounds up
-  assert.equal(foundersFeeCents(5000), 50);   // $50 exactly — floor and 1% agree
-  assert.equal(foundersFeeCents(5100), 51);   // above $50 the plain 1% rules
-  assert.equal(foundersFeeCents(3000), 50);   // $30 → the floor
-  assert.equal(foundersFeeCents(49), 50);     // a sub-dollar piece still pays 50¢
+test("the passenger fee: $1 + 1.5% on every purchase (owner ruling 18 Oct 2026, A6) — the founders fee is history", () => {
+  assert.equal(PASSENGER_FEE_RATE, 0.015);
+  assert.equal(PASSENGER_FEE_FLAT_CENTS, 100);
+  assert.equal(passengerFeeCents(10000), 250); // $100 → $1 + $1.50
+  assert.equal(passengerFeeCents(8050), 221);  // 120.75 rounds half up
+  assert.equal(passengerFeeCents(60000), 1000); // the Passport's own example: a $600 piece pays $10
+  assert.equal(passengerFeeCents(0), 100);     // the flat dollar is the floor
+  assert.equal(passengerFeeCents(49), 101);
 });
 
-test("ticket fee (standalone charge): the processor-minimum guard holds", async () => {
+test("ticket fee (standalone charge): the passenger fee starts at $1, so the processor minimum never binds", async () => {
   const { ticketFeeCents, STRIPE_MINIMUM_CHARGE_CENTS } = await import("../lib/orders.js");
   assert.equal(STRIPE_MINIMUM_CHARGE_CENTS, 50); // amount_too_small below this, learned live
-  assert.equal(ticketFeeCents(3000), 50);   // identical to the floor today, by ruling
-  assert.equal(ticketFeeCents(4999), 50);
-  assert.equal(ticketFeeCents(5100), 51);
-  assert.equal(ticketFeeCents(10000), 100);
+  assert.equal(ticketFeeCents(3000), 145);
+  assert.equal(ticketFeeCents(4999), 175);
+  assert.equal(ticketFeeCents(10000), 250);
 });
 
 test("startTicketFee: unkeyed 503; keyed but unconsented 400", async () => {
@@ -216,4 +228,29 @@ test("webhook: completed settles by session id, unknown types are untouched, orp
   });
   assert.equal(orphan.handled, false);
   assert.equal(orphan.orphan, true);
+});
+
+test("a native order can never fall through the legacy Checkout webhook transition", async () => {
+  const order = await createOrderWithEvent({
+    user: "sb-11111111-1111-4111-8111-111111111111",
+    itemId: "native:guard-fixture",
+    amountCents: 20_000,
+    feeCents: 400,
+    currency: "usd",
+  });
+  // Memory-store fixture only: durable native writes use the dedicated
+  // checkout transaction. The shared reference lets this test exercise the
+  // dispatcher guard without pretending to create native money in memory.
+  order.commerce_rail = "native_storefront";
+  await attachOrderSession(order.id, "cs_test_native_legacy_guard");
+
+  await assert.rejects(
+    applyStripeWebhook({
+      id: "evt_native_legacy_guard",
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_test_native_legacy_guard", metadata: {} } },
+    }),
+    /not claimed by the native reconciler/,
+  );
+  assert.equal((await getOrder(order.id)).status, "awaiting_payment");
 });

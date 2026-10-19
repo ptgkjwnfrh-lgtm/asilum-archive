@@ -32,8 +32,8 @@ test("keyed: sends the right shape to SendGrid and treats 202 as sent", async ()
   const payload = JSON.parse(captured.init.body);
   assert.equal(payload.personalizations[0].to[0].email, "owner@asilummagazine.com");
   assert.equal(payload.from.email, "noreply@asilummagazine.com");
-  // Brand law: the name is "*ASILUM magazine" and magazine is never dropped.
-  assert.match(payload.subject, /^\*ASILUM magazine — order paid: ord_test$/);
+  // Brand law: the name is "*ASILUM" and magazine is never dropped.
+  assert.match(payload.subject, /^\*ASILUM — order paid: ord_test$/);
   assert.match(payload.content[0].value, /240\.00 USD/);
   assert.match(payload.content[0].value, /ledger is the authority/);
   delete process.env.SENDGRID_API_KEY;

@@ -17,7 +17,7 @@ import { saveImageFingerprint } from "../lib/db/imageFingerprints.js";
 import { DHASH_HAMMING_THRESHOLD } from "../lib/images/dhash.js";
 
 const SRC = readFileSync("lib/vision/sameShot.js", "utf8");
-const MODAL = readFileSync("app/page.js", "utf8");
+const MODAL = readFileSync("app/components/ListingSheet.jsx", "utf8");
 
 const SHOT = "a1b2c3d4e5f60718";
 const OTHER = "ffffffffffffffff";
@@ -118,7 +118,7 @@ test("NO CONTROL — no listing offers a reverse image search", () => {
                          /image search/i, /check image/i]) {
     assert.doesNotMatch(visible, control, "the capability is never advertised");
   }
-  assert.match(MODAL, /setModalSameShot\(d\.sameShot \|\| null\)/,
+  assert.match(MODAL, /setSameShot\(d\.sameShot \|\| null\)/,
     "it rides the fetch that already fires when a piece opens");
 });
 
@@ -126,5 +126,5 @@ test("absent, not empty, when there is nothing to say", () => {
   const route = readFileSync("app/api/related/route.js", "utf8");
   assert.match(route, /\.\.\.\(sameShot \? \{ sameShot \} : \{\}\)/,
     "the key is omitted entirely rather than sent empty");
-  assert.match(MODAL, /modalSameShot &&/, "and the block does not render");
+  assert.match(MODAL, /sameShot \? \(/, "and the block does not render");
 });

@@ -7,6 +7,7 @@
 // All data comes from GET /api/asterisk/memory — a read facade over the
 // existing stores; writes are display visibility and Asterisk guidance.
 
+import AMark from "./AMark.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   authorizedFetch, postJSON, getUid, brainEnabled, setBrainEnabled,
@@ -150,7 +151,7 @@ export function AsteriskGuidanceToggle({ compact = false, className = "" }) {
       onMouseDown={(event) => event.preventDefault()}
       onClick={toggle}
     >
-      {compact ? "" : "ASTERISK — "}{saving ? "…" : on ? "PAUSE" : "TURN ON"}
+      <AMark label="|A|" /> {compact ? "" : "ASTERISK — "}{saving ? "…" : on ? "PAUSE" : "TURN ON"}
     </button>
   );
 }

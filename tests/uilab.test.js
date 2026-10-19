@@ -63,9 +63,11 @@ test("the control registry is internally consistent", () => {
   // 53 -> 54 on 17 Aug: --ed-fs-wordmark-mobile. 54 -> 56 on 9 Sep: the
   // upload station's masthead (--ed-fs-gxmast) and the purchase globe's size
   // (--ed-gx-globe); 56 -> 57 the same day: the plus field's opacity
-  // (--ed-plus-op). This count is pinned on purpose — a control added
+  // (--ed-plus-op). 57 -> 38 on 17 Oct (V.2): the header, ticker, status
+  // bar, scanline, grid, haze, glow and nav-item controls retired with the
+  // chrome they tuned. This count is pinned on purpose — a control added
   // without a decision changes this line first.
-  assert.equal(ALL_CONTROLS.length, 57);
+  assert.equal(ALL_CONTROLS.length, 38);
 
   const keys = ALL_CONTROLS.map((c) => c.key);
   // A duplicated key is the copy-paste failure this file invites: ALLOWED_KEYS
@@ -89,11 +91,15 @@ test("the control registry is internally consistent", () => {
   }
 });
 
-test("the one toggle is shaped as a toggle, not a broken slider", () => {
+test("every toggle is shaped as a toggle, not a broken slider", () => {
+  // (V.2, 17 Oct) the one toggle, text glow, retired with the glow itself;
+  // there are none today. The shape rule still holds for the next one.
   const toggles = ALL_CONTROLS.filter((c) => c.kind === "toggle");
-  assert.deepEqual(toggles.map((c) => c.key), ["--glow-ink"]);
-  assert.equal(toggles[0].off, "none", "its off state is a value the grammar accepts");
-  assert.equal(validValue(toggles[0].off), true);
+  assert.deepEqual(toggles.map((c) => c.key), []);
+  for (const t of toggles) {
+    assert.equal(t.off, "none", "its off state is a value the grammar accepts");
+    assert.equal(validValue(t.off), true);
+  }
 });
 
 // ------------------------------------------------- the value grammar (security)
@@ -147,14 +153,14 @@ test("a value must be a string, and a short one", () => {
 test("an import keeps only known keys and reports what it dropped", () => {
   const result = sanitizeImport(JSON.stringify({
     "--ed-fs-btn": "13px",          // known key, legal value
-    "--ed-fs-nav": "url(evil)",     // known key, illegal value
+    "--ed-fs-deck": "url(evil)",    // known key, illegal value
     "--not-a-control": "12px",      // unknown key, legal value
-    "--glow-ink": "none",           // the toggle
+    "--glow-ink": "none",           // the retired glow toggle (V.2): unknown now
   }));
 
   assert.equal(result.ok, true);
-  assert.deepEqual(result.overrides, { "--ed-fs-btn": "13px", "--glow-ink": "none" });
-  assert.equal(result.dropped, 2, "the caller is told, rather than silently losing them");
+  assert.deepEqual(result.overrides, { "--ed-fs-btn": "13px" });
+  assert.equal(result.dropped, 3, "the caller is told, rather than silently losing them");
 });
 
 test("an unknown key cannot smuggle a CSS property through an import", () => {
@@ -235,7 +241,7 @@ test("applying an override writes it and clears every control it does not name",
   assert.equal(applied.get("--ed-rad-btn"), "0px");
   assert.equal(applied.size, 2, "only the named controls are written");
   assert.equal(removed.length, ALL_CONTROLS.length - 2, "every other control is cleared");
-  assert.ok(removed.includes("--ed-fs-nav"), "including ones never mentioned");
+  assert.ok(removed.includes("--ed-fs-deck"), "including ones never mentioned");
   assert.equal(removed.includes("--ed-fs-btn"), false, "and not the ones just set");
 });
 

@@ -117,7 +117,7 @@ export default function TasteNetwork({ onExplore }) {
                 <li><i className="k curated" /> CURATED — an editorial neighbour, not a claim about you</li>
               </ul>
               {net && net.guidanceEnabled === false && <p className="tnetp warn">guidance is paused — edits are kept; the ranking ignores them until you resume it in SETTINGS.</p>}
-              <p className="tnetp faint">A preference in film, food or movement can share a trait with clothing — restraint, texture, pace — but it never rewrites this network on its own. Cross-medium links are yours to confirm on THE WIRE.</p>
+              <p className="tnetp faint">A preference in film, food or movement can share a trait with clothing — restraint, texture, pace — but it never rewrites this network on its own. Cross-medium links are yours to confirm in the Feed.</p>
             </>
           ) : (
             <>

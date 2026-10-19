@@ -9,11 +9,11 @@ export const metadata = {
     "The live edition — today's cover of the personalized fashion terminal.",
   alternates: { canonical: "/cover" },
   openGraph: {
-    title: "FRONT COVER · *ASILUM magazine",
+    title: "FRONT COVER · *ASILUM",
     description:
       "The live edition — today's cover of the personalized fashion terminal.",
     url: siteUrl("/cover"),
-    siteName: "*ASILUM magazine",
+    siteName: "*ASILUM",
     type: "website",
     locale: "en_US",
   },

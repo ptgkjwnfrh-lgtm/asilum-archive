@@ -38,7 +38,7 @@ export default function TitleCardPage() {
 
         <div className="tc-stage">
           <div className="e4-half" aria-hidden="true" />
-          <h1 className="tc-word" aria-label="*ASILUM magazine — personalized fashion terminal">
+          <h1 className="tc-word" aria-label="*ASILUM — personalized fashion terminal">
             <span className="tc-mark" aria-hidden="true">
               <span className="tc-star">*</span>
               <span className="tc-wrap">
@@ -48,14 +48,14 @@ export default function TitleCardPage() {
                 <span className="tc-face">ASILUM</span>
               </span>
             </span>
-            <span className="tc-mag" aria-hidden="true">magazine.com</span>
+            <span className="tc-mag" aria-hidden="true">asilum.com</span>
           </h1>
           <div className="e4-sq" aria-hidden="true"><i /><i /></div>
         </div>
 
         <div className="e4-mrz" aria-hidden="true">
           <div>
-            <b>TITLE</b><i>&lt;</i><b>CARD</b><i>&lt;&lt;</i><b>ASILUMMAGAZINE</b>
+            <b>TITLE</b><i>&lt;</i><b>CARD</b><i>&lt;&lt;</i><b>ASILUM</b>
             <i>&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</i>
             <b className="e4-caret">▮</b>
           </div>

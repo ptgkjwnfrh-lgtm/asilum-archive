@@ -350,6 +350,164 @@ test("mem and Postgres agree on the whole adoption scenario",
   assert.deepEqual(mem.accountSeen, ["acct-a", "dev-a"], "the _meta rings merge, not overwrite");
 });
 
+// ASTERISK governance (slice 5) has a mem branch and a Postgres branch for
+// every function in lib/db/production/asterisk.js; the unit battery runs mem.
+test("mem and Postgres agree on the ASTERISK governance scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "governance-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  // guard the guard
+  assert.equal(mem.override.ok, true); assert.equal(mem.overrideTwice, false);
+  assert.deepEqual(mem.queueOrder, ["-b", "-a"], "fraud before value");
+  assert.equal(mem.paused.queued, true); assert.equal(mem.paused.ran, 0);
+});
+
+// Native commerce (slice 6) has a mem branch and a Postgres branch for every
+// function in lib/db/production/commerce.js; the unit battery runs mem.
+test("mem and Postgres agree on the native commerce scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "commerce-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.accepted.price, 15000); assert.equal(mem.closed, "OFFERS_CLOSED"); assert.equal(mem.relist.ok, true);
+});
+
+// After the sale (slice 7) has a mem branch and a Postgres branch for every
+// function in lib/db/production/{aftersale,score,credit}.js; the unit battery runs mem.
+test("mem and Postgres agree on the after-sale scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "aftersale-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.settled.creditKind, "refund"); assert.equal(mem.review1.published, 0); assert.equal(mem.review2.published, 2);
+});
+
+// BRDCST (slice 8) has a mem branch and a Postgres branch for every function
+// in lib/db/production/brdcst.js; the unit battery runs mem.
+test("mem and Postgres agree on the BRDCST scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "brdcst-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.delivery.near.footer, true); assert.equal(mem.delivery.far.footer, false); assert.equal(mem.cancelled.unused, 4); assert.equal(mem.late.billedDays, 5);
+});
+
+// MOTION assets (slice 9) have a mem branch and a Postgres branch for every
+// function in lib/db/production/media.js; the unit battery runs mem.
+test("mem and Postgres agree on the MOTION asset scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "media-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.ready.state, "ready"); assert.equal(mem.refused.code, "codec"); assert.equal(mem.captions.length, 2); assert.equal(mem.foreignCaptions, "NOT_YOURS");
+});
+
+// Identity (slice 10b) has a mem branch and a Postgres branch for every function
+// in lib/db/production/identity.js; the unit battery runs mem.
+test("mem and Postgres agree on the identity scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "identity-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.noConsent, "CONSENT_REQUIRED"); assert.equal(mem.scoreAfter, "0.0 ★ · No reviews"); assert.equal(mem.erased, true);
+  assert.equal(mem.orphanReview, "ORDER_NOT_FOUND", "a review without an order is refused, not stored");
+});
+
+// Money in motion (slice 11) has a mem branch and a Postgres branch for every
+// function in lib/db/production/money.js; the unit battery runs mem.
+test("mem and Postgres agree on the money scenario", { skip: !databaseUrl }, async () => {
+  const scenario = path.join(process.cwd(), "tests", "helpers", "money-scenario.mjs");
+  const memRun = await run(process.execPath, [scenario, `mem${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: "", TEST_DATABASE_URL: "" },
+  });
+  const pgRun = await run(process.execPath, [scenario, `pg${randomUUID().slice(0, 8)}`], {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+  const mem = JSON.parse(memRun.stdout.trim().split("\n").pop());
+  const pg = JSON.parse(pgRun.stdout.trim().split("\n").pop());
+  assert.equal(mem.error, undefined, mem.error);
+  assert.equal(pg.error, undefined, pg.error);
+  for (const key of Object.keys(mem)) {
+    assert.deepEqual(pg[key], mem[key],
+      `backends diverge on "${key}":\n  mem = ${JSON.stringify(mem[key])}\n  pg  = ${JSON.stringify(pg[key])}`);
+  }
+  assert.deepEqual(Object.keys(pg).sort(), Object.keys(mem).sort());
+  assert.equal(mem.sellerDelivery.moved, false); assert.equal(mem.payoutOpen, "releasable"); assert.equal(mem.released.net, 7500); assert.equal(mem.released.twice, "NOT_RELEASABLE");
+});
+
 // The §6 export has a mem branch and a Postgres branch, and AGENTS.md makes
 // mem/pg parity a hard rule — the unit battery in tests/privacy-export.test.js
 // runs mem, so a Postgres-only fault in the export would ship green.
@@ -4221,4 +4379,325 @@ test("wardrobe gift: concurrent accepts give one card to one person, and the pen
   const dm = await import("../lib/db/dm.js");
   await dm.blockAccount(bId, aId);
   await assert.rejects(() => gifts.offerGift(A, { itemId: two.id, toHandle: `taker-${tag}` }), (e) => e.code === "no-recipient");
+});
+
+// ---------------------------------------------------------------------------
+// NATIVE STOREFRONT (schema v62): real row locks, idempotency advisory locks,
+// reservation ceilings and the server-only RLS posture. Unit coverage drives
+// the same memory contract; this is deliberately the only file with PG-backed
+// storefront tests.
+// ---------------------------------------------------------------------------
+
+test("native storefront v62 serializes fee and inventory reservations in Postgres",
+  { skip: !databaseUrl }, async (t) => {
+  process.env.DATABASE_URL = databaseUrl;
+  const db = await import("../lib/db/index.js");
+  const storefronts = await import("../lib/db/production/storefronts.js");
+  const { STOREFRONT_TERMS_VERSION } = await import("../lib/storefront/contracts.js");
+  const pool = await db.getPool();
+  const accountId = randomUUID();
+  const suffix = randomUUID().replaceAll("-", "");
+  let storefrontId = null;
+  let listingId = null;
+  let variantId = null;
+  let secondVariantId = null;
+  const orders = ["inv-a", "inv-b", "fee-a", "fee-b"].map((name) => `ord_sf_${name}_${suffix}`);
+  const crossTenantOrder = `ord_sf_cross_${suffix}`;
+  const allOrderIds = [...orders, crossTenantOrder];
+  const attempts = orders.map(() => randomUUID());
+
+  t.after(async () => {
+    if (storefrontId) {
+      await pool.query("DELETE FROM storefront_fee_events WHERE storefront_id=$1", [storefrontId]);
+      await pool.query("DELETE FROM storefront_fee_reservations WHERE storefront_id=$1", [storefrontId]);
+    }
+    const storefrontVariantIds = [variantId, secondVariantId].filter(Boolean);
+    if (storefrontVariantIds.length) {
+      await pool.query("DELETE FROM inventory_reservations WHERE variant_id=ANY($1::uuid[])", [storefrontVariantIds]);
+    }
+    await pool.query("DELETE FROM refund_operations WHERE order_id=ANY($1::text[])", [allOrderIds]);
+    await pool.query("DELETE FROM payment_attempts WHERE order_id=ANY($1::text[])", [allOrderIds]);
+    await pool.query("DELETE FROM order_lines WHERE order_id=ANY($1::text[])", [allOrderIds]);
+    await pool.query("DELETE FROM order_events WHERE order_id=ANY($1::text[])", [allOrderIds]);
+    await pool.query("DELETE FROM orders WHERE id=ANY($1::text[])", [allOrderIds]);
+    if (listingId) {
+      await pool.query("DELETE FROM items WHERE native_listing_id=$1", [listingId]);
+      await pool.query("DELETE FROM native_listing_variants WHERE listing_id=$1", [listingId]);
+      await pool.query("DELETE FROM native_listings WHERE id=$1", [listingId]);
+    }
+    if (storefrontId) {
+      await pool.query("DELETE FROM storefront_payment_accounts WHERE storefront_id=$1", [storefrontId]);
+      await pool.query("DELETE FROM storefront_fee_accounts WHERE storefront_id=$1", [storefrontId]);
+      await pool.query("DELETE FROM storefronts WHERE id=$1", [storefrontId]);
+    }
+    await pool.query("DELETE FROM profile_rooms WHERE account_id=$1", [accountId]);
+    if (authUserSeeded) await pool.query("DELETE FROM auth.users WHERE id=$1", [accountId]);
+  });
+
+  // profile_rooms carries an FK to auth.users wherever the auth schema exists
+  // (Supabase, and CI's shim), so the seller handle below needs a parent row,
+  // as the v17 profile-rooms block gives its accounts. Absent auth schema
+  // (42P01 / 3F000) means no FK to satisfy; any other refusal is a real error.
+  let authUserSeeded = false;
+  try {
+    await pool.query("INSERT INTO auth.users (id) VALUES ($1::uuid) ON CONFLICT DO NOTHING", [accountId]);
+    authUserSeeded = true;
+  } catch (err) {
+    if (err.code !== "42P01" && err.code !== "3F000") throw err;
+  }
+
+  let owner = await storefronts.createStorefront({
+    accountId, name: `PG Store ${suffix.slice(0, 6)}`, accepted: true,
+    acceptedTermsVersion: STOREFRONT_TERMS_VERSION,
+  });
+  storefrontId = owner.storefront.id;
+  owner = await storefronts.updateStorefront(accountId, {
+    version: owner.storefront.version, status: "pending_review", name: owner.storefront.name,
+  });
+  await storefronts.applyStorefrontModerationDecision({
+    storefrontId, state: "active", actor: "postgres-acceptance",
+  });
+  const made = await storefronts.createStorefrontListing(accountId, {
+    title: "PG single stock", category: "other", priceCents: 2_000, inventory: 1,
+    fulfillment: { shipping: true, pickup: false }, status: "pending_review",
+  });
+  listingId = made.storefront.listings[0].id;
+  variantId = made.storefront.listings[0].variants[0].id;
+  await storefronts.applyStorefrontListingModerationDecision({
+    listingId, state: "active", actor: "postgres-acceptance",
+  });
+  const sellerHandle = `pg-${suffix.slice(0, 12)}`;
+  await pool.query(
+    `INSERT INTO profile_rooms (account_id,handle,published,moderation_status)
+     VALUES ($1,$2,true,'visible')`,
+    [accountId, sellerHandle],
+  );
+  const publicStore = await storefronts.getPublicStorefrontBySlug(owner.storefront.slug);
+  assert.equal(publicStore.storefront.sellerHandle, sellerHandle);
+  assert.equal(JSON.stringify(publicStore).includes(accountId), false,
+    "the PG public projection returns the published handle without its account UUID");
+  await pool.query("UPDATE profile_rooms SET moderation_status='hidden' WHERE account_id=$1", [accountId]);
+  assert.equal(
+    (await storefronts.getPublicStorefrontBySlug(owner.storefront.slug)).storefront.sellerHandle,
+    null,
+  );
+  secondVariantId = randomUUID();
+  await pool.query(
+    `INSERT INTO native_listing_variants
+       (id,listing_id,label,option_values,price_cents,currency,stock_on_hand,state,is_default)
+     VALUES ($1,$2,'Second','{"finish":"two"}'::jsonb,2000,'usd',1,'active',false)`,
+    [secondVariantId, listingId],
+  );
+
+  for (let index = 0; index < orders.length; index++) {
+    await pool.query(
+      `INSERT INTO orders
+         (id,user_id,item_id,status,amount_cents,currency,commerce_rail,storefront_id)
+       VALUES ($1,$2,$3,'awaiting_payment',2000,'usd','native_storefront',$4)`,
+      [orders[index], `u-${randomUUID()}`, `native-${listingId}`, storefrontId],
+    );
+    const reserved = index === 2 ? 2_000 : index === 3 ? 1_000 : 0;
+    await pool.query(
+      `INSERT INTO payment_attempts
+         (id,order_id,storefront_id,idempotency_key,stripe_account_id,livemode,
+          expected_buyer_total_cents,passenger_fee_cents,storefront_fee_reserved_cents,
+          application_fee_cents,currency)
+       VALUES ($1,$2,$3,$4,'acct_pg_acceptance',false,2130,130,$5,$6,'usd')`,
+      [attempts[index], orders[index], storefrontId, `attempt-${suffix}-${index}`, reserved, reserved + 130],
+    );
+  }
+  await pool.query(
+    `INSERT INTO orders (id,user_id,item_id,status,amount_cents,currency,commerce_rail)
+     VALUES ($1,$2,$3,'awaiting_payment',2000,'usd','native_storefront')`,
+    [crossTenantOrder, `u-${randomUUID()}`, `native-${listingId}`],
+  );
+
+  await assert.rejects(
+    () => storefronts.reserveStorefrontInventory({
+      variantId, orderId: crossTenantOrder, quantity: 1,
+      operationKey: `inventory-cross-${suffix}`,
+    }),
+    (error) => error.code === "ORDER_STOREFRONT_MISMATCH",
+  );
+  await assert.rejects(
+    () => storefronts.reserveStorefrontFee({
+      storefrontId, orderId: crossTenantOrder, maximumCents: 100,
+      operationKey: `fee-cross-${suffix}`,
+    }),
+    (error) => error.code === "ORDER_STOREFRONT_MISMATCH",
+  );
+  await assert.rejects(
+    () => pool.query(
+      `INSERT INTO storefront_fee_reservations
+         (storefront_id,order_id,operation_key,amount_cents,state)
+       VALUES ($1,$2,$3,100,'active')`,
+      [storefrontId, crossTenantOrder, `fee-cross-raw-${suffix}`],
+    ),
+    (error) => error.code === "23503",
+    "a fee reservation cannot cross the order/store tenant graph without an attempt",
+  );
+  await assert.rejects(
+    () => pool.query(
+      `INSERT INTO inventory_reservations
+         (storefront_id,listing_id,variant_id,order_id,operation_key,quantity,state)
+       VALUES ($1,$2,$3,$4,$5,1,'active')`,
+      [storefrontId, listingId, variantId, crossTenantOrder, `inventory-cross-raw-${suffix}`],
+    ),
+    (error) => error.code === "23503",
+    "inventory cannot cross the order/store tenant graph without an attempt",
+  );
+
+  await assert.rejects(
+    () => pool.query(
+      `INSERT INTO refund_operations
+         (order_id,payment_attempt_id,storefront_id,idempotency_key,amount_cents,
+          currency,stripe_account_id,livemode)
+       VALUES ($1,$2,$3,$4,100,'usd','acct_pg_acceptance',false)`,
+      [orders[0], attempts[1], storefrontId, `refund-mismatch-${suffix}`],
+    ),
+    (error) => error.code === "23503",
+    "a refund attempt cannot be attached to a different order",
+  );
+
+  const sameInventory = await Promise.all([
+    storefronts.reserveStorefrontInventory({
+      variantId, orderId: orders[0], paymentAttemptId: attempts[0], quantity: 1,
+      operationKey: `inventory-${suffix}-same`,
+    }),
+    storefronts.reserveStorefrontInventory({
+      variantId, orderId: orders[0], paymentAttemptId: attempts[0], quantity: 1,
+      operationKey: `inventory-${suffix}-same`,
+    }),
+  ]);
+  assert.equal(sameInventory[0].reservation.id, sameInventory[1].reservation.id);
+  assert.equal(sameInventory.filter((value) => value.duplicate).length, 1);
+  const secondLine = await storefronts.reserveStorefrontInventory({
+    variantId: secondVariantId, orderId: orders[0], paymentAttemptId: attempts[0], quantity: 1,
+    operationKey: `inventory-${suffix}-second-variant`,
+  });
+  assert.equal(secondLine.reservation.variantId, secondVariantId,
+    "one payment attempt can reserve multiple variants");
+  await assert.rejects(() => storefronts.reserveStorefrontInventory({
+    variantId, orderId: orders[1], paymentAttemptId: attempts[1], quantity: 1,
+    operationKey: `inventory-${suffix}-other`,
+  }), (error) => error.code === "OUT_OF_STOCK");
+
+  const sameFee = await Promise.all([
+    storefronts.reserveStorefrontFee({
+      storefrontId, orderId: orders[2], paymentAttemptId: attempts[2], maximumCents: 2_000,
+      operationKey: `fee-${suffix}-same`,
+    }),
+    storefronts.reserveStorefrontFee({
+      storefrontId, orderId: orders[2], paymentAttemptId: attempts[2], maximumCents: 2_000,
+      operationKey: `fee-${suffix}-same`,
+    }),
+  ]);
+  assert.equal(sameFee[0].reservation.id, sameFee[1].reservation.id);
+  assert.equal(sameFee.filter((value) => value.duplicate).length, 1);
+  const remainder = await storefronts.reserveStorefrontFee({
+    storefrontId, orderId: orders[3], paymentAttemptId: attempts[3], maximumCents: 2_000,
+    operationKey: `fee-${suffix}-remainder`,
+  });
+  assert.equal(remainder.reservation.amountCents, 1_000);
+  assert.equal(remainder.feeBalance.reservedCents, 3_000);
+
+  await assert.rejects(
+    () => pool.query(
+      `INSERT INTO storefront_fee_events
+         (storefront_id,reservation_id,order_id,payment_attempt_id,kind,amount_cents,
+          operation_key,currency)
+       VALUES ($1,$2,$3,$4,'reserved',100,$5,'usd')`,
+      [storefrontId, sameFee[0].reservation.id, crossTenantOrder, null, `event-cross-${suffix}`],
+    ),
+    (error) => error.code === "23503",
+    "fee events cannot leave their reservation/order/store graph",
+  );
+  await assert.rejects(
+    () => pool.query(
+      `INSERT INTO storefront_fee_events
+         (storefront_id,reservation_id,order_id,payment_attempt_id,kind,amount_cents,
+          operation_key,currency)
+       VALUES ($1,$2,$3,$4,'collected',1000,$5,'usd')`,
+      [storefrontId, remainder.reservation.id, orders[3], attempts[3], `event-no-proof-${suffix}`],
+    ),
+    (error) => error.code === "23514",
+    "a collected ledger event requires immutable provider proof",
+  );
+  await assert.rejects(
+    () => storefronts.confirmStorefrontFee({
+      reservationId: sameFee[0].reservation.id,
+      operationKey: `fee-confirm-no-proof-${suffix}`,
+    }),
+    (error) => error.code === "PROVIDER_PROOF_REQUIRED",
+  );
+  const collected = await storefronts.confirmStorefrontFee({
+    reservationId: sameFee[0].reservation.id,
+    operationKey: `fee-confirm-${suffix}`,
+    stripeAccountId: "acct_pg_acceptance",
+    stripeApplicationFeeId: `fee_${suffix}`,
+    stripeEventId: `evt_collect_${suffix}`,
+    livemode: false,
+  });
+  await assert.rejects(
+    () => storefronts.reverseStorefrontFee({
+      collectionEventId: collected.event.id,
+      amountCents: 100,
+      operationKey: `fee-reverse-no-proof-${suffix}`,
+    }),
+    (error) => error.code === "PROVIDER_PROOF_REQUIRED",
+  );
+  const reversed = await storefronts.reverseStorefrontFee({
+    collectionEventId: collected.event.id,
+    amountCents: 100,
+    operationKey: `fee-reverse-${suffix}`,
+    stripeFeeRefundId: `fr_${suffix}`,
+    stripeEventId: `evt_reverse_${suffix}`,
+  });
+  assert.equal(reversed.event.kind, "reversed");
+
+  await pool.query("UPDATE native_listings SET state='paused' WHERE id=$1", [listingId]);
+  const listingVersion = Number((await pool.query(
+    "SELECT version FROM native_listings WHERE id=$1", [listingId],
+  )).rows[0].version);
+  const firstVariant = (await pool.query(
+    "SELECT * FROM native_listing_variants WHERE id=$1", [variantId],
+  )).rows[0];
+  await assert.rejects(
+    () => storefronts.updateStorefrontListing(accountId, listingId, {
+      version: listingVersion,
+      variants: [{
+        id: variantId, label: firstVariant.label, priceCents: Number(firstVariant.price_cents),
+        stockOnHand: Number(firstVariant.stock_on_hand), optionValues: firstVariant.option_values,
+      }],
+    }),
+    (error) => error.code === "INVENTORY_RESERVED",
+    "an omitted variant with a pending reservation cannot be archived",
+  );
+  await storefronts.releaseStorefrontInventory({
+    reservationId: secondLine.reservation.id,
+    operationKey: `inventory-release-${suffix}`,
+  });
+  await storefronts.updateStorefrontListing(accountId, listingId, {
+    version: listingVersion,
+    variants: [{
+      id: variantId, label: firstVariant.label, priceCents: Number(firstVariant.price_cents),
+      stockOnHand: Number(firstVariant.stock_on_hand), optionValues: firstVariant.option_values,
+    }],
+  });
+  assert.equal((await pool.query(
+    "SELECT state FROM native_listing_variants WHERE id=$1", [secondVariantId],
+  )).rows[0].state, "archived");
+
+  const policyCount = await pool.query(
+    `SELECT count(*)::int AS n FROM pg_policies
+      WHERE policyname='asilum_app_server_access'
+        AND tablename=ANY($1::text[])`,
+    [["storefronts", "storefront_payment_accounts", "storefront_fee_accounts",
+      "native_listings", "native_listing_variants", "order_lines", "payment_attempts",
+      "storefront_fee_reservations", "storefront_fee_events", "inventory_reservations",
+      "refund_operations", "stripe_event_inbox"]],
+  );
+  const appRole = await pool.query("SELECT 1 FROM pg_roles WHERE rolname='asilum_app'");
+  assert.equal(policyCount.rows[0].n, appRole.rowCount ? 12 : 0);
+  assert.equal((await pool.query("SELECT to_regclass('refund_operations') AS name")).rows[0].name, "refund_operations");
 });

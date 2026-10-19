@@ -5,7 +5,7 @@
 deployed — the brief asks for a branch and a preview, and merge is the
 owner's word.
 
-The brief (`ASiLUM_Live_Launch_V2_Claude_Handoff.md`, 17 Sep) supersedes
+The brief (`ASILUM_Live_Launch_V2_Claude_Handoff.md`, 17 Sep) supersedes
 the older seven-destination order where they disagree; every other law —
 no faking, branch + PR, build and suite green, the copy law, ADR-002
 identity, ADR-006 privacy, the rights register — is untouched and was

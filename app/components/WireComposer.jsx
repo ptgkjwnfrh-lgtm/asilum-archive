@@ -9,7 +9,11 @@
 // detaching the last image exposes the transmission again, and if it is now
 // too long the author is asked to shorten it — never cut. A post's LAYOUT
 // (single, carousel, wardrobe fragment, exposé, event publication) is a
-// choice inside the post. Video says plainly that it needs the media worker.
+// choice inside the post. VIDEO (slice 9) is the media worker's seam: where
+// video uploads are enabled the file goes straight to storage on a signed
+// URL, the worker reads its own copy and admits or refuses by name, and the
+// admitted asset rides the composition; where they are not, the button says
+// why. A poster frame the device captures rides the image path.
 //
 // The draft autosaves on the device with a version (lib/wire/draft.js);
 // detached media stays in the draft's history until discarded. Pieces are
@@ -30,12 +34,16 @@ import Icon from "./Icons.jsx";
 import ModelTag from "./ModelTag.jsx";
 import { getUid, postJSON, authorizedFetch, thumbFor } from "../../lib/client.js";
 import { getProfileInfo, addPost } from "../../lib/social.js";
+import BrdcstOptions, { DEFAULT_TARGETING, money } from "./BrdcstOptions.jsx";
+import { quote as brdcstQuote } from "../../lib/brdcst/index.js";
+import { extractRefs } from "../../lib/wire/refs.js";
 import { WIRE_CATEGORIES, WIRE_INTENTS } from "../../lib/model/media.js";
 import { TRANSMISSION_MAX, CAPTION_MAX, MAX_IMAGES, MAX_PIECES, LAYOUTS, LAYER_ALIGNS, LAYER_POSITIONS, LAYER_COLORS, graphemeCount } from "../../lib/wire/compose.js";
 import {
   newDraft, readDraft, writeDraft, clearDraft, attachMedia, detachMedia, restoreMedia, discardMedia,
-  setText, setTitle, setLayout, setLink, setEvent, setPieces, setLayers, describe,
+  setText, setTitle, setLayout, setLink, setEvent, addEvent, removeEvent, setPieces, setLayers, setVideo, describe,
 } from "../../lib/wire/draft.js";
+import { preflightMotion, MOTION } from "../../lib/media/index.js";
 
 const LAYOUT_LABEL = { single: "SINGLE", carousel: "CAROUSEL", fragment: "WARDROBE FRAGMENT", expose: "EXPOSÉ", event: "EVENT" };
 const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
@@ -63,7 +71,10 @@ async function prepImage(file) {
   return { blob, w: canvas.width, h: canvas.height };
 }
 
-export default function WireComposer({ onPublished, compact = false }) {
+// `kind` is Post Selection's hint (V.2 slice 3): transm · still · motion ·
+// brdcst · echo. STILL opens the image picker's tool row, BRDCST the event
+// picker, ECHO marks the composition temporary (24 hours; lib/wire/compose.js).
+export default function WireComposer({ onPublished, compact = false, kind = null }) {
   // the draft lives in localStorage, which the server cannot read: start from
   // an empty draft on both sides and adopt the device's after mount, or the
   // first paint and the hydration disagree (caught 1 Oct: "a draft is
@@ -78,9 +89,23 @@ export default function WireComposer({ onPublished, compact = false }) {
   const [busy, setBusy] = useState("");
   const [tool, setTool] = useState(null);       // "pieces" | "link" | "event" | "layers" | null
   const [uploads, setUploads] = useState(null); // { available, reason }
+  const [motion, setMotion] = useState(null);   // { available, reason, law, worker } — the media worker's gate
+  const videoRef = useRef(null);
+  // BRDCST targeting (slice 8): the composer's panel; a campaign is created
+  // as a DRAFT the moment the post publishes, paid as a separate step
+  const [targeting, setTargeting] = useState({ ...DEFAULT_TARGETING });
+  const [brdcstPlan, setBrdcstPlan] = useState("draft"); // "draft" | "pay"
   const fileRef = useRef(null);
   const c = draft.composition;
   const status = useMemo(() => describe(draft), [draft]);
+  // the hint: the tool that type needs is open; an ECHO is marked at once
+  useEffect(() => {
+    if (!kind) return;
+    setOpen(true);
+    if (kind === "brdcst") setTool("event");
+    if (kind === "echo") setDraft((d) => writeDraft({ ...d, composition: { ...d.composition, echo: true } }));
+    if (kind !== "echo") setDraft((d) => d.composition.echo ? writeDraft({ ...d, composition: { ...d.composition, echo: false } }) : d);
+  }, [kind]);
 
   useEffect(() => {
     const check = () => setAnon(!(getUid() || "").startsWith("sb-"));
@@ -90,6 +115,7 @@ export default function WireComposer({ onPublished, compact = false }) {
   }, []);
   useEffect(() => {
     fetch("/api/editorial/media").then((r) => (r.ok ? r.json() : { available: false, reason: `the media service answered ${r.status}` })).then((d) => setUploads(d)).catch(() => setUploads({ available: false, reason: "the media service did not answer" }));
+    fetch("/api/editorial/motion").then((r) => (r.ok ? r.json() : { available: false, reason: `the media worker answered ${r.status}` })).then((d) => setMotion(d)).catch(() => setMotion({ available: false, reason: "the media worker did not answer" }));
   }, []);
   // autosave: every change is a new version on the device
   const apply = (fn) => setDraft((d) => writeDraft(fn(d)));
@@ -112,6 +138,71 @@ export default function WireComposer({ onPublished, compact = false }) {
     }
     setBusy("");
   }
+  /** The device reads the file's own length before anything leaves it. */
+  function readDuration(file) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.onloadedmetadata = () => { const d = v.duration; URL.revokeObjectURL(url); resolve({ durationMs: Number.isFinite(d) ? Math.round(d * 1000) : null, w: v.videoWidth, h: v.videoHeight, el: v }); };
+      v.onerror = () => { URL.revokeObjectURL(url); resolve({ durationMs: null, w: 0, h: 0, el: null }); };
+      v.src = url;
+    });
+  }
+  /** VIDEO: preflight on the device, a signed direct upload, the worker's verdict. */
+  async function addVideo(file) {
+    if (!file) return;
+    if (!motion || !motion.available) { setNote(motion ? motion.reason : "checking the media worker…"); return; }
+    const meta = await readDuration(file);
+    const pre = preflightMotion({ mime: file.type, bytes: file.size, durationMs: meta.durationMs });
+    if (!pre.ok) { setNote(pre.message); return; }
+    setBusy("asking the worker…");
+    try {
+      const begin = await postJSON("/api/editorial/motion", { user: getUid(), action: "begin", mime: file.type, bytes: file.size, durationMs: meta.durationMs });
+      const b = await begin.json().catch(() => ({}));
+      if (!begin.ok) { setNote(b.error || "the worker refused"); setBusy(""); return; }
+      setBusy("uploading the video…");
+      const put = await fetch(b.upload.url, { method: b.upload.method || "PUT", headers: { ...(b.upload.headers || {}), Authorization: `Bearer ${b.upload.token}` }, body: file });
+      if (!put.ok) { setNote(`storage answered ${put.status} — nothing was attached`); setBusy(""); return; }
+      setBusy("the worker is reading its copy…");
+      const verify = await postJSON("/api/editorial/motion", { user: getUid(), action: "verify", id: b.asset.id });
+      const v = await verify.json().catch(() => ({}));
+      if (!verify.ok) { setNote(v.error || "the worker could not read the upload"); setBusy(""); return; }
+      if (v.asset.state !== "ready") { setNote(`refused: ${v.asset.refusalNote || v.asset.refusalCode}`); setBusy(""); return; }
+      let poster = null;
+      // the poster: a frame the device draws, through the image path (no analysis server-side)
+      if (meta.el && uploads && uploads.available) {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.min(1600, meta.w || 320); canvas.height = Math.round(canvas.width * ((meta.h || 180) / (meta.w || 320)));
+          canvas.getContext("2d").drawImage(meta.el, 0, 0, canvas.width, canvas.height);
+          const blob = await new Promise((r) => canvas.toBlob(r, "image/jpeg", 0.8));
+          if (blob && blob.size <= IMAGE_MAX_BYTES) {
+            const form = new FormData(); form.set("user", getUid() || ""); form.set("photo", blob, "poster.jpg");
+            const res = await authorizedFetch("/api/editorial/media", { method: "POST", body: form });
+            const d = await res.json().catch(() => ({}));
+            if (res.ok) {
+              poster = d;
+              await postJSON("/api/editorial/motion", { user: getUid(), action: "poster", id: v.asset.id, path: d.path });
+            }
+          }
+        } catch {}
+      }
+      apply((dr) => setVideo(dr, { ...v.asset, poster: poster ? poster.url : null, posterPath: poster ? poster.path : null }));
+      setNote("");
+    } catch (e) { setNote(String(e.message || "the video could not be uploaded")); }
+    setBusy("");
+  }
+  async function addCaptions(file, lang) {
+    if (!file || !c.video) return;
+    const vtt = await file.text();
+    setBusy("saving the captions…");
+    const res = await postJSON("/api/editorial/motion", { user: getUid(), action: "captions", id: c.video.id, tracks: [...(c.video.captions || []).filter((t) => t.lang !== lang).map((t) => ({ ...t, vtt: t.vtt })), { lang, label: lang, vtt }].filter((t) => t.vtt) });
+    const d = await res.json().catch(() => ({}));
+    setBusy("");
+    if (!res.ok) { setNote(d.error || "the captions were not accepted"); return; }
+    apply((dr) => setVideo(dr, { ...dr.composition.video, captions: d.asset.captions }));
+  }
   async function discard(path) {
     apply((dr) => discardMedia(dr, path));
     try { await authorizedFetch("/api/editorial/media", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ user: getUid(), path }) }); } catch {}
@@ -123,23 +214,40 @@ export default function WireComposer({ onPublished, compact = false }) {
     const refs = `#${intent} #${category}`;
     const text = c.text.trim();
     const body = text.includes(refs) ? text : (text ? `${text}\n\n${refs}` : refs);
-    const composition = { media: c.media, pieces: (c.pieces || []).map((p) => p.id), link: c.link ? { url: c.link.url } : null, event: c.event ? { id: c.event.id } : null, layout: c.layout, layers: c.layers, alt: c.alt };
+    const composition = { media: c.media, video: c.video ? { id: c.video.id, durationMs: c.video.durationMs, state: c.video.state } : null, pieces: (c.pieces || []).map((p) => p.id), link: c.link ? { url: c.link.url } : null, event: c.event ? { id: c.event.id } : null, layout: c.layout, layers: c.layers, alt: c.alt, echo: !!c.echo };
     setBusy("publishing…");
     postJSON("/api/editorial", { user: getUid(), handle: info.handle || info.name, text: body, title: c.title || undefined, composition })
       .then(async (res) => {
         const d = await res.json().catch(() => null);
         setBusy("");
-        if (!res.ok) { setNote((d && (d.error || d.note)) || "the wire did not accept that"); return; }
-        addPost(body, info, c.title, { postKind: d.postKind, layout: d.layout, attachments: d.attachments, imageUrl: c.media[0] ? c.media[0].url : "" });
-        setNote(d && d.held ? (d.note || "saved and paused for a human review") : "");
-        setDraft(clearDraft()); setTool(null);
+        if (!res.ok) { setNote((d && (d.error || d.note)) || "the Feed did not accept that"); return; }
+        addPost(body, info, c.title, { postKind: d.postKind, layout: d.layout, attachments: d.attachments, imageUrl: c.media[0] ? c.media[0].url : (c.video && c.video.poster) || "" });
+        let note = d && d.held ? (d.note || "saved and paused for a human review") : "";
+        // the BRDCST campaign: a draft on the server, named to the post; a
+        // sample fixture cannot be promoted and the route says so
+        const evs = (c.events && c.events.length ? c.events : c.event ? [c.event] : []).filter((e) => !e.sample);
+        if (evs.length && d && d.id != null) {
+          try {
+            const created = await postJSON("/api/brdcst", { user: getUid(), action: "create", postId: d.id, eventIds: evs.map((e) => e.id), tags: extractRefs(body).hashtags, radiusMi: targeting.radiusMi, tasteBreadth: targeting.tasteBreadth, durationDays: targeting.durationDays, scheduledStart: targeting.scheduledStart || null });
+            const cj = await created.json().catch(() => null);
+            if (!created.ok) note = (note ? note + " · " : "") + "the BRDCST was not saved: " + ((cj && cj.error) || created.status);
+            else if (brdcstPlan === "pay") {
+              const paid = await postJSON("/api/brdcst", { user: getUid(), action: "pay", id: cj.campaign.id });
+              const pj = await paid.json().catch(() => null);
+              if (paid.ok && pj && pj.checkoutUrl) { window.location.assign(pj.checkoutUrl); return; }
+              note = (note ? note + " · " : "") + (paid.ok && pj && pj.paid ? "the BRDCST is paid with Credit and " + (pj.campaign.state === "scheduled" ? "scheduled" : "live") : "the BRDCST waits in the Studio's drafts — " + ((pj && pj.error) || "payment did not start"));
+            } else note = (note ? note + " · " : "") + "the BRDCST is saved as a draft in the Studio — pay it there to send it";
+          } catch { note = (note ? note + " · " : "") + "the BRDCST could not be saved — the post is published"; }
+        } else if ((c.events && c.events.length) || c.event) note = (note ? note + " · " : "") + "a sample fixture cannot be promoted — the event rides on the post for you alone";
+        setNote(note);
+        setDraft(clearDraft()); setTool(null); setTargeting({ ...DEFAULT_TARGETING }); setBrdcstPlan("draft");
         if (onPublished) onPublished();
       })
       .catch(() => { setBusy(""); setNote("the shared wire could not be reached — nothing was published"); });
   }
 
   const count = status.kind === "transmission" ? `${graphemeCount(c.text)}/${TRANSMISSION_MAX}` : `${c.text.length}/${CAPTION_MAX}`;
-  const layoutChoices = LAYOUTS.filter((l) => l !== "event" || c.event).filter((l) => l !== "expose" || c.media.length)
+  const layoutChoices = LAYOUTS.filter((l) => l !== "event" || c.event || (c.events && c.events.length)).filter((l) => l !== "expose" || c.media.length)
     .filter((l) => (l !== "single" && l !== "carousel") || c.media.length).filter((l) => l !== "fragment" || c.pieces.length);
 
   return (
@@ -153,7 +261,8 @@ export default function WireComposer({ onPublished, compact = false }) {
       ) : (
         <>
           <div className="wckind" role="status">
-            <span className={"wckindtag " + status.kind}>{status.kind.toUpperCase()}</span>
+            <span className={"wckindtag " + status.kind}>{c.echo ? "ECHO" : status.kind.toUpperCase()}</span>
+            {c.echo ? <span className="wclayout">GONE IN 24H</span> : null}
             {status.kind === "post" && status.layout ? <span className="wclayout">{LAYOUT_LABEL[status.layout]}</span> : null}
             <span className="wckindwhy">{status.kind === "transmission" ? "words alone — attach an image and it becomes a post" : status.kind === "post" ? "the words are the caption" : ""}</span>
             {draft.version ? <span className="wcver">draft v{draft.version}</span> : null}
@@ -191,6 +300,19 @@ export default function WireComposer({ onPublished, compact = false }) {
                   ))}
                 </ul>
               )}
+              {c.video && (
+                <div className="wcvideo">
+                  <span className="cclbl">MOTION · {c.video.container} · {c.video.codec} · {c.video.width}×{c.video.height} · {Math.round((c.video.durationMs || 0) / 1000)}s{c.video.audio ? "" : " · no audio track"}</span>
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                  <video src={c.video.url} poster={c.video.poster || undefined} controls muted playsInline preload="metadata" />
+                  <div className="wcvideorow">
+                    <label className="txtbtn wcvtt">ADD CAPTIONS (.vtt)<input type="file" accept=".vtt,text/vtt" hidden onChange={(e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; const lang = window.prompt("the captions' language tag (en, pt-BR…)", "en"); if (f && lang) addCaptions(f, lang.trim()); }} /></label>
+                    {(c.video.captions || []).map((t) => <span key={t.lang} className="chip">CC {t.lang}{t.cues ? ` · ${t.cues} cues` : ""}</span>)}
+                    <button className="txtbtn" onClick={() => apply((d) => setVideo(d, null))}>REMOVE</button>
+                  </div>
+                  <p className="fine">{motion && motion.worker ? motion.worker.sentence : ""} · automatic transcription and translation are not built; creator captions are the real path (3.8)</p>
+                </div>
+              )}
               {draft.detached.length > 0 && (
                 <div className="wcdetached">
                   <span className="cclbl">DETACHED · KEPT UNTIL YOU DISCARD</span>
@@ -219,13 +341,23 @@ export default function WireComposer({ onPublished, compact = false }) {
                   <button className="txtbtn" onClick={() => apply((d) => setLink(d, null))}>REMOVE</button>
                 </div>
               )}
-              {c.event && (
-                <div className="wcevent">
-                  <span className="cclbl">EVENT · {String(c.event.kind || "").toUpperCase()}{c.event.sample ? " · SAMPLE FIXTURE" : ""}</span>
-                  <b>{c.event.name}</b><span>{c.event.city}{c.event.startsAt ? " · " + c.event.startsAt : ""}</span>
-                  <button className="txtbtn" onClick={() => apply((d) => setEvent(d, null))}>REMOVE</button>
+              {(c.events && c.events.length ? c.events : c.event ? [c.event] : []).map((ev) => (
+                <div className="wcevent" key={ev.id}>
+                  <span className="cclbl">BRDCST · {String(ev.kind || "").toUpperCase()}{ev.sample ? " · SAMPLE FIXTURE" : ""}</span>
+                  <b>{ev.name}</b><span>{ev.city}{ev.startsAt ? " · " + ev.startsAt : ""}</span>
+                  <button className="txtbtn" onClick={() => apply((d) => removeEvent(d, ev.id))}>REMOVE</button>
                 </div>
-              )}
+              ))}
+              {((c.events && c.events.length) || c.event) ? (
+                <>
+                  <BrdcstOptions value={targeting} onChange={setTargeting} eventId={(c.events && c.events[0] ? c.events[0].id : c.event && c.event.id) || null} tags={extractRefs(c.text || "").hashtags} compact />
+                  <div className="brdplan seg" role="group" aria-label="when to pay">
+                    <button type="button" className={"chip clickable" + (brdcstPlan === "draft" ? " cur" : "")} aria-pressed={brdcstPlan === "draft"} onClick={() => setBrdcstPlan("draft")}>SAVE THE BRDCST AS A DRAFT</button>
+                    <button type="button" className={"chip clickable" + (brdcstPlan === "pay" ? " cur" : "")} aria-pressed={brdcstPlan === "pay"} onClick={() => setBrdcstPlan("pay")}>PAY {money(brdcstQuote(targeting).totalCents)} ON PUBLISH →</button>
+                  </div>
+                  <p className="fine">until it is paid the broadcast waits in the Studio's drafts; the post itself publishes now. a BRDCST reaches passports whose taste matches, inside the radius; a block suppresses it.</p>
+                </>
+              ) : null}
 
               {/* THE ADD ROW */}
               <div className="wcadd" role="group" aria-label="add to the post">
@@ -236,12 +368,17 @@ export default function WireComposer({ onPublished, compact = false }) {
                 <button className={"wcaddbtn" + (tool === "pieces" ? " on" : "")} onClick={() => setTool(tool === "pieces" ? null : "pieces")}><Icon name="feed" size={16} /> ADD PIECES</button>
                 <button className={"wcaddbtn" + (tool === "link" ? " on" : "")} onClick={() => setTool(tool === "link" ? null : "link")}><Icon name="link" size={16} /> ADD LINK</button>
                 <button className={"wcaddbtn" + (tool === "event" ? " on" : "")} onClick={() => setTool(tool === "event" ? null : "event")}><Icon name="map" size={16} /> ADD EVENT</button>
-                <button className="wcaddbtn soon" disabled title="video needs the media worker (transcoding, duration limits) — not on this deployment yet"><Icon name="cover" size={16} /> VIDEO <ModelTag kind="device">SOON</ModelTag></button>
+                <button className={"wcaddbtn" + (c.echo ? " on" : "")} aria-pressed={!!c.echo} onClick={() => apply((d) => ({ ...d, composition: { ...d.composition, echo: !d.composition.echo } }))} title="an echo is a temporary post — gone after 24 hours"><Icon name="disc" size={16} /> ECHO</button>
+                <input ref={videoRef} aria-label="choose a video" type="file" accept="video/mp4,video/webm" hidden onChange={(e) => { addVideo(e.target.files && e.target.files[0]); e.target.value = ""; }} />
+                <button className={"wcaddbtn" + (motion && !motion.available ? " off" : "")} disabled={!!busy || !!c.video || !motion} title={motion && !motion.available ? motion.reason : `an MP4 (H.264) or a WebM (VP8/VP9), at most ${Math.round(MOTION.maxMs / 60000)} minutes and ${Math.round(MOTION.maxBytes / 1024 / 1024)} MB — no transcoder, so nothing else`} onClick={() => { if (motion && !motion.available) { setNote("video: " + motion.reason); return; } videoRef.current && videoRef.current.click(); }}>
+                  <Icon name="cover" size={16} /> VIDEO{motion && !motion.available ? <ModelTag kind="device">OFF</ModelTag> : null}
+                </button>
               </div>
               {uploads && !uploads.available && <p className="fine">images: {uploads.reason}</p>}
+              {motion && !motion.available && <p className="fine">video: {motion.reason} — {motion.worker ? motion.worker.sentence : ""}</p>}
               {tool === "pieces" && <PiecePicker chosen={c.pieces} onPick={(p) => apply((d) => setPieces(d, [...d.composition.pieces.filter((x) => x.id !== p.id), p]))} />}
               {tool === "link" && <LinkPicker onPick={(snap) => { apply((d) => setLink(d, snap)); setTool(null); }} />}
-              {tool === "event" && <EventPicker onPick={(ev) => { apply((d) => setEvent(d, ev)); setTool(null); }} />}
+              {tool === "event" && <EventPicker onPick={(ev) => { apply((d) => addEvent(d, ev)); setTool(null); }} />}
 
               {/* LAYOUT, for a post */}
               {(status.kind === "post" || c.pieces.length > 0) && (

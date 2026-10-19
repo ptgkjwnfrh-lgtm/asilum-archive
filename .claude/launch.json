@@ -77,6 +77,35 @@
         "3463"
       ],
       "port": 3463
+    },
+    {
+      "name": "asilum-v2-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "next",
+        "dev",
+        "-p",
+        "3480"
+      ],
+      "port": 3480
+    },
+    {
+      "name": "asilum-v2-mem",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=",
+        "DATABASE_ADMIN_URL=",
+        "STRIPE_SECRET_KEY=",
+        "STRIPE_WEBHOOK_SECRET=",
+        "ADMIN_TOKEN=v2-mem-verify-throwaway-token-1",
+        "SITE_ORIGIN=http://localhost:3482",
+        "npx",
+        "next",
+        "start",
+        "-p",
+        "3482"
+      ],
+      "port": 3482
     }
   ]
 }

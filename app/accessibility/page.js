@@ -4,8 +4,8 @@
 // than papered over. Version 1.0 — drafted 2026-07-19.
 
 export const metadata = {
-  title: "*ASILUM magazine — accessibility",
-  description: "ASiLUM magazine's accessibility commitment, measures, and contact.",
+  title: "*ASILUM — accessibility",
+  description: "ASILUM's accessibility commitment, measures, and contact.",
 };
 
 export default function AccessibilityPage() {
@@ -13,12 +13,12 @@ export default function AccessibilityPage() {
     <div className="wrap">
       <h1 className="headline"><span className="red">*</span>ACCESSIBILITY</h1>
       <p className="deck">
-        the magazine is for everyone. version 1.0 — july 19, 2026.
+        ASILUM is for everyone. version 1.0 — july 19, 2026.
       </p>
 
       <h2 className="statshead">OUR COMMITMENT</h2>
       <p className="legal">
-        ASiLUM magazine is committed to making asilummagazine.com accessible
+        ASILUM is committed to making asilummagazine.com accessible
         to people with disabilities, consistent with the americans with
         disabilities act (ada). our target standard is the web content
         accessibility guidelines (wcag) 2.1, level aa, and accessibility
@@ -42,7 +42,7 @@ export default function AccessibilityPage() {
       <h2 className="statshead">KNOWN LIMITATIONS</h2>
       <p className="legal">
         we are honest about gaps while we close them: the moving ticker is
-        part of the magazine&apos;s visual identity and,
+        part of ASILUM&apos;s visual identity and,
         outside reduced-motion mode, remains animated; some data-dense
         surfaces (the stats room, the stylist grid) are still being tuned for
         screen-reader flow; and third-party merchant pages we link to are
@@ -60,7 +60,7 @@ export default function AccessibilityPage() {
 
       <h2 className="statshead">FEEDBACK</h2>
       <p className="legal">
-        if any part of ASiLUM is hard to use with assistive technology, tell
+        if any part of ASILUM is hard to use with assistive technology, tell
         us:{" "}
         <a href="mailto:legal@asilummagazine.com">legal@asilummagazine.com</a>{" "}
         with &quot;accessibility&quot; in the subject. we aim to respond

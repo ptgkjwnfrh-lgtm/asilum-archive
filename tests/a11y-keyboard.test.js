@@ -145,7 +145,8 @@ test("the exemptions are the four legitimate shapes, and nothing else", () => {
 
 test("the chips the register found are real controls now", () => {
   // Named so the specific regression cannot come back quietly.
-  const page = readFileSync(ROOT + "app/page.js", "utf8");
+  // (V.2 slice 3) the designer chips live in the LISTING popup now
+  const page = readFileSync(ROOT + "app/components/ListingSheet.jsx", "utf8");
   assert.match(page, /<a\s+className="dz"/, "the designer chip navigates, so it is a link");
   assert.doesNotMatch(page, /className="dz"[\s\S]{0,200}?window\.location\.href/,
     "and no longer navigates from a click handler");

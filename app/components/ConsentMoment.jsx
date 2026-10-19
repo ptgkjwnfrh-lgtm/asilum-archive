@@ -105,7 +105,7 @@ export default function ConsentMoment() {
             experience feel more like yours every time you return.
           </p>
           <p>
-            <span className="red">*</span>ASILUM magazine <b>WILL NEVER</b>{" "}
+            <span className="red">*</span>ASILUM <b>WILL NEVER</b>{" "}
             sell your information. once you have a{" "}
             <b><span className="red">*</span>PASSPORT</b>, your style, taste
             and content stay protected.

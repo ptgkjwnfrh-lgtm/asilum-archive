@@ -100,7 +100,7 @@ the contract, not a bug.
 
 ## 5. Stripe (real-money checkout — risk campaign phase L2)
 
-State 18 Aug 2026: sandbox "ASILUM magazine" exists (test mode); the engine is
+State 18 Aug 2026: sandbox "ASILUM" exists (test mode); the engine is
 built and verified end to end in test mode. `STRIPE_SECRET_KEY` (sk_test_) in
 `.env.local` locally. Business verification in the Stripe dashboard is the
 owner gate to LIVE keys — do not start it from a session.

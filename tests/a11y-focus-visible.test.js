@@ -84,7 +84,10 @@ test("the focus indicator is drawn with a palette token, never a literal colour"
 test("the four controls the register found are covered by name", () => {
   // Named explicitly so the specific regression cannot return quietly if the
   // generic scan above is ever loosened.
-  for (const sel of [".search", ".controls input[type='text']", ".usearch input", ".composer2 textarea"]) {
+  // `.composer2 textarea` left the list with V.2 slice 2: no component renders
+  // .composer2 any more and its rules are deleted (the one composer is
+  // WireComposer, covered by the generic scan above).
+  for (const sel of [".search", ".controls input[type='text']", ".usearch input"]) {
     const has = ALL.some((r) =>
       r.selector.split(",").some((c) => c.trim().startsWith(sel) && c.includes(":focus")));
     assert.ok(has, `${sel} has a :focus style`);

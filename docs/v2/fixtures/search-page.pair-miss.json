@@ -3,7 +3,7 @@
   "status": 200,
   "body": {
     "contractVersion": 1,
-    "requestId": "055d8cbd-5986-4fa1-9154-8df7da62479c",
+    "requestId": "bfb32493-cfe6-4f7f-b971-e5ab14cee6f5",
     "outcome": "empty",
     "total": 0,
     "totalIsExact": true,
@@ -426,6 +426,8 @@
         "miss": "designer",
         "served": false
       },
+      "tag": null,
+      "pins": [],
       "assist": null,
       "exclusions": [],
       "priceSort": null,

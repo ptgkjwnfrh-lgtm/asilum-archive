@@ -8,6 +8,7 @@
 
 import { useId, useState } from "react";
 import SaveButton from "./SaveButton.jsx";
+import { ChevronText } from "./Chevrons.jsx";
 import ModelTag from "./ModelTag.jsx";
 import { OVERVIEW_ELIGIBILITY } from "../../lib/people/overviews.js";
 import { setFollowBrand, followedBrands } from "../../lib/social.js";
@@ -66,7 +67,7 @@ function OverviewCard({ person, compact }) {
         <div className="povkick">THE PEOPLE BEHIND THE CLOTHES</div>
         <h2 className="povname"><button type="button" aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded((value) => !value)}>{person.name}</button></h2>
         <div className="povrole">{person.role}</div>
-        <p className="povsum">{person.summary}</p>
+        <ChevronText as="p" className="povsum" text={person.summary} />
         <button className="txtbtn povread" type="button" aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded((value) => !value)}>{expanded ? "Read less −" : "Read overview +"}</button>
         <div id={detailsId} hidden={!expanded} className="povdetails">
           <ul className="povfacts">

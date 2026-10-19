@@ -31,6 +31,19 @@ async function identity(req, claimed) {
 export async function GET(req) {
   if (!wardrobeEnabled()) return disabled();
   const { searchParams } = new URL(req.url);
+  // V.2 13.2–13.4 (slice 11): the pieces a passenger is willing to sell, by handle —
+  // title and photo only, to a signed-in viewer, so an offer can start from a message
+  if (searchParams.get("handle") && searchParams.get("offerable") === "1") {
+    const viewer = await identity(req, searchParams.get("user"));
+    if (!viewer) return NextResponse.json({ error: "authentication required" }, { status: 401 });
+    const { getProfileRoomByHandle } = await import("../../../lib/db/production.js");
+    const room = await getProfileRoomByHandle(String(searchParams.get("handle") || "").toLowerCase()).catch(() => null);
+    const ownerId = room && room.account_id ? "sb-" + room.account_id : null;
+    if (!ownerId) return NextResponse.json({ handle: searchParams.get("handle"), items: [] });
+    const items = (await listWardrobe(ownerId, { status: "active" })).filter((it) => it.acceptOffers === true || it.accept_offers === true);
+    const withPhotos = await Promise.all(items.map(async (item) => ({ id: item.id, title: item.title, category: item.category || null, photoUrl: item.photoPath ? await signedPhotoUrl(item.photoPath).catch(() => null) : null })));
+    return NextResponse.json({ handle: room.handle, ownerId, items: withPhotos }, { headers: { "Cache-Control": "private, no-store, max-age=0" } });
+  }
   const user = await identity(req, searchParams.get("user"));
   if (!user) return NextResponse.json({ error: "authentication required" }, { status: 401 });
   const quota = await consumeRateLimit({ scope: "wardrobe-read", subject: user, limit: 120, windowMs: 60_000 });

@@ -11,6 +11,11 @@
 //            Record + USER_UPLOADED_IMAGE event persist in one transaction.
 //   text   → manual tag entry (analyzed_by "manual")
 // GET ?user= → the user's upload/training records.
+// PATCH { user, id, caption } — the caption re-reads the upload: its tags
+//       override a conflicting assumption and train the Passport (17.2)
+// PATCH { user, id, removeTag, tagType } — a gathered tag is corrected away (17.3)
+// DELETE ?user=&id= — the upload and its analysis leave; the taste edges it
+//       alone supported are recalculated, anchors and shared evidence kept (17.4)
 // Identity: resolveRequestUser proof (device cookie / bearer), per PR #12.
 
 import { NextResponse } from "next/server";
@@ -28,6 +33,10 @@ import { consumeRateLimit, rateLimitResponse } from "../../../lib/security/rateL
 import { readJsonRequest } from "../../../lib/security/json.js";
 import { findImageCollisions } from "../../../lib/db/imageFingerprints.js";
 import { getDiscoverablePool, publicProduct } from "../../../lib/products.js";
+import { updateMoodBoardUpload, deleteMoodBoardUpload } from "../../../lib/db/production/editorial.js";
+import { mutateProfile } from "../../../lib/db/index.js";
+import { migrateProfile } from "../../../lib/brain/index.js";
+import { captionOverride, evidenceOf, evidenceAfterDeletion } from "../../../lib/passport/evidence.js";
 
 export const dynamic = "force-dynamic";
 
@@ -211,5 +220,75 @@ export async function GET(req) {
     return NextResponse.json({ uploads: await listMoodBoardUploads(user) });
   } catch {
     return NextResponse.json({ error: "moodboard history unavailable" }, { status: 503 });
+  }
+}
+
+
+export async function PATCH(req) {
+  const parsed = await readJsonRequest(req);
+  if (parsed.response) return parsed.response;
+  const body = parsed.body || {};
+  const user = await resolveRequestUser(req, String(body.user || ""));
+  if (!user) return NextResponse.json({ error: "authentication required" }, { status: 401 });
+  const quota = await consumeRateLimit({ scope: "moodboard-edit", subject: user, limit: 60, windowMs: 60 * 60 * 1000 });
+  if (!quota.allowed) return NextResponse.json(rateLimitResponse(quota), { status: 429 });
+  const id = body.id;
+  const mine = (await listMoodBoardUploads(user)).find((u) => String(u.id) === String(id));
+  if (!mine) return NextResponse.json({ error: "no such upload of yours" }, { status: 404 });
+  try {
+    if (body.removeTag) {
+      const tag = String(body.removeTag).toLowerCase(), type = body.tagType ? String(body.tagType) : null;
+      const tags = (mine.tags || []).filter((t) => !(String(t.tag).toLowerCase() === tag && (!type || t.tag_type === type)));
+      const upload = await updateMoodBoardUpload({ id, userId: user, tags });
+      return NextResponse.json({ upload, removed: tag });
+    }
+    if (typeof body.caption === "string") {
+      const caption = body.caption.trim().slice(0, 400);
+      // the caption's own reading (the same reader the upload had), laid over the assumptions
+      const vec = caption ? inferTags(caption) : {};
+      const captionTags = {};
+      for (const [t, w] of Object.entries(vec.long || vec)) if (typeof w === "number" && w > 0.05) captionTags[t] = Math.min(1, Math.round(w * 100) / 100);
+      const tags = captionOverride(mine.tags || [], captionTags);
+      const upload = await updateMoodBoardUpload({ id, userId: user, caption: caption || null, tags });
+      // captions are taste evidence: the caption's tags enter the long vector (never past what they say)
+      if (Object.keys(captionTags).length) {
+        await mutateProfile(user, (current) => {
+          const next = migrateProfile(current);
+          for (const [t, w] of Object.entries(captionTags)) next.long[t] = Math.max(next.long[t] || 0, Math.min(1, w));
+          return next;
+        });
+      }
+      return NextResponse.json({ upload, captionTags });
+    }
+    return NextResponse.json({ error: "caption or removeTag" }, { status: 400 });
+  } catch (error) {
+    console.error("[moodboard] edit failed", error?.message || error);
+    return NextResponse.json({ error: "the upload could not be edited" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req) {
+  const { searchParams } = new URL(req.url);
+  const user = await resolveRequestUser(req, String(searchParams.get("user") || ""));
+  if (!user) return NextResponse.json({ error: "authentication required" }, { status: 401 });
+  const id = searchParams.get("id");
+  const all = await listMoodBoardUploads(user);
+  const mine = all.find((u) => String(u.id) === String(id));
+  if (!mine) return NextResponse.json({ error: "no such upload of yours" }, { status: 404 });
+  try {
+    const gone = evidenceOf(mine.tags);
+    const others = all.filter((u) => String(u.id) !== String(id)).map((u) => evidenceOf(u.tags));
+    await deleteMoodBoardUpload({ id, userId: user });
+    let recalculated = [];
+    await mutateProfile(user, (current) => {
+      const next = migrateProfile(current);
+      const r = evidenceAfterDeletion({ long: next.long, manual: (next._meta && next._meta.manual) || {} }, gone, others);
+      next.long = r.long; recalculated = r.recalculated;
+      return next;
+    });
+    return NextResponse.json({ deleted: true, recalculated });
+  } catch (error) {
+    console.error("[moodboard] delete failed", error?.message || error);
+    return NextResponse.json({ error: "the upload could not be deleted" }, { status: 500 });
   }
 }

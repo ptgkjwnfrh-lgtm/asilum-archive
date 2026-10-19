@@ -14,7 +14,7 @@ import { readEvidence, SIGNALS } from "../lib/authenticity/evidence.js";
 import { STAKE_HIGH, STAKE_MATERIAL } from "../lib/provenance.js";
 
 const SRC = readFileSync("lib/authenticity/evidence.js", "utf8");
-const MODAL = readFileSync("app/page.js", "utf8");
+const MODAL = readFileSync("app/components/ListingSheet.jsx", "utf8");
 
 const piece = (price) => ({
   id: `ev-${price}`, title: "coat", brand: "Balenciaga", price,
@@ -106,6 +106,6 @@ test("evidence rides an existing request — there is no control for it", () => 
                          /authenticate/i, /run check/i]) {
     assert.doesNotMatch(visible, control, "no affordance may offer a check");
   }
-  assert.match(MODAL, /setModalEvidence\(d\.evidence \|\| null\)/,
+  assert.match(MODAL, /setEvidence\(d\.evidence \|\| null\)/,
     "it arrives on the related fetch that already fires when a piece opens");
 });

@@ -57,7 +57,8 @@ test("A5.3 no surface prints a confidence percentage", async () => {
   assert.equal(confidenceBand(null), null);
 
   const root = process.cwd();
-  for (const file of ["app/page.js", "app/discover/page.js"]) {
+  // (V.2 slice 3) the feed's why panel is app/components/AsteriskWhy.jsx
+  for (const file of ["app/components/AsteriskWhy.jsx", "app/discover/page.js"]) {
     const src = readFileSync(path.join(root, file), "utf8");
     assert.doesNotMatch(src, /confidence[^\n]*\* 100\)/,
       `${file} prints a confidence percentage — a number carries a precision the evidence does not have`);

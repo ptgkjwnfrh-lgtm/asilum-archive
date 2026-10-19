@@ -36,7 +36,7 @@ test("the state machine: only pending moves, and only by the right party", () =>
   for (const s of ["accepted", "declined", "cancelled", "expired"]) assert.equal(giftTransition(s, "accept", "recipient"), null, s + " is final");
   assert.equal(giftExpired(giftExpiry(0), 14 * 86_400_000), true);
   assert.equal(giftExpired(giftExpiry(0), 14 * 86_400_000 - 1), false);
-  assert.equal(TRANSFER_DISCLAIMER, "Digital wardrobe transfer. Physical delivery is not verified by ASiLUM.");
+  assert.equal(TRANSFER_DISCLAIMER, "Digital wardrobe transfer. Physical delivery is not verified by ASILUM.");
   assert.equal(provenanceLabel({ provenance: "transferred", transferredFromHandle: "alice-a" }), "digitally transferred from alice-a");
   assert.equal(provenanceLabel({ source: "ticket" }), "from a purchase record");
 });

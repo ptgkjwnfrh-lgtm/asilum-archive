@@ -4,7 +4,7 @@
 // One clean room for the §6 two-transaction lane: the piece's picture and
 // price stay on screen the whole time the buyer is on ASILUM; name, address,
 // and card are typed ONCE (the vault keeps them — SETTINGS edits them);
-// returning buyers pay with one press. ASILUM charges the founders fee
+// returning buyers pay with one press. ASILUM charges the passenger fee
 // ALONE — the real purchase (the piece, shipping, tax) completes on the
 // source, and the paid fee IS the purchase ticket. Card fields are Stripe's
 // own iframes (Payment Element); card data never touches this codebase.
@@ -41,6 +41,7 @@ export default function CheckoutHousing() {
   const [profile, setProfile] = useState(null);  // vault public shape
   const [form, setForm] = useState(EMPTY_FORM);
   const [consent, setConsent] = useState(false);
+  const [useCredit, setUseCredit] = useState(true); // 5.32: Credit pays the fee first when the passenger has any
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   // phases: loading | ready | card | paying | paid | dead
   const [phase, setPhase] = useState("loading");
@@ -103,11 +104,13 @@ export default function CheckoutHousing() {
       user: getUid(),
       itemId: quote.item.id,
       consent: true,
+      creditCents: creditApplied,
       profile: needsIdentity ? form : undefined,
     }).catch(() => null);
     const d = res ? await res.json().catch(() => ({})) : {};
     if (!res || !res.ok) { setErr((d && d.error) || "the fee could not be opened"); return; }
     setOrderId(d.order);
+    if (d.mode === "credit") { setTicket(d.ticket || null); setPhase("paid"); return; }
     if (d.mode === "saved") { await paySaved(d.order); return; }
     if (!PK) {
       setErr("card entry is idle on this build — the publishable key is not set; nothing was charged");
@@ -188,6 +191,9 @@ export default function CheckoutHousing() {
   }
 
   const item = quote && quote.item;
+  const creditBalance = quote ? Math.max(0, Number(quote.credit_cents) || 0) : 0;
+  const creditApplied = quote && useCredit ? Math.min(creditBalance, quote.fee_cents) : 0;
+  const dueCents = quote ? Math.max(0, quote.fee_cents - creditApplied) : 0;
   const src = quote && quote.source_name ? quote.source_name.toUpperCase() : "THE SOURCE";
 
   return (
@@ -212,11 +218,22 @@ export default function CheckoutHousing() {
               <span>PIECE</span><b>{money(quote.amount_cents, quote.currency)}</b>
             </div>
             <div className="chkline">
-              <span>FOUNDERS FEE{quote.floored ? " (minimum)" : " (1%)"}</span>
+              <span>PASSENGER FEE{quote.floored ? " (minimum)" : " ($1 + 1.5%)"}</span>
               <b>{money(quote.fee_cents, quote.currency)}</b>
             </div>
+            {creditBalance > 0 ? (
+              <div className="chkline">
+                <span>
+                  <label className="chkcredit">
+                    <input type="checkbox" checked={useCredit} onChange={(e) => setUseCredit(e.target.checked)} />
+                    {" "}ASILUM CREDIT · {money(creditBalance, quote.currency)} on hand
+                  </label>
+                </span>
+                <b>{creditApplied ? "− " + money(creditApplied, quote.currency) : "—"}</b>
+              </div>
+            ) : null}
             <div className="chkline chktotal">
-              <span>TODAY ON ASILUM</span><b>{money(quote.fee_cents, quote.currency)}</b>
+              <span>TODAY ON ASILUM</span><b>{money(dueCents, quote.currency)}</b>
             </div>
             <p className="legal">
               the fee is all ASILUM charges. the piece itself —{" "}
@@ -314,14 +331,16 @@ export default function CheckoutHousing() {
 
                 {phase === "ready" && (
                   <button className="btn chkpaybtn" disabled={!readyToPay} onClick={begin}>
-                    {hasSavedCard
-                      ? `PAY ${money(quote.fee_cents, quote.currency)} ✓`
-                      : `CONTINUE TO CARD →`}
+                    {dueCents === 0
+                      ? `PAY WITH CREDIT ✓`
+                      : hasSavedCard
+                        ? `PAY ${money(dueCents, quote.currency)} ✓`
+                        : `CONTINUE TO CARD →`}
                   </button>
                 )}
                 {phase === "card" && (
                   <button className="btn chkpaybtn" onClick={payWithElement}>
-                    PAY {money(quote.fee_cents, quote.currency)} ✓
+                    PAY {money(dueCents, quote.currency)} ✓
                   </button>
                 )}
                 {phase === "paying" && <div className="empty">settling the fee…</div>}

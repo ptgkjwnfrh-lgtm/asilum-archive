@@ -9,7 +9,7 @@ hand.
 
 ---
 
-## What *ASILUM magazine is
+## What *ASILUM is
 
 A personalized fashion terminal. The Asterisk system learns what a reader
 wears and what they are looking for, and puts the right independent work in
@@ -66,7 +66,7 @@ terminal.** Founding designers are the point, not an afterthought.
 - Placement by taste, not by ad spend: the Asterisk system routes your work
   to readers whose taste already points at it — and even the paid booth
   obeys taste before money.
-- An editorial frame — *ASILUM magazine reads as a magazine, not a grid of
+- An editorial frame — *ASILUM reads as a magazine, not a grid of
   thumbnails.
 - A verified business presence, and — when you opt in — a booth on the
   hotlist (the paid program above).

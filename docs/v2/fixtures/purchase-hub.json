@@ -4,9 +4,9 @@
     "status": 200,
     "body": {
       "contractVersion": 1,
-      "requestId": "2486fe35-4185-46db-a70f-4449ed6662af",
+      "requestId": "dd92b5c1-9851-4a30-816c-d9a5de40cff5",
       "outcome": "empty",
-      "userId": "u-3ba57018-a679-431b-ae93-90b7920adc9f",
+      "userId": "u-26d470cc-41be-45a1-99ce-7d618810d9cb",
       "records": [],
       "counts": {
         "payment_order": 0,
@@ -15,7 +15,7 @@
         "userReported": 0
       },
       "disclosures": [
-        "a paid founders fee is not proof a garment was purchased",
+        "a paid passenger fee is not proof a garment was purchased",
         "a self-reported outcome is the reader's word, not the merchant's",
         "merchant-verified fulfilment has no adapter yet: that lane is always unknown",
         "a saved bag is never a purchase and is not listed here"
@@ -412,7 +412,7 @@
       "userReported": 2
     },
     "disclosures": [
-      "a paid founders fee is not proof a garment was purchased",
+      "a paid passenger fee is not proof a garment was purchased",
       "a self-reported outcome is the reader's word, not the merchant's",
       "merchant-verified fulfilment has no adapter yet: that lane is always unknown",
       "a saved bag is never a purchase and is not listed here"

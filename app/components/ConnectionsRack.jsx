@@ -31,6 +31,12 @@ export default function ConnectionsRack() {
 
   async function attempt(platform, capability) {
     setNote("");
+    // the music seams: a real redirect when the deployment is keyed (the route answers 503 with the prepared application otherwise)
+    const c = reg && reg.connectors.find((x) => x.id === platform);
+    if (c && c.flow && c.capabilities.find((x) => x.id === capability && x.state === "disconnected")) {
+      window.location.assign(`${c.flow}&capability=${encodeURIComponent(capability)}&user=${encodeURIComponent(getUid() || "")}`);
+      return;
+    }
     try {
       const r = await authorizedFetch("/api/connect", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user: getUid(), platform, capability }) });
       const d = await r.json().catch(() => ({}));
@@ -42,7 +48,7 @@ export default function ConnectionsRack() {
   if (reg.failed) return <p className="fine">connections could not be read right now.</p>;
   return (
     <div className="crack">
-      <p className="fine">each connection lists what it can do here and what it would never be used for. no account is connected: the sign-in flows are not written yet, and nothing here pretends otherwise.</p>
+      <p className="fine">each connection lists what it can do here and what it would never be used for. Spotify and Apple Music connect for real once the deployment holds the owner's approved keys; until then their rows say REQUIRES APPROVAL, and nothing here pretends otherwise.</p>
       {note ? <p className="amemnote" role="status">{note}</p> : null}
       {reg.connectors.map((c) => (
         <section className="cconn" key={c.id} aria-label={c.label}>

@@ -68,9 +68,10 @@ test("the trap moves focus in, cycles Tab, and gives focus back", () => {
 
 test("the trap never becomes one the user cannot leave", () => {
   // WCAG 2.1.2: a modal may contain Tab, but Escape must still get out.
-  const page = readFileSync(ROOT + "app/page.js", "utf8");
-  assert.match(page, /useEscape\(\(\) => setModal\(null\), !!modal\)/,
-    "the item dialog still closes on Escape");
+  // (V.2 slice 3) the item detail is the LISTING popup in SheetHost
+  const page = readFileSync(ROOT + "app/components/SheetHost.jsx", "utf8");
+  assert.match(page, /useEscape\(\(\) => \(hasBack \? backSheet\(\) : dismiss\(\)\), open\)/,
+    "the popup still closes on Escape");
   const dismiss = readFileSync(ROOT + "app/components/dismiss.js", "utf8");
   assert.match(dismiss, /if \(event\.key === "Escape"\) onClose\(\)/);
 });

@@ -40,7 +40,7 @@ test("law 1: only a PAID SALE is a verified purchase; a paid fee is a paid fee",
   assert.equal(sale.amounts.total_cents, 60600);
   assert.equal(sale.merchant.name, "ASILUM");
   const fee = hub.records.find((r) => r.id === "ord_fee1");
-  assert.equal(fee.verifiedPurchase, false, "a paid founders fee is not a purchased garment");
+  assert.equal(fee.verifiedPurchase, false, "a paid passenger fee is not a purchased garment");
   assert.equal(fee.purchaseEvidence, "none");
   assert.deepEqual(fee.lanes, { payment: "none", fee: "paid", merchant: "checkout_started", outcome: "unknown", fulfillment: "unknown" });
   assert.equal(fee.amounts.total_cents, 900, "the buyer paid the fee alone");

@@ -11,14 +11,13 @@ import { NextResponse } from "next/server";
 import { TAGS } from "../../../lib/brain/tags.js";
 import { searchProducts } from "../../../lib/search/index.js";
 import { sourceFor } from "../../../lib/social.js";
-import { safeExternalUrl } from "../../../lib/url.js";
 import { resolveRequestUser } from "../../../lib/identity.js";
 import { consumeRateLimit, consumeGlobalBudget, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import { requestSubject } from "../../../lib/security/request.js";
 import { getMemoryPreferences } from "../../../lib/db/production.js";
 import { envelope, failure, newRequestId } from "../../../lib/api/outcome.js";
 import { resolveOverviewForQuery } from "../../../lib/people/resolve.js";
-import { getDiscoverablePool } from "../../../lib/products.js";
+import { getDiscoverablePool, publicProduct } from "../../../lib/products.js";
 import { bindingOf, snapshotOf, encodeCursor, decodeCursor } from "../../../lib/search/cursor.js";
 import { POLICY_VERSION } from "../../../lib/brain/policy.js";
 import { sizeWithHints } from "../../../lib/brain/fitHints.js";
@@ -120,9 +119,10 @@ export async function GET(req) {
       if (brands.length < 6) brands.push(it.brand);
     }
     if (items.length < 6) {
+      const product = publicProduct(it);
+      if (!product) continue;
       items.push({
-        id: it.id, title: it.title, brand: it.brand, price: it.price,
-        currency: it.currency, img: it.img, tags: it.tags, src: sourceFor(it),
+        ...product, src: sourceFor(it),
         matchReason: it.matchReason, confidenceScore: it.confidenceScore,
         match: it.match || null,
       });
@@ -142,7 +142,8 @@ export async function GET(req) {
     nextCursor,
     snapshotId,
     candidatesTruncated: !!out.candidatesTruncated,
-    overview: resolvedEntities.overview,
+    // 16.3 (slice 12): the overview carries the BRDCSTs in this viewer's reach that name the entity
+    overview: resolvedEntities.overview ? { ...resolvedEntities.overview, brdcst: await (async () => { try { const { brdcstsForEntity } = await import("../../../lib/db/production/brdcst.js"); const viewer = userId || await resolveRequestUser(req, searchParams.get("user") || "").catch(() => null); return await brdcstsForEntity({ viewerId: viewer, entity: resolvedEntities.overview }); } catch { return []; } })() } : resolvedEntities.overview,
     related: resolvedEntities.related,
     entities: resolvedEntities.entities,
     query: resolvedEntities.query,
@@ -159,14 +160,17 @@ export async function GET(req) {
     // here until now.
     cultural: out.cultural || null,
     semantic: out.semantic || null,
-    results: page.map((it) => ({
-      id: it.id, title: it.title, brand: it.brand, price: it.price,
-      currency: it.currency, img: it.img, tags: it.tags, category: it.category,
-      src: sourceFor(it), url: safeExternalUrl(it.url || it.source_product_url),
-      confidenceScore: it.confidenceScore, matchReason: it.matchReason,
-      matchedTags: it.matchedTags, availability: it.availability_status || "unknown",
-      // additive (19 Sep): the size record, read through the reader's fit hints when personalised
-      size: it.size && typeof it.size === "object" ? sizeWithHints(it, fitHints) : it.size ?? null,
-    })),
+    results: page.map((it) => {
+      const product = publicProduct(it);
+      if (!product) return null;
+      return {
+        ...product, src: sourceFor(it),
+        // Preserve the route's ranked answer while publicProduct owns the
+        // catalog allowlist (including native Storefront fields).
+        confidenceScore: it.confidenceScore, matchReason: it.matchReason,
+        matchedTags: it.matchedTags, availability: it.availability_status || "unknown",
+        size: it.size && typeof it.size === "object" ? sizeWithHints(it, fitHints) : it.size ?? null,
+      };
+    }).filter(Boolean),
   });
 }

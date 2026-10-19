@@ -30,7 +30,7 @@ allowed product domains (§4) may not be implemented before that approval.
 
 ## 1. Mission
 
-ASiLUM becomes the place where fashion is discovered, interpreted,
+ASILUM becomes the place where fashion is discovered, interpreted,
 discussed, styled, and purchased across the internet — one compounding
 journey across six prongs, not five disconnected features:
 
@@ -128,7 +128,7 @@ owner/legal gates are met. One phase = multiple reviewed PRs.
 
 ## 5. *ASTERISK doctrine
 
-Asterisk is ASiLUM's personal fashion editor and travel agent: one
+Asterisk is ASILUM's personal fashion editor and travel agent: one
 orchestrator over bounded, typed tools (ADR-007) — never one omnipotent
 model with database access. Its laws:
 
@@ -307,6 +307,63 @@ Nothing here loosens the Search-accuracy law: an unknown query still falls
 through honestly to the research queue, and a fabricated reading is still a
 violation. A5 says the same thing about a PERSON that that law already says
 about a QUERY.
+
+**A6 — THE V.2 BLUEPRINT SUPERSEDES (Oct 18, 2026).** The owner's V.2
+Blueprint of 17 October 2026 supersedes every older rule in this document,
+in docs/OWNER-DECISIONS.md and in the rights register wherever they differ;
+where a blueprint clause names a figure, the figure is the law, and where it
+names none the owner rules by the word recorded here. Rulings of 18 Oct:
+(1) FEES — the passenger fee is $1 + 1.5% of the merchandise on every
+purchase through ASILUM, buyer-paid, and supersedes the 1% founders fee with
+its 50¢ floor on the ticket lane; the $30 storefront activation applies ONLY
+to DROP (a seller releasing at scale); SELL carries no ASILUM fee on the
+seller's side and is subject only to the processor's own fees, which ASILUM
+does not control. (2) FOLLOWERS are tracked server-side so the friend
+asterisk (a mutual follow) can exist; the earlier refusal is lifted.
+(3) MUSIC — the manual-only ruling of 2 Oct 2026 (OWNER-DECISIONS §7) is
+superseded: Spotify and Apple Music developer access is to be applied for,
+last in the build, on the owner's behalf in preparation and by the owner's
+hand where a service requires the account holder. (4) |A| is a box with the
+letter A in it, nothing more. (5) MOTION limits as declared in slice 9
+stand. (6) The BRDCST price list is set by best judgment: profitable, never
+so expensive that a small band opts out. (7) Account creation collects the
+birth date, the home town and — optional, explained, erasable — ethnicity,
+for the Passport's identity anchors; the onboarding questions of 14.11 use
+them. The no-faking law, branch + PR, build-must-pass and the report format
+are untouched by this.
+
+**A6 addendum — THE LOOK (Oct 18, 2026).** The owner's search-popup
+reference picture of 18 October is the primary reference for how the app,
+and the search popup in particular, looks: Michroma for headings and names;
+the description face — Share Tech Mono, restored from the 1 October build —
+for decks, tabs, meta and the search field; Inter for reading paragraphs
+and results; an icy white-blue ground with slate ink, blue links and a true
+red accent (the asterisk, the active tab, the |A| when on) in light; the
+blueprint's dark palette stays. No lines of any kind: no scanlines, no
+hairline fields, no grid. Where the 17 October blueprint's "Inter secondary"
+differs, this addendum wins (the latest explicit correction beats the
+earlier text).
+
+**A6 third addendum — THE DEVICE (Oct 18, 2026, evening).** The owner,
+after the slice-14 look: "rainbow refractive reactive liquid glass, cmon …
+I want it to look cool"; "pull from the og design language but only some of
+it"; "I want the app to feel like a physical device"; "the og passport design
+should transfer over 90% accurately"; "I miss the soft gradient of blue to
+white and green to black and I miss the dark mode phosphorus glow … add it
+back"; "drop the magazine from everything, it's just ASILUM". Rulings:
+(1) THE PHOSPHOR GLOW returns in the DARK palette only — a word glows in its
+own colour; body text never glows; light keeps none. This narrows the
+addendum above ("no glow" in its "no lines of any kind" sense): scanlines,
+hairline fields and grids stay retired. (2) THE GROUND is the original
+gradient — blue to white in light, green to black in dark. (3) THE DEVICE
+LANGUAGE, sparingly: text that loads in from ">>>>>>" when a compacted
+description expands; square warning lights that blink and go dark on a
+purchase, a bag or an offer; MRZ lines run out in chevrons with a block
+cursor. Their red (--warn) is red in both palettes. (4) THE PASSPORT
+document follows its 25 July iteration-5 design (7db2b89) at roughly 90%:
+the photo slot's fine print lines and the plus registration band are part of
+the document, not a CRT. (5) The name is ASILUM — "magazine" is dropped from
+every visible string; the domain keeps its current address until it moves.
 
 **Operational note (July 26, 2026), not a rule change.** The device-flow
 ritual is retired at the owner's request; a repo-scoped `gh` token is

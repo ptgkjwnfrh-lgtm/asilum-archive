@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { runSteward, exitCodeFor, schemaVersionsFrom, CHECKS, ATTENTION } from "../lib/steward/index.js";
 import {
   rlsCoverage, orderProjection, foreignCounters, catalogIntegrity, worseOf,
-  searchAnswerRate, interpretationCoverage, brainLearning, unknownDemand,
+  searchAnswerRate, interpretationCoverage, brainLearning, unknownDemand, asteriskGovernance,
 } from "../lib/steward/checks.js";
 
 /** A query stub: match on a fragment of the SQL, answer with rows. */
@@ -284,4 +284,20 @@ test("a keyed provider with zero live product vectors is a WARN; orphans alone a
     if (saved.p == null) delete process.env.EMBEDDINGS_PROVIDER; else process.env.EMBEDDINGS_PROVIDER = saved.p;
     if (saved.k == null) delete process.env.EMBEDDINGS_API_KEY; else process.env.EMBEDDINGS_API_KEY = saved.k;
   }
+});
+
+test("asterisk.governance: unapplied schema is unmeasurable; a handed function or an alert warns; paused or stale is a note; a quiet board is ok", async () => {
+  const absent = await asteriskGovernance.run({ query: fakeQuery([["to_regclass", [{ ok: false }]]]) });
+  assert.equal(absent.state, "unmeasurable"); assert.match(absent.evidence, /v63/);
+  const board = (state, open) => fakeQuery([["to_regclass", [{ ok: true }]], ["asterisk_function_state", state], ["asterisk_queue", [open]]]);
+  const quiet = await asteriskGovernance.run({ query: board([], { n: 0, alerts: 0, stale: 0 }) });
+  assert.equal(quiet.state, "ok"); assert.equal(quiet.action, null);
+  const handed = await asteriskGovernance.run({ query: board([{ function: "tagging", paused: false, handed: true, grade: "F" }], { n: 3, alerts: 0, stale: 0 }) });
+  assert.equal(handed.state, "warn"); assert.match(handed.evidence, /tagging/); assert.match(handed.action, /GRADE/);
+  const alert = await asteriskGovernance.run({ query: board([], { n: 2, alerts: 1, stale: 0 }) });
+  assert.equal(alert.state, "warn"); assert.match(alert.action, /fraud flag or a high-value/);
+  const paused = await asteriskGovernance.run({ query: board([{ function: "search", paused: true, handed: false, grade: "U" }], { n: 0, alerts: 0, stale: 0 }) });
+  assert.equal(paused.state, "note"); assert.match(paused.evidence, /1 paused \(search\)/);
+  const stale = await asteriskGovernance.run({ query: board([], { n: 5, alerts: 0, stale: 4 }) });
+  assert.equal(stale.state, "note"); assert.match(stale.evidence, /4 older than a day/);
 });

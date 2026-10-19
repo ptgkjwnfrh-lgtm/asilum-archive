@@ -45,11 +45,12 @@ date once, telling agents the UI was locked after the owner had unlocked it.
 - Persistence: lib/db/index.js (brain tables) + lib/db/production.js
   (production tables) — Postgres via `DATABASE_URL` (Supabase), in-memory
   fallback otherwise. Migrations are `supabase/schema-v*.sql`, applied with
-  `scripts/apply-schema.mjs`; live schema is **v53** as of 19 Sep 2026 (the
-  ledger also holds v51 asterisk-stream and v52 cutouts from branches that are
-  not yet on main — READ `app_schema_migrations` on the live database before
-  numbering a migration) and
-  `schema-alpha.sql` is still STAGED, not applied. Read
+  `scripts/apply-schema.mjs`; live schema is **v61** (READ
+  `app_schema_migrations` on the live database before numbering a migration);
+  `schema-v62`–`schema-v72` (the native storefront, ASTERISK governance, native
+  commerce, after the sale, BRDCST, the media worker, identity, the Passport,
+  money, attendance, the music tokens) are STAGED on `v2/build`, not applied,
+  and `schema-alpha.sql` is still STAGED, not applied. Read
   `.claude/skills/database-safety` before touching schema or production rows.
 - **The two backends must agree.** mem mode is what preview deploys, local
   dev, and nearly every test run on, so a mem/pg divergence ships green.
@@ -78,6 +79,11 @@ date once, telling agents the UI was locked after the owner had unlocked it.
   `purgePersonalizationData`, or deliberately excluded with a comment.
 - lib/brain/memory.js and other client-imported modules must NOT import
   brain/index.js or the catalog lands in the client bundle.
+- **A true memory-mode preview needs `DATABASE_URL=` set EMPTY**, not unset:
+  `next start` loads `.env.local` itself and fills any variable that is
+  absent, so `env -u DATABASE_URL` still runs on the live database. The
+  `asilum-v2-mem` launch config (port 3482) does it right; the older
+  `asilum-memmode-verify` configs do not.
 
 ## Measurement discipline
 

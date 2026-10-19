@@ -30,7 +30,7 @@ const DESTINATIONS = [
   { href: "/cover", label: "FRONT COVER", meta: "the landing edition" },
   { href: "/", label: "CATALOG", meta: "your curated edit" },
   { href: "/discover", label: "DISCOVER", meta: "the open index" },
-  { href: "/hotlist", label: "THE WIRE", meta: "posts + the hotlist" },
+  { href: "/hotlist", label: "THE HOTLIST", meta: "the booths and the ladder" },
 ];
 
 export default function NotFound() {
@@ -66,7 +66,7 @@ export default function NotFound() {
           <b className="e4-caret">▮</b>
         </div>
         <div>
-          <b>ASILUMMAGAZINE</b><i>&lt;&lt;</i><b>PERSONALIZED</b><i>&lt;</i><b>FASHION</b><i>&lt;</i><b>TERMINAL</b>
+          <b>ASILUM</b><i>&lt;&lt;</i><b>PERSONALIZED</b><i>&lt;</i><b>FASHION</b><i>&lt;</i><b>TERMINAL</b>
           <i>&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</i>
         </div>
       </div>

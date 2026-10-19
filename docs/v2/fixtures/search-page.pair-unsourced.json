@@ -3,7 +3,7 @@
   "status": 200,
   "body": {
     "contractVersion": 1,
-    "requestId": "16bc3f82-c3b1-497c-9fea-143fd05adced",
+    "requestId": "ddd8ad76-7582-434b-8039-335045487507",
     "outcome": "empty",
     "total": 0,
     "totalIsExact": true,
@@ -338,6 +338,8 @@
         "tenures": [],
         "served": true
       },
+      "tag": null,
+      "pins": [],
       "assist": null,
       "exclusions": [],
       "priceSort": null,

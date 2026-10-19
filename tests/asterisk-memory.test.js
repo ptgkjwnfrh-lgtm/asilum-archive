@@ -56,11 +56,11 @@ test("preferences roundtrip through the facade", async () => {
   assert.equal(r.memory.preferences.guidanceEnabled, true);
   await saveMemoryPreferences(U, { guidanceEnabled: false });
   assert.deepEqual(await getMemoryPreferences(U), {
-    hiddenSections: ["global"], guidanceEnabled: false,
+    hiddenSections: ["global"], guidanceEnabled: false, explorationOff: false,
   }, "a partial guidance patch preserves display preferences");
   await saveMemoryPreferences(U, { hiddenSections: [] });
   assert.deepEqual(await getMemoryPreferences(U), {
-    hiddenSections: [], guidanceEnabled: false,
+    hiddenSections: [], guidanceEnabled: false, explorationOff: false,
   }, "a partial display patch preserves guidance");
   await saveMemoryPreferences(U, { guidanceEnabled: true });
 });
@@ -112,7 +112,7 @@ test("purge erases Asterisk preferences and restores guidance default", async ()
   await purgePersonalizationData(user);
   assert.equal((await listFollows(user)).length, 0);
   assert.deepEqual(await getMemoryPreferences(user), {
-    hiddenSections: [], guidanceEnabled: true,
+    hiddenSections: [], guidanceEnabled: true, explorationOff: false,
   });
 });
 

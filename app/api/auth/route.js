@@ -134,6 +134,8 @@ export async function POST(req) {
   }
 
   const adopted = await adoptAccountData(from, user);
+  // device authentication (10.4, slice 10b): the account adopted this signed device
+  try { const { recordDevice } = await import("../../../lib/db/production/identity.js"); await recordDevice(authUser.id, from); } catch (e) { console.error("[auth] device record failed", e?.message || e); }
   let correctionProfileUpdated = null;
   if (adopted.movedCorrections > 0 || adopted.movedProfile ||
       adopted.movedBoards > 0 || adopted.movedRecords > 0) {

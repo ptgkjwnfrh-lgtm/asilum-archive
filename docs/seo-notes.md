@@ -7,10 +7,11 @@ is refused on purpose, and this document is the reason.
 
 ## The constraint everything here follows
 
-**The catalog is a demo.** Every piece is a synthetic sample record with
-placeholder imagery — not real inventory, not for sale, no real prices or
-availability (owner ruling, #212). The page says so to a reader's face in a
-red-bordered banner on `/`, `/discover` and `/stylist`.
+**The catalog began as a demo and now also carries native Storefront inventory.**
+Synthetic sample records remain explicitly labeled and are never purchasable;
+server-owned native listing, variant, inventory and payment-readiness fields
+are the only path to checkout. The banners on `/`, `/discover` and `/stylist`
+describe the actual mix returned rather than claiming the whole shelf is fake.
 
 Search metadata is the same promise made to a machine. So the rule is: **a
 crawler must not be told anything the page would not tell a person.**
@@ -19,13 +20,14 @@ crawler must not be told anything the page would not tell a person.**
 
 - **`metadataBase`** on the root layout. Without it every relative canonical and
   `og:url` resolves relative and is worthless to a crawler.
-- **A title template** — `%s · *ASILUM magazine`. Before this, 13 of 17 routes inherited
+- **A title template** — `%s · *ASILUM`. Before this, 13 of 17 routes inherited
   the root title, so every page in a search result read
   "*ASILUM — fashion intelligence OS" with no way to tell them apart.
 - **Canonicals on every route.** Public routes point at themselves; so do the
   personal ones (see below).
 - **OpenGraph on the four public destinations** — `/cover`, `/discover`,
-  `/hotlist`, `/stylist` — with descriptions that name the catalog as synthetic.
+  `/hotlist`, `/stylist` — with descriptions that distinguish native Storefront
+  goods from synthetic sample records.
 - **`noindex, nofollow` on the eight personal surfaces**: `/board`, `/profile`,
   `/settings`, `/orders`, `/asterisk`, `/upload`, `/stats`, `/admin`.
 - **`/cover` added to the sitemap.** It is a public destination and was
@@ -50,12 +52,12 @@ while also saying "do not index me". Two contradictory signals about one URL.
 
 ### Product JSON-LD — refused
 
-Structured `Product` data is what puts a price, an availability and a rating
-into a search result and into Google Shopping. **Every product on this site is
-fabricated.** Emitting `Product` markup would push invented prices and invented
-availability into a shopping index — the most consequential possible version of
-the fake this project's constitution forbids, and unlike a labelled page a rich
-result carries no banner explaining itself.
+Structured `Product` data is what puts a price, availability and rating into a
+search result and Google Shopping. The shared catalog still contains synthetic
+records, and the root/feed metadata cannot safely represent a particular native
+offer. Emitting global `Product` markup would risk pushing invented prices or
+availability into a shopping index. Product JSON-LD therefore stays absent
+until a native product-detail route can emit it only from a current server quote.
 
 `WebSite` or `Organization` JSON-LD would be honest and is a reasonable future
 addition. **`Product` stays out until the catalog is real inventory.**
@@ -125,7 +127,7 @@ returns `content-type: image/png`, a valid PNG signature, and 1200×630 read out
 the IHDR chunk. Next emits `og:image`, `:type`, `:width`, `:height` and `:alt`
 absolutely, through `metadataBase`.
 
-### The name is "*ASILUM magazine"
+### The name is "*ASILUM"
 
 Owner directive, 17 August: **the word magazine is never dropped.** It was being
 dropped in fourteen metadata strings — the title template, every segment layout's
@@ -272,7 +274,7 @@ while the catalog is synthetic.
 whole point: it can export `generateMetadata`, and `/?item=<id>` never could.
 
 - **Per-piece preview.** `/piece/syn-0911` serves
-  `<title>Y/Project — slip dress · *ASILUM magazine</title>`, a matching `og:title` and
+  `<title>Y/Project — slip dress · *ASILUM</title>`, a matching `og:title` and
   `og:url`, and a self-referential canonical.
 - **The demo warning travels with the card.** The description reads
   *"dresses · 2020s. A synthetic sample record — not real inventory, not for

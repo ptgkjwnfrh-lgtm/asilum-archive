@@ -30,13 +30,10 @@ const CROSSES = [
 
 // Registration asterisks (owner amendment: same placement as the old
 // pluses, five-point glyphs — five arms radiating from centre, point up).
-function Ast({ x, y, s = 5, tone = "s" }) {
-  const arms = [];
-  for (let k = 0; k < 5; k++) {
-    const a = ((-90 + k * 72) * Math.PI) / 180;
-    arms.push(`M ${x} ${y} L ${(x + Math.cos(a) * s).toFixed(1)} ${(y + Math.sin(a) * s).toFixed(1)}`);
-  }
-  return <path className={"pvplus pv-" + tone} d={arms.join(" ")} />;
+// the registration crosses of the OG document (iteration 5): plain pluses in
+// the three security tones
+function Plus({ x, y, s = 5, tone = "s" }) {
+  return <path className={"pvplus pv-" + tone} d={`M ${x - s} ${y} H ${x + s} M ${x} ${y - s} V ${y + s}`} />;
 }
 
 // V.2: the hologram is drawn only when the bearer's confirmed base city IS
@@ -66,8 +63,9 @@ export default function PassportSecurity({ topTag, topWeight, roads = true, map:
       {/* overlay: registration asterisks over the header */}
       <div className="ppuv" aria-hidden="true">
         <svg className="ppuvcross" viewBox="0 0 1000 60" preserveAspectRatio="none">
-          {CROSSES.map(([x, y, s, tone], i) => <Ast key={i} x={x} y={y} s={s} tone={tone} />)}
+          {CROSSES.map(([x, y, s, tone], i) => <Plus key={i} x={x} y={y} s={s} tone={tone} />)}
         </svg>
+        <span className="ppvpage">01</span>
       </div>
 
       {/* open window where the hologram burns at full strength */}
@@ -78,7 +76,7 @@ export default function PassportSecurity({ topTag, topWeight, roads = true, map:
 
       {/* microprint band above the machine zone, like security print */}
       <div className="ppmicro" aria-hidden="true">
-        {("*ASILUM MAGAZINE · PERSONALIZED FASHION TERMINAL · ").repeat(24)}
+        {("*ASILUM · PERSONALIZED FASHION TERMINAL · ").repeat(24)}
       </div>
     </>
   );

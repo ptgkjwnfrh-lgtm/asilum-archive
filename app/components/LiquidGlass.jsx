@@ -114,8 +114,13 @@ export function drawRefractionMap(node, weightNode, w, h, radius, open) {
 // The pull at the edge, R/G/B (glass disperses: red bends least, blue most).
 // The header runs at 1; the popups at 0.5 (0.15 read as nothing at all).
 export const PULL = [80, 86, 92];
-export function LiquidGlassDefs({ id, mapRef, weightRef, strength = 1 }) {
-  const [sr, sg, sb] = PULL.map((v) => (v * strength).toFixed(1));
+// `prism` widens the gap between the three colours' pulls (owner, 18 Oct
+// 2026: "rainbow refractive reactive liquid glass, cmon … I want it to look
+// cool"): 0 is the 8 Sep fringe; 1 roughly triples it, so what passes under
+// the bezel splits into red, green and blue — the rainbow is IN the
+// refraction, not only painted on the rim.
+export function LiquidGlassDefs({ id, mapRef, weightRef, strength = 1, prism = 0 }) {
+  const [sr, sg, sb] = PULL.map((v, i) => (v * strength * (1 + prism * (i - 1) * 0.28)).toFixed(1));
   return (
     <svg className="glass-defs" aria-hidden="true" focusable="false">
     {/* THE OPTICS: the centre of the pane is CRYSTAL CLEAR (the backdrop
@@ -337,7 +342,7 @@ export function createPageBend({ id, el, selector, strength = 1, mapRef, open = 
 // coordinates over a flat 128 grey — so what is under the edge bends the
 // way a backdrop would. Bounded: only the elements under the pane, each
 // filtered within its own box; nothing on the rest of the page pays.
-export function useLiquidGlass(elRef, { id, active = true, open = null, strength = 1, bend = null } = {}) {
+export function useLiquidGlass(elRef, { id, active = true, open = null, strength = 1, bend = null, prism = 0 } = {}) {
   const mapRef = useRef(null);
   const weightRef = useRef(null);
   useEffect(() => {
@@ -390,5 +395,80 @@ export function useLiquidGlass(elRef, { id, active = true, open = null, strength
       if (pageBend) pageBend.dispose();
     };
   }, [elRef, id, active, open, strength, bend]);
-  return <LiquidGlassDefs id={id} mapRef={mapRef} weightRef={weightRef} strength={strength} />;
+  return <LiquidGlassDefs id={id} mapRef={mapRef} weightRef={weightRef} strength={strength} prism={prism} />;
+}
+
+// ---- THE REACTIVE RAINBOW (owner, 18 Oct 2026: "the liquid glass isn't
+// liquid enough — I want the OG reactive rainbow liquid glass you made for
+// ASILUM"). The 8 Sep glass answered the hand: its bezel bent what passed
+// beneath it, the pointer's shine slid across it and the lit word's lamp
+// glided under it. This restores that answer on the V.2 fixtures, the deck
+// and every popup: ONE listener set for the whole app (the pointer, the
+// phone's tilt where the device shares it, the scroll), ONE rAF write per
+// frame, and the writes are custom properties on the few glass elements
+// themselves (`.lgrx`), never on <html> — a property set on the root
+// re-styles the whole document every frame; on four small elements it
+// re-styles four small subtrees. Nothing here reads layout: the pointer is
+// read from the event, the tilt from the sensor, the scroll from scrollY.
+//
+//   --iris-a   the angle the rainbow rim's conic starts from: it turns
+//              towards the pointer, leans with the phone and rolls with
+//              the scroll, so the colours travel round the edge
+//   --iris-x/y where the conic is centred: the light's position, from
+//              the pointer or the tilt (a percentage of the element)
+//   --tilt-x/y -1..1, the lean the sheen and the rim read
+//
+// The phone's tilt needs no prompt here: Android shares it; iOS shares it
+// only once the passenger granted motion in a tap (askTilt in FloatView.jsx,
+// the photograph that floats) — until then the pointer and the scroll drive
+// it alone. prefers-reduced-motion: nothing listens, the rim stays still.
+export const GLASS_REACTIVE = ".lgrx";
+export function useGlassReactive() {
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const s = { px: 0.5, py: 0.25, tx: 0, ty: 0, base: null, gyro: false, scroll: 0, raf: 0, a: 200, ta: 200 };
+    const W = () => window.innerWidth || 1, H = () => window.innerHeight || 1;
+    const tick = () => {
+      s.raf = 0;
+      // the angle: towards the pointer from the middle of the screen, plus the
+      // lean and the scroll, eased so the colours flow rather than jump
+      const toward = (Math.atan2(s.py - 0.5, s.px - 0.5) * 180) / Math.PI;
+      s.ta = 200 + toward * 0.6 + s.tx * 40 + s.scroll * 0.18;
+      s.a += (s.ta - s.a) * 0.18;
+      const ix = (50 + (s.px - 0.5) * 70 + s.tx * 30).toFixed(1) + "%";
+      const iy = (50 + (s.py - 0.5) * 70 + s.ty * 30).toFixed(1) + "%";
+      const a = s.a.toFixed(1) + "deg";
+      for (const el of document.querySelectorAll(GLASS_REACTIVE)) {
+        el.style.setProperty("--iris-a", a);
+        el.style.setProperty("--iris-x", ix);
+        el.style.setProperty("--iris-y", iy);
+        el.style.setProperty("--tilt-x", s.tx.toFixed(3));
+        el.style.setProperty("--tilt-y", s.ty.toFixed(3));
+      }
+      if (Math.abs(s.ta - s.a) > 0.2) s.raf = requestAnimationFrame(tick);
+    };
+    const wake = () => { if (!s.raf) s.raf = requestAnimationFrame(tick); };
+    const onMove = (e) => { if (s.gyro) return; s.px = e.clientX / W(); s.py = e.clientY / H(); s.tx = (s.px - 0.5) * 2; s.ty = (s.py - 0.5) * 2; wake(); };
+    const onScroll = () => { s.scroll = window.scrollY || 0; wake(); };
+    const onOrient = (e) => {
+      if (e.beta == null || e.gamma == null) return;
+      if (!s.base) s.base = { b: e.beta, g: e.gamma };
+      s.gyro = true;
+      s.tx = Math.max(-1, Math.min(1, (e.gamma - s.base.g) / 25));
+      s.ty = Math.max(-1, Math.min(1, (e.beta - s.base.b) / 25));
+      s.px = 0.5 + s.tx * 0.5; s.py = 0.5 + s.ty * 0.5;
+      wake();
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("deviceorientation", onOrient);
+    wake();
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("deviceorientation", onOrient);
+      if (s.raf) cancelAnimationFrame(s.raf);
+    };
+  }, []);
 }

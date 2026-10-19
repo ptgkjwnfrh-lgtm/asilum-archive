@@ -5,13 +5,19 @@
 // refusal, opens a live checkout session, then polls reconcile until the
 // session is paid in a browser and asserts the full ledger.
 //
-// Run:  set -a; source .env.local; set +a; unset DATABASE_URL DATABASE_ADMIN_URL
+// Run:  set -a; source .env.local; set +a
+//       unset DATABASE_URL DATABASE_ADMIN_URL SENDGRID_API_KEY ORDER_NOTIFY_EMAIL
 //       node scripts/verify-stripe-e2e.mjs
 // Pay the printed URL with Stripe's public test card 4242 4242 4242 4242.
 
 if (process.env.DATABASE_URL || process.env.DATABASE_ADMIN_URL) {
   console.error("REFUSING: DATABASE_URL is set — this script is memory-only on purpose.");
   console.error("unset DATABASE_URL DATABASE_ADMIN_URL and re-run.");
+  process.exit(2);
+}
+if (process.env.SENDGRID_API_KEY || process.env.ORDER_NOTIFY_EMAIL) {
+  console.error("REFUSING: SendGrid notification variables are set — this verification must not send mail.");
+  console.error("unset SENDGRID_API_KEY ORDER_NOTIFY_EMAIL and re-run.");
   process.exit(2);
 }
 if (!process.env.STRIPE_SECRET_KEY) {

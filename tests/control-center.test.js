@@ -4,30 +4,35 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { UTILITIES, SEARCH_SCOPES, scopeFor, SEARCH_TOGGLES, toggleContent, stateKey, LAUNCH_PATH, MAP_TOOLS } from "../lib/dock.js";
+import { UTILITIES, DECK, HOUSE_LINES, SEARCH_SCOPES, scopeFor, SEARCH_TOGGLES, toggleContent, stateKey, LAUNCH_PATH, MAP_TOOLS } from "../lib/dock.js";
 import { restoreAnchor, newAbove } from "../lib/viewstate.js";
 import { tickerItems, placementLine, shortDate, PLACEMENT_LABELS } from "../lib/placements.js";
 import { placeNames, projector } from "../lib/roads/overpass.js";
 
 const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 
-test("the utilities are Likes, Search, Messages — actions, not tabs", () => {
-  assert.deepEqual(UTILITIES.map((u) => u.id), ["likes", "search", "messages"]);
+test("the Info Dock's utilities are Likes, Bag, Notices — sheets, not tabs; the deck is five keys", () => {
+  // V.2 Blueprint (owner, 17 Oct 2026, Foundations): the Info Dock carries
+  // the utilities; the deck is FEED · SEARCH · POST · MESSAGES · ACCOUNT.
+  assert.deepEqual(UTILITIES.map((u) => u.id), ["likes", "bag", "notices"]);
   for (const u of UTILITIES) assert.ok(u.label && !("href" in u), u.id + " must not be a route");
+  assert.deepEqual(DECK.map((k) => k.id), ["feed", "search", "post", "messages", "account"]);
+  assert.equal(DECK[2].kind, "disc", "POST is the center disc");
+  assert.deepEqual(DECK.filter((k) => k.kind === "route").map((k) => k.id), ["feed", "account"]);
 });
 
 test("search scopes carry the brief's exact placeholders and never widen on their own", () => {
-  assert.equal(SEARCH_SCOPES.global.placeholder, "Search ASiLUM");
+  assert.equal(SEARCH_SCOPES.global.placeholder, "Search ASILUM");
   assert.equal(SEARCH_SCOPES.map.placeholder, "Search places and events");
   assert.equal(SEARCH_SCOPES.messages.placeholder, "Search your messages");
   assert.equal(SEARCH_SCOPES["likes-pieces"].placeholder, "Search liked pieces");
-  assert.equal(SEARCH_SCOPES["likes-wire"].placeholder, "Search liked Wire posts");
+  assert.equal(SEARCH_SCOPES["likes-wire"].placeholder, "Search liked posts");
   assert.equal(SEARCH_SCOPES["likes-sold"].placeholder, "Search sold likes");
   assert.equal(scopeFor({ pathname: "/map" }).id, "map");
   assert.equal(scopeFor({ pathname: "/", sheet: "messages" }).id, "messages");
   assert.equal(scopeFor({ pathname: "/map", sheet: "likes", likesTab: "sold" }).id, "likes-sold", "a sheet's scope beats the page's");
   assert.equal(scopeFor({ pathname: "/cover" }).id, "global");
-  for (const k of Object.keys(SEARCH_SCOPES)) if (k !== "global") assert.equal(SEARCH_SCOPES[k].wide, true, k + " offers Search all ASiLUM as an explicit action");
+  for (const k of Object.keys(SEARCH_SCOPES)) if (k !== "global") assert.equal(SEARCH_SCOPES[k].wide, true, k + " offers Search all ASILUM as an explicit action");
   assert.equal(SEARCH_SCOPES.global.wide, false);
 });
 
@@ -113,23 +118,26 @@ test("the neighbourhood's name comes from OpenStreetMap place nodes inside the f
   assert.ok(Number.isInteger(names[0].x) && Number.isInteger(names[0].y));
 });
 
-test("the theme opens on the pale surface and only an explicit pick changes it", () => {
+test("the theme follows the device unless a pick is pinned (blueprint 2.24)", () => {
   const layout = read("app/layout.js");
-  assert.ok(/if\(t!=="dark"&&t!=="light"\)t="light";/.test(layout), "the default is light");
-  assert.ok(!/prefers-color-scheme/.test(layout.split("const PREPAINT")[1]), "the device scheme no longer decides");
+  const prepaint = layout.split("const PREPAINT")[1];
+  assert.ok(/if\(t!=="dark"&&t!=="light"\)t=\(window\.matchMedia&&window\.matchMedia\("\(prefers-color-scheme: dark\)"\)\.matches\)\?"dark":"light";/.test(prepaint), "an unpinned theme is the device's");
+  assert.ok(/localStorage\.getItem\("asilum-theme"\)/.test(prepaint), "a pinned pick wins");
+  assert.deepEqual([...HOUSE_LINES], ["ARE YOU SEEKING A S I L U M", "DISCOVERY - COMMERCE - COMMUNITY", "DISCOVER FROM ARCHIVES ACROSS THE WORLD"]);
 });
 
-test("the feed and the wire are one destination with two labelled views", () => {
+test("there is no Wire: one Feed, the posts braided in, the listing a popup (blueprint, 17 Oct)", () => {
   const feed = read("app/page.js");
-  assert.ok(/href="\/\?view=wire"/.test(feed), "the wire view is a URL");
-  assert.ok(/view === "wire"/.test(feed));
-  assert.ok(/function feedList\(/.test(feed));
+  assert.ok(!/view=wire|view === "wire"|streamlanes|HotlistStrip/.test(feed), "the selector, the lanes and the rail are gone");
+  assert.ok(/function feedList\(/.test(feed) && /braid\(list, streamPosts, places\)/.test(feed), "the posts are braided into the pieces");
+  assert.ok(/openSheet\("listing", \{ item, title: "LISTING" \}\)/.test(feed), "a piece opens the LISTING popup");
+  assert.ok(/<EchoRail groups=\{rail\} \/>/.test(feed), "the echo rail rides above the stream");
 });
 
 test("the feed parks and restores through the registry; wire cards carry their id; the cover and the dock read one placements hook", () => {
   const feed = read("app/page.js");
   assert.ok(/from "\.\.\/lib\/viewstate\.js"/.test(feed), "the feed imports the registry");
-  assert.ok(/park\(\);\n\s*setModal\(item\);/.test(feed), "opening a detail parks the feed first");
+  assert.ok(/park\(\);\n\s*openSheet\("listing"/.test(feed), "opening a listing parks the feed first");
   assert.ok(/addEventListener\("pagehide", onHide\)/.test(feed), "leaving the page parks it");
   assert.ok(/restoreFromPark\(data\.items \|\| \[\]\)/.test(feed), "the fresh feed re-finds the anchor");
   assert.ok(/className="newabove"/.test(feed), "new items above are offered, never scrolled into");

@@ -1,12 +1,12 @@
 // app/privacy/page.js — PRIVACY POLICY.
 // Constitution §7 launch dependency. Every claim below describes what the
 // product ACTUALLY does today (no-faking rule applies to legal pages first).
-// Version 1.0 — drafted 2026-07-19; counsel review pending before public
+// Version 1.3 — drafted 2026-10-02; counsel review pending before public
 // announcement. Update the version line with every substantive change.
 
 export const metadata = {
-  title: "*ASILUM magazine — privacy policy",
-  description: "What ASiLUM magazine collects, why, and the controls you hold.",
+  title: "*ASILUM — privacy policy",
+  description: "What ASILUM collects, why, and the controls you hold.",
 };
 
 export default function PrivacyPage() {
@@ -15,15 +15,15 @@ export default function PrivacyPage() {
       <div className="locline"><a href="/settings">← SETTINGS</a><span>/ THE FINE PRINT</span></div>
       <h1 className="headline"><span className="red">*</span>PRIVACY POLICY</h1>
       <p className="deck">
-        what we collect, why, and the controls you hold. version 1.2 —
-        effective august 20, 2026 (adds purchase info, payment processing,
-        and the first-visit observation question; under legal review).
+        what we collect, why, and the controls you hold. version 1.3 —
+        effective october 2, 2026 (adds native Storefront catalog and commerce
+        records; under legal review).
       </p>
 
       <h2 className="statshead">WHO WE ARE</h2>
       <p className="legal">
-        ASiLUM magazine (&quot;ASiLUM&quot;, &quot;we&quot;) operates
-        asilummagazine.com — a fashion discovery magazine with a personal
+        ASILUM (&quot;ASILUM&quot;, &quot;we&quot;) operates
+        asilummagazine.com — a fashion discovery service with a personal
         taste engine. Privacy questions and requests:{" "}
         <a href="mailto:legal@asilummagazine.com">legal@asilummagazine.com</a>.
       </p>
@@ -66,7 +66,17 @@ export default function PrivacyPage() {
         disclaimer shown at the time.
       </p>
       <p className="legal">
-        <strong>purchase info.</strong>{" "}if you pay a founders fee, the name
+        <strong>native storefront records.</strong>{" "}if you open a Storefront,
+        we store the public name, description, images and product facts you
+        submit, plus private ownership, moderation, inventory and payment
+        readiness records. provider account, payout, address and earnings
+        details are never part of the public Storefront response. order,
+        inventory-reservation, fee, refund and provider-reference records are
+        retained as transaction and fraud-prevention evidence rather than
+        being moved to another device identity or erased as personalization.
+      </p>
+      <p className="legal">
+        <strong>purchase info.</strong>{" "}if you pay a passenger fee, the name
         and address you enter once are stored in a purchase-info vault kept
         apart from the catalog and your taste record, used only to open
         checkout without retyping. your card goes to stripe, our payment
@@ -96,9 +106,10 @@ export default function PrivacyPage() {
       <p className="legal">
         supabase (database, authentication, and private file storage; hosted
         in canada), vercel (site hosting, delivery, and security filtering),
-        and stripe (payment processing for the founders fee — card entry
-        happens in stripe&apos;s own fields, and saved payment methods live
-        with stripe, never with us). all act under our instructions to run
+        and stripe (payment processing for external-ticket fees and, only when
+        enabled, native Storefront orders — card entry happens in
+        stripe&apos;s own fields, and saved payment methods live with stripe,
+        never with us). all act under our instructions to run
         the service — no other recipients.
       </p>
 

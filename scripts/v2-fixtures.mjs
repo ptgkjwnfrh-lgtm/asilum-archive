@@ -186,5 +186,57 @@ const tickets = await loadRoute("app/api/tickets/route.js");
   });
 }
 
+// ---- BRDCST (slice 8): the public quote and forecast, a draft, the idle payment --------
+{
+  const brdcst = await loadRoute("app/api/brdcst/route.js");
+  const { listPlaces } = await import("../lib/places/registry.js");
+  const { eventLive } = await import("../lib/brdcst/index.js");
+  const ev = listPlaces({ dated: true }).find((p) => !p.sample && eventLive(p));
+  const quote = await callRoute(brdcst.GET, { path: "/api/brdcst", query: { quote: "1", radiusMi: "100", tasteBreadth: "0.25", durationDays: "7", eventId: ev.id, tags: "ARCHIVAL" } });
+  const me = newDevice();
+  // slice 10b (Terms 2.2): a device cannot run a BRDCST — the route refuses with the law's sentence;
+  // the draft and the idle payment are the store's answers for an 18+ account
+  const B = await import("../lib/db/production/brdcst.js");
+  const refused = await callRoute(brdcst.POST, { path: "/api/brdcst", cookies: me.cookies, json: { user: me.uid, action: "create", eventIds: [ev.id], radiusMi: 100, tasteBreadth: 0.25, durationDays: 7 } });
+  const draft = await B.createCampaign({ ownerId: "sb-00000000-0000-4000-8000-000000000000", events: [ev], radiusMi: 100, tasteBreadth: 0.25, durationDays: 7 });
+  const idle = await B.payCampaign({ campaignId: draft.id, ownerId: draft.ownerId, creditCents: 0 }).then(() => ({ status: 200, body: {} })).catch((e) => ({ status: e.status, body: { error: e.message, code: e.code } }));
+  const ticker = await callRoute(brdcst.GET, { path: "/api/brdcst", query: { ticker: "1" } });
+  const scrub = (c) => ({ ...c, id: "<uuid>", ownerId: "<uid>", createdAt: "<iso>", updatedAt: "<iso>" });
+  write("brdcst.json", {
+    quote: { request: `GET /api/brdcst?quote=1&radiusMi=100&tasteBreadth=0.25&durationDays=7&eventId=${ev.id}&tags=ARCHIVAL`, status: quote.status, body: quote.body },
+    createAsDevice: { request: "POST /api/brdcst { action: create, … } from a device identity", status: refused.status, body: refused.body },
+    draft: { request: "createCampaign for an 18+ account (the store; the route is the same call behind the gate)", campaign: scrub(draft) },
+    payIdle: { request: "payCampaign { creditCents: 0 } with no STRIPE_SECRET_KEY", status: idle.status, body: idle.body },
+    ticker: { request: "GET /api/brdcst?ticker=1 (anonymous: no taste to match)", status: ticker.status, body: ticker.body },
+  });
+}
+
+// ---- MOTION (slice 9): the worker's gate and law, a device refused, an
+// admitted asset's captions served as text/vtt, the probe over the sample ----
+{
+  const motion = await loadRoute("app/api/editorial/motion/route.js");
+  const M = await import("../lib/db/production/media.js");
+  const { probeVideo, admitMotion } = await import("../lib/media/index.js");
+  const gate = await callRoute(motion.GET, { path: "/api/editorial/motion" });
+  const me = newDevice();
+  const begin = await callRoute(motion.POST, { path: "/api/editorial/motion", cookies: me.cookies, json: { user: me.uid, action: "begin", mime: "video/mp4", bytes: 26879, durationMs: 6000 } });
+  const asset = await M.createMotionAsset({ ownerId: me.uid, path: `${me.uid}/00000000-0000-4000-8000-000000000000.mp4`, container: "mp4", mime: "video/mp4", declaredBytes: 26879 });
+  const bytes = fs.readFileSync(path.join(process.cwd(), "public", "model", "motion-test-pattern.mp4"));
+  const probe = probeVideo(bytes);
+  const verdict = admitMotion(probe, { bytes: bytes.length });
+  await M.admitMotionAsset({ id: asset.id, ownerId: me.uid, facts: verdict.facts });
+  await M.setMotionCaptions({ id: asset.id, ownerId: me.uid, tracks: [{ lang: "en", label: "English", default: true, vtt: fs.readFileSync(path.join(process.cwd(), "public", "model", "motion-test-pattern.vtt"), "utf8") }] });
+  const vtt = await callRoute(motion.GET, { path: "/api/editorial/motion", query: { captions: asset.id, lang: "en" } });
+  const mine = await callRoute(motion.GET, { path: "/api/editorial/motion", cookies: me.cookies, query: { user: me.uid } });
+  const scrub = (a) => ({ ...a, id: "<uuid>", ownerId: "<uid>", path: "<uid>/<uuid>.mp4", createdAt: "<iso>", updatedAt: "<iso>", verifiedAt: "<iso>" });
+  write("media.json", {
+    gate: { request: "GET /api/editorial/motion (no WIRE_VIDEO_ENABLED)", status: gate.status, body: gate.body },
+    beginDevice: { request: "POST /api/editorial/motion { action: begin, mime, bytes, durationMs } as a device", status: begin.status, body: begin.body },
+    probeSample: { file: "public/model/motion-test-pattern.mp4", probe, verdict },
+    captions: { request: "GET /api/editorial/motion?captions=<id>&lang=en", status: vtt.status, contentType: vtt.response.headers.get("content-type"), text: vtt.text },
+    mine: { request: "GET /api/editorial/motion?user=<uid>", status: mine.status, body: { ...mine.body, mine: mine.body.mine.map(scrub) } },
+  });
+}
+
 write("registry-coverage.json", { coverage: registryCoverage(), provenance: CAREER_PROVENANCE });
 console.log("done");

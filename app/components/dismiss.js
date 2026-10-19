@@ -92,6 +92,11 @@ export function useFocusTrap(surfaceRef, active = true) {
       const first = items[0];
       const last = items[items.length - 1];
       if (!surface.contains(document.activeElement)) {
+        // another modal dialog stacked above this one (the photograph that
+        // floats, the ticket flow — rendered on <body>, outside this surface)
+        // keeps focus: its own trap owns Tab while it is up
+        const above = document.activeElement && document.activeElement.closest && document.activeElement.closest('[aria-modal="true"]');
+        if (above && above !== surface) return;
         event.preventDefault();
         first.focus();
       } else if (event.shiftKey && document.activeElement === first) {

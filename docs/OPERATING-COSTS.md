@@ -1,4 +1,4 @@
-# ASiLUM operating costs and verification
+# ASILUM operating costs and verification
 
 Planning date: September 17, 2026. USD before tax. Code audit based on
 `734e105e5ff048c1d2babf9da49c855fcd9e14cb`.
@@ -12,9 +12,9 @@ measured. No subscription or paid AI setting was changed for this work.
 The owner revised the policy during this cost review:
 
 - Every piece receives parent/source website verification and AI research.
-- **Only a discrepancy between the source and AI requires an ASiLUM
+- **Only a discrepancy between the source and AI requires an ASILUM
   archivalist.** Human approval is not required for every matching piece.
-- **All ASiLUM human labor remains TBD.** No wage, review duration, headcount
+- **All ASILUM human labor remains TBD.** No wage, review duration, headcount
   or unpaid founder contribution is assumed in the dollar projection.
 
 The third layer is conditional. It is not removed.
@@ -23,7 +23,7 @@ The third layer is conditional. It is not removed.
 | --- | --- | --- |
 | Source website | Retain source URL, listing ID, seller, original tags, images or image references, fetch time and source revision. Refresh availability and price from approved access. | Evidence is available and attributable to the source. A seller claim remains a seller claim. |
 | AI research | Research the actual piece and asserted facts using cited evidence. Compare normalized source values with independently supported AI findings. Keep AI findings separate from source tags. | Adequately supported agreement can complete automatically. Unknown values, absent evidence, failed research or a disabled model do not count as agreement. |
-| ASiLUM archivalist | Review a source–AI discrepancy with both values, citations and the relevant listing version. Record the decision, reason, reviewer and time. | The discrepancy remains unresolved until the archivalist resolves or rejects it. |
+| ASILUM archivalist | Review a source–AI discrepancy with both values, citations and the relevant listing version. Record the decision, reason, reviewer and time. | The discrepancy remains unresolved until the archivalist resolves or rejects it. |
 
 Normalize equivalent labels, case and units before comparing. Different
 spelling of the same canonical tag is not a factual disagreement. A material
@@ -99,7 +99,7 @@ schedules as resilience. A cheaper bill is not a reason to silently remove that.
 | Domain | $1.67 allowance | $20/year planning assumption, accrued monthly. Actual TLD, renewal price and payment month unknown. |
 | Extra backup/monitoring | $5 allowance | Unquoted reserve for extra storage or monitoring. Database backups do not back up uploaded media. |
 | Source access and incremental development tools | Unpriced | Model assumes no new recurring charge. Replace with actual contracts and allocated subscriptions. Chat subscriptions do not cover API usage. |
-| ASiLUM human labor | **TBD** | Excluded from software totals. |
+| ASILUM human labor | **TBD** | Excluded from software totals. |
 
 The core hosting/database floor is **$45/month**. The modeled non-AI services
 start at **$51.67/month** and move to **$71.67/month** when email needs Pro,
@@ -116,7 +116,7 @@ Standard GitHub-hosted Actions runners are free for this public repository.
 [GitHub runner documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 Paid runners, extra environments, premium analytics and other add-ons are not
 assumed. Taxes, marketing, major feature development, legal work, source licenses
-and any future ASiLUM payment-processing fees need separate amounts where applicable.
+and any future ASILUM payment-processing fees need separate amounts where applicable.
 
 ## AI calculation
 
@@ -177,7 +177,7 @@ production app fits the cheapest configuration.
 
 ## Future physical server and database
 
-The owner intends to move to ASiLUM-owned hardware eventually. The workbook's
+The owner intends to move to ASILUM-owned hardware eventually. The workbook's
 **Ownership** sheet adds a 24-month projection with cloud operation, migration
 overlap, a hardware purchase and then self-hosting. The editable timing
 assumption is full cutover in month 13 (October 2027), with one month of overlap.
@@ -191,7 +191,7 @@ Moving only Postgres does not replace authentication, storage, required jobs
 or the website. Next.js supports
 [self-hosting](https://nextjs.org/docs/app/guides/self-hosting), and Supabase
 documents a [self-hosted stack](https://supabase.com/docs/guides/self-hosting).
-ASiLUM would own upgrades, security, monitoring, backups and recovery. No
+ASILUM would own upgrades, security, monitoring, backups and recovery. No
 migration or subscription cancellation is included in this change-set.
 
 GitHub is already modeled at $0 for this public repository and standard
@@ -226,7 +226,7 @@ That is longer than the assumed 48-month replacement period. The calculation
 is a planning comparison, not an ROI promise. Cloud costs would need to grow,
 hardware cost less, or the operating assumptions improve for a compelling
 cost-only move. Ownership can still support the separate goal of control over
-ASiLUM's infrastructure.
+ASILUM's infrastructure.
 
 The Ownership sheet records the hardware purchase once in the first overlap
 month, retains managed charges during overlap and removes them only after

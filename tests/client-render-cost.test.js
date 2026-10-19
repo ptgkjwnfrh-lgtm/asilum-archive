@@ -50,8 +50,9 @@ test("C2 the tokens are re-read when the theme or interface changes", () => {
   assert.ok(code.includes("new MutationObserver("), "nothing would notice a theme change");
   assert.match(code, /attributeFilter:\s*\[[^\]]*"data-theme"/,
     "phosphor dark / ice light switch data-theme");
-  assert.match(code, /attributeFilter:\s*\[[^\]]*"data-model"/,
-    "MODULE RAIL / ORB HUB switch data-model");
+  // V.2 slice 1 retired the MODULE RAIL / ORB HUB interfaces: data-model is
+  // gone from the root and must not be watched for (tests/v2-shell.test.js)
+  assert.ok(!/"data-model"/.test(code), "no interface model survives");
   assert.ok(code.includes("readTokens()"), "and the observer must actually re-read");
 });
 

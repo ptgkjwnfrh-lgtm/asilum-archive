@@ -76,10 +76,6 @@ function PostByline({ p }) {
 
 // The wire's hairline field (magazine treatment, Aug 13): pinned to the
 // page's first stretch, hand-placed and deterministic.
-const EL_HAIRLINES = [
-  "elln-h1", "elln-h2", "elln-h3", "elln-h4",
-  "elln-v1", "elln-v2", "elln-v3",
-];
 
 const BOOTHS = Array.from({ length: 10 }, (_, i) => i + 1);
 
@@ -176,7 +172,7 @@ export default function TheWirePage() {
     const on = !(kind === "like" ? now?.youLike : now?.youSave);
     toggleEngagement(p.serverId, kind, on).then((r) => {
       if (r.ok) setEngagement((prev) => ({ ...prev, [String(p.serverId)]: r.counts }));
-      else setWireNote(r.error || "the wire could not be reached");
+      else setWireNote(r.error || "the Feed could not be reached");
     });
   }
 
@@ -200,7 +196,7 @@ export default function TheWirePage() {
     if (!p || !t) return;
     editPost(p, t, editCaption.trim()).then((r) => {
       setWireNote(!r.ok
-        ? (r.error || "the edit could not reach the wire")
+        ? (r.error || "the edit could not reach the Feed")
         : r.held ? (r.note || "your edit is saved and paused for a human review") : "");
       setEditing(null);
       loadWire();
@@ -210,7 +206,7 @@ export default function TheWirePage() {
 
   function doDelete(p) {
     deletePost(p).then((r) => {
-      setWireNote(r.ok ? "" : (r.error || "the delete could not reach the wire"));
+      setWireNote(r.ok ? "" : (r.error || "the delete could not reach the Feed"));
       setConfirmDel(null);
       loadWire();
       loadMine();
@@ -277,7 +273,7 @@ export default function TheWirePage() {
         const d = await res.json().catch(() => null);
         if (!res.ok) {
           // The server's own words — it knows why better than this page does.
-          setWireNote((d && (d.error || d.note)) || "the wire did not accept that transmission");
+          setWireNote((d && (d.error || d.note)) || "the Feed did not accept that transmission");
           return;
         }
         addPost(t, info, cap);
@@ -356,12 +352,9 @@ export default function TheWirePage() {
 
   return (
     <div className="wrap elr ctr wire2">
-      <div className="cvlines ellines" aria-hidden="true">
-        {EL_HAIRLINES.map((c) => <i key={c} className={c} />)}
-      </div>
       {posts !== null && (
         <span className="cvside elside" aria-hidden="true">
-          {posts.length} TRANSMISSION{posts.length === 1 ? "" : "S"} ON THE WIRE
+          {posts.length} TRANSMISSION{posts.length === 1 ? "" : "S"} IN THE FEED
         </span>
       )}
       <span className="cvside cvsider elsider" aria-hidden="true">
@@ -387,7 +380,7 @@ export default function TheWirePage() {
         )}
       </header>
       <p className="deck">
-        the ten booths held for verified independent brands, and the quieter rungs of the ladder. the stream itself lives on <a className="txtbtn" href="/">THE WIRE →</a>
+        the ten booths held for verified independent brands, and the quieter rungs of the ladder. the stream itself lives in <a className="txtbtn" href="/">THE FEED →</a>
       </p>
 
       <div className="wlayout hotlistonly">
@@ -460,8 +453,8 @@ export default function TheWirePage() {
           </GlassPane>
 
           {/* ---- ASILUM MAGAZINE — the house's own dispatches ---- */}
-          <GlassPane glass="lg-w-house" className="elhouse" aria-label="asilum magazine">
-            <div className="elh elh2">ASILUM MAGAZINE</div>
+          <GlassPane glass="lg-w-house" className="elhouse" aria-label="asilum">
+            <div className="elh elh2">ASILUM</div>
             {house === null && <div className="empty">opening the house pages…</div>}
             {house && !houseLive && (
               <p className="elhousenote">the house pages could not be reached — try again in a moment.</p>
@@ -557,7 +550,7 @@ export default function TheWirePage() {
       </div>
 
       <footer className="cvcolo" aria-label="colophon">
-        *ASILUM MAGAZINE — THE WIRE · {stamp}
+        *ASILUM — THE HOTLIST · {stamp}
         {posts !== null && <> · {posts.length} TRANSMISSION{posts.length === 1 ? "" : "S"}</>}
         {booths !== null && <> · {booths.length} OF 10 BOOTHS HELD</>}
         {" "}· {READING_ROOM.length} MASTHEADS IN THE READING ROOM

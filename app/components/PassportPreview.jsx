@@ -73,7 +73,7 @@ export default function PassportPreview() {
         </div>
       )}
       <div className="ppsec"><span className="ppnum">№ AS·{String(boards.length).padStart(2, "0")}·{String(conv.length).padStart(2, "0")}</span></div>
-      <div className="ppnation">ASILUM MAGAZINE <b>*</b> FASHION PASSPORT</div>
+      <div className="ppnation">ASILUM <b>*</b> FASHION PASSPORT</div>
       <div className="ppminibody">
         <span className="ppphoto ppminiphoto" aria-hidden="true">
           {photo ? <img src={photo} alt="" /> : <span className="ppphotoempty">◉</span>}

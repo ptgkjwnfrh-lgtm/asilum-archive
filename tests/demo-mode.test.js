@@ -59,6 +59,16 @@ test("isDemoItem does not label a genuinely sourced listing as demo", () => {
     "any non-seed source with an https url is live");
 });
 
+test("only an explicitly server-marked native listing may omit an external URL", () => {
+  const native = {
+    id: "native-one", commerce_rail: "native_storefront", source_name: "asilum-native",
+    native_listing_id: "lst-one", storefront_slug: "night-objects",
+  };
+  assert.equal(isDemoItem(native), false);
+  assert.equal(isDemoItem({ ...native, commerce_rail: null }), true,
+    "a seller-like source name alone cannot bypass the external provenance gate");
+});
+
 test("every record in the shipped catalog is demo, and the whole catalog agrees", () => {
   // If this ever fails, real inventory has entered CATALOG and the demo banner
   // on / and /discover has become a lie for at least one piece.

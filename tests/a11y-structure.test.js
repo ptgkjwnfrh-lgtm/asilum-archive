@@ -67,12 +67,11 @@ test("card images are presentational, so each card announces one name", () => {
   }
 });
 
-test("the item detail overlay is a labelled, modal dialog with a named close", () => {
-  const src = code("app/page.js");
+test("the listing popup is a labelled, modal dialog with a named close (V.2: the item detail is the LISTING popup)", () => {
+  const src = code("app/components/SheetHost.jsx");
   assert.match(src, /role="dialog"/, "it announces as a dialog");
   assert.match(src, /aria-modal="true"/, "and as modal, so the page behind is inert");
-  assert.match(src, /aria-labelledby="item-detail-title"/, "and it is named");
-  assert.match(src, /id="item-detail-title"/, "by an element that exists");
-  assert.match(src, /className="mclose"[^>]*aria-label="close item detail"/,
-    "the close control has a name — × alone is not one");
+  assert.match(src, /aria-label=\{title\}/, "and it is named by the popup's title");
+  assert.match(src, /aria-label="close"/, "the close control has a name — × alone is not one");
+  assert.ok(!/item-detail-title/.test(code("app/page.js")), "the page's own modal is gone");
 });

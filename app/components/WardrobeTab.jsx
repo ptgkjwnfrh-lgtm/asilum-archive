@@ -80,6 +80,34 @@ export function WardrobeTab() {
   // STAGE C: gifts. `gifts` = the four lists from the server; `gifting` =
   // { id, handle, confirmed } for the one card being offered.
   const [gifts, setGifts] = useState(null);
+  const [woffers, setWoffers] = useState(null);
+  const loadWoffers = () => authorizedFetch("/api/wardrobe/offers?user=" + encodeURIComponent(getUid() || "")).then((r) => (r.ok ? r.json() : null)).then((d) => setWoffers(d || null)).catch(() => setWoffers(null));
+  useEffect(() => { loadWoffers(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  async function toggleOffers(piece) {
+    const res = await postJSON("/api/wardrobe/offers", { user: getUid(), action: "accept_offers", itemId: piece.id, on: !piece.acceptOffers });
+    const d = await res.json().catch(() => null);
+    setNotice(res.ok ? (d.piece.acceptOffers ? "Wardrobe offers on — a buyer who messages you may offer; one negotiation at a time" : `Wardrobe offers off${d.cancelled.length ? ` — ${d.cancelled.length} active negotiation${d.cancelled.length === 1 ? "" : "s"} cancelled` : ""}`) : (d && d.error) || "that did not save");
+    refresh(showRetired); loadWoffers();
+  }
+  async function decideOffer(id, decision) {
+    const res = await postJSON("/api/wardrobe/offers", { user: getUid(), action: "respond", id, decision });
+    const d = await res.json().catch(() => null);
+    setNotice(res.ok ? (decision === "accept" ? "accepted — the buyer has 24 hours to pay; the piece leaves Search meanwhile" : "declined — the piece rests 14 days") : (d && d.error) || "that did not go through");
+    loadWoffers();
+  }
+  async function payOffer(id) {
+    const res = await postJSON("/api/wardrobe/offers", { user: getUid(), action: "checkout", id });
+    const d = await res.json().catch(() => null);
+    if (res.ok && d && d.url) { window.location.assign(d.url); return; }
+    setNotice((d && (d.error || d.reason)) || "checkout is not open here");
+    loadWoffers();
+  }
+  async function cancelSale(id) {
+    const res = await postJSON("/api/wardrobe/offers", { user: getUid(), action: "cancel_sale", id });
+    const d = await res.json().catch(() => null);
+    setNotice(res.ok ? "cancelled before handoff — the buyer is refunded in full, the piece rests 14 days, no penalty" : (d && d.error) || "too late to cancel");
+    loadWoffers();
+  }
   // the closet view and the piece in hand (V.2 §8)
   const [view, setView] = useState("flow");
   const [selectedId, setSelectedId] = useState(null);
@@ -248,6 +276,31 @@ export function WardrobeTab() {
         </label>
       )}
       {notice && <div className="amemnote">{notice}</div>}
+      {/* V.2 chapter 13 (slice 11): private-sale negotiations on my pieces — one at a time, DM first,
+          24 hours exclusive on acceptance, ownership on the carrier's delivery. */}
+      {woffers && woffers.asOwner.length ? (
+        <div className="wgifts">
+          <div className="psub">OFFERS ON YOUR PIECES · {woffers.asOwner.length}</div>
+          {woffers.asOwner.map((o) => (
+            <div className="wrow wgift" key={o.id}>
+              <span className="wgiftline"><b>USD {(o.amountCents / 100).toFixed(2)}</b> · piece {o.itemId} · {String(o.stateNow).toUpperCase()}{o.exclusiveUntil ? ` · exclusive until ${String(o.exclusiveUntil).slice(0, 16).replace("T", " ")}` : ""}</span>
+              {o.stateNow === "open" ? <><button className="wact" onClick={() => decideOffer(o.id, "accept")}>ACCEPT</button><button className="wact" onClick={() => decideOffer(o.id, "decline")}>DECLINE</button></> : null}
+              {o.stateNow === "paid" ? <button className="wact" onClick={() => cancelSale(o.id)}>CANCEL BEFORE HANDOFF</button> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {woffers && woffers.asBuyer.length ? (
+        <div className="wgifts">
+          <div className="psub">WARDROBE OFFERS YOU MADE · {woffers.asBuyer.length}</div>
+          {woffers.asBuyer.map((o) => (
+            <div className="wrow wgift" key={o.id}>
+              <span className="wgiftline"><b>USD {(o.amountCents / 100).toFixed(2)}</b> · {String(o.stateNow).toUpperCase()}{o.exclusiveUntil ? ` · yours until ${String(o.exclusiveUntil).slice(0, 16).replace("T", " ")}` : ""}</span>
+              {o.stateNow === "accepted" ? <button className="wact" onClick={() => payOffer(o.id)}>PAY NOW →</button> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
       {/* STAGE C (brief §8): offers waiting on me, and offers I made. */}
       {gifts && gifts.incoming.length ? (
         <div className="wgifts">
@@ -321,7 +374,10 @@ export function WardrobeTab() {
           </div>
           <a className="amemgo" href={`/stylist?anchor=wardrobe:${piece.id}`}>STYLE IT</a>
           {signedIn && piece.status === "active" && !(gifting && gifting.id === piece.id) && !(gifts && gifts.outgoing.some((t) => t.itemId === piece.id)) ? (
-            <button className="wact" aria-label={`Gift ${piece.title}`} onClick={() => { setGifting({ id: piece.id, handle: "", confirmed: false }); setNotice(""); }}>GIFT</button>
+            <>
+              <button className="wact" aria-label={`Gift ${piece.title}`} onClick={() => { setGifting({ id: piece.id, handle: "", confirmed: false }); setNotice(""); }}>GIFT</button>
+              <button className={"wact" + (piece.acceptOffers ? " on" : "")} aria-pressed={!!piece.acceptOffers} aria-label={`Accept Wardrobe offers on ${piece.title}`} onClick={() => toggleOffers(piece)}>OFFERS {piece.acceptOffers ? "ON" : "OFF"}</button>
+            </>
           ) : null}
           {uploads.available ? (
             <>

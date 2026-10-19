@@ -1,5 +1,34 @@
 # Claude status — V.2 engines
 
+## The V.2 build (17–18 October 2026) — PR #484, `v2/build`
+
+Fourteen vertical slices under the owner's 17 October blueprint and the 18
+October ruling (CONSTITUTION A6; OWNER-DECISIONS §12). Each has a write-up in
+`docs/v2/slice-*.md`; the matrix is `docs/v2/BLUEPRINT-GAP-2026-10-17.md`.
+
+| Slice | Commit(s) | What is real now |
+|---|---|---|
+| 1–7 shell, sessions, the one Feed, tags, governance, native commerce, protection | earlier on the branch | see their write-ups |
+| 8 BRDCST | `6133121` | outreach, billing, Credit, the ticker, the desk |
+| 9 media | `0771266` | the MOTION housing over the media worker |
+| 10 rulings, identity, the Passport, friends, offline | `a8b8a22` `ec5ba64` `da3ad27` `23a83e1` `bbf0379` | the passenger fee ($1 + 1.5%), DROP-only activation, the \|A\|; 18+ gates, home town and ethnicity with consent, 2FA, appeals; the onboarding questions and identity anchors, Exploration Active, Behind the Upload; the friend asterisk; the offline queue |
+| the look | `0cefc10` `c0c17e3` | no lines, no scanlines; the search popup to the owner's reference |
+| 11 money in motion | `2ac0858` | payouts, top-ups, Credit at the fee, Wardrobe private sales, the hourly sweeps, the review screen |
+| 12 map, attendance, valuation | this commit | the map popup above a post, substantiated attendance, the valuation hierarchy, the overview's BRDCST line, the score on the Passport |
+| 13 the music seams | this commit | Spotify PKCE and the MusicKit developer token behind honest 503s; sealed tokens; **two prepared applications the owner submits** (`docs/v2/applications/`) |
+| 14 the Feed and the look, to the 18 Oct references | `ef89b1c` `8751674` `0477e80` `461527e` `6a5fd8d` + the rounding commit | the post card, the BRDCST footer, place cards and the map popup's head, the piece card and the listing popup as drawn; the Wire gone from every visible word; page gradients; dark popups deepen the page; the OG reactive rainbow liquid glass on the fixtures, the deck and every popup; rounded everywhere (`docs/v2/slice-14-feed-look-2026-10-18.md`) |
+
+Schema: v61 applied; v62–v72 STAGED on this branch (`scripts/apply-schema.mjs`
+applies them in order; CI applies all to a fresh Postgres for the
+differentials). Gates at the branch head: `npm test`, `npm run build`,
+`npm run v2:check` — recorded in the final report.
+
+**For the owner, in order:** (1) submit the two developer applications;
+(2) ratify the BRDCST price list (`lib/brdcst/index.js PRICE`); (3) apply
+v62–v72 when the branch merges; (4) key Stripe for the native and Wardrobe
+rails and the payouts; (5) read RIGHTS-REGISTER before `library-sync`.
+
+
 19 September 2026. Branch `claude/v2-engines`, from `ui/live-launch-v2` at `67a016f`. Coordination issue: #472. Codex's UI slice: PR #471.
 
 Owner instruction recorded 19 Sep: **external provider connections (eBay / Shopify / Stripe / Pinterest / OAuth wiring, any live third-party API call) are Codex's.** This branch touches no provider. Where an engine needs one, it exposes the seam and the typed `unavailable` state.

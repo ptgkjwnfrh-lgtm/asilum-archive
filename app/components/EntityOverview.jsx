@@ -1,6 +1,6 @@
 "use client";
 
-// app/components/EntityOverview.jsx — the ASiLUM OVERVIEW for any entity in
+// app/components/EntityOverview.jsx — the ASILUM OVERVIEW for any entity in
 // the graph (V.2 brief §9): a designer (PersonOverview's card, plus the
 // houses in chronological order as scrollable labelled chips with role and
 // dates), a house (name, origin as editorial knowledge or sourced fact,
@@ -16,6 +16,7 @@
 // follow law routes to /api/train on the brand's tags. The confirmation
 // says exactly that and nothing more.
 
+import { ChevronText } from "./Chevrons.jsx";
 import { useState } from "react";
 import PersonOverview from "./PersonOverview.jsx";
 import SaveButton from "./SaveButton.jsx";
@@ -102,7 +103,7 @@ export default function EntityOverview({ entity, compact = false, onOpen }) {
         <div className="povkick">THE SPOT · {String(o.kind || "").toUpperCase()}</div>
         <h2 className="eoname">{o.name}</h2>
         <p className="eoorigin">{o.locality}{o.address ? ` · ${o.address}` : ""}</p>
-        {o.description ? <p className="povsum">{o.description}</p> : null}
+        {o.description ? <ChevronText as="p" className="povsum" text={o.description} /> : null}
         {missing}
         <div className="eolinks">
           {o.sourceUrl ? <a className="txtbtn" href={o.sourceUrl} target="_blank" rel="noreferrer">OFFICIAL PAGE ↗</a> : null}

@@ -42,7 +42,7 @@ export default function PurchaseGlobe({ places = [], className = "" }) {
     globeRef.current = globe;
     globe.setPlaces(places);
     const themeWatch = new MutationObserver(() => globe.refreshTokens());
-    themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-model", "class"] });
+    themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
     const ro = new ResizeObserver(() => globe.fit());
     ro.observe(cv);
     globe.fit();

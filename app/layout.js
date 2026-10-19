@@ -9,11 +9,9 @@ import { SITE_ORIGIN, siteUrl } from "../lib/site.js";
 // og:url below resolve; without it Next emits them relative and they are
 // worthless to a crawler.
 //
-// The description says "synthetic sample records" because they are. The
-// catalog is a demo (owner ruling, #212) and every piece carries a DEMO label
-// on the page — so the sentence a search result shows must not promise
-// inventory the site does not have. "The taste engine is real; the clothes are
-// not" is the same claim the catalog makes to a reader's face.
+// The catalog can now contain both native Storefront inventory and the older
+// demo archive. Metadata names both; each product surface carries the more
+// specific provenance and checkout-readiness disclosure.
 //
 // Product JSON-LD is deliberately absent (the catalog is synthetic). og:image
 // is NOT absent any more — app/opengraph-image.js generates it. See
@@ -21,18 +19,18 @@ import { SITE_ORIGIN, siteUrl } from "../lib/site.js";
 export const metadata = {
   metadataBase: new URL(SITE_ORIGIN),
   title: {
-    default: "*ASILUM magazine — personalized fashion terminal",
-    template: "%s · *ASILUM magazine",
+    default: "*ASILUM",
+    template: "%s · *ASILUM",
   },
   description:
-    "A personalized fashion terminal that learns what you wear and what you are looking for. The catalog is a demo archive of synthetic sample records — the learning is real; the clothes are not.",
+    "A personalized culture and style terminal with native Storefront goods and clearly labeled synthetic sample records, routed through your optional Asterisk Passport.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "*ASILUM magazine — personalized fashion terminal",
+    title: "*ASILUM — personalized fashion terminal",
     description:
-      "A personalized fashion terminal that learns what you wear and what you are looking for. The catalog is a demo archive of synthetic sample records.",
+      "A personalized culture and style terminal with native Storefront goods and clearly labeled synthetic sample records.",
     url: siteUrl("/"),
-    siteName: "*ASILUM magazine",
+    siteName: "*ASILUM",
     type: "website",
     locale: "en_US",
   },
@@ -42,7 +40,7 @@ export const metadata = {
   // while there was nothing to fill it — a large card with no image is worse
   // than a small one. The two move together, and tests/seo.test.js pins the
   // pairing in both directions so neither can ship without the other.
-  twitter: { card: "summary_large_image", title: "*ASILUM magazine — personalized fashion terminal" },
+  twitter: { card: "summary_large_image", title: "*ASILUM — personalized fashion terminal" },
   // Search-console ownership proofs, env-gated: each tag renders ONLY when the
   // owner pastes the engine's code into Vercel env (SETUP-KEYS / seo-notes
   // "getting indexed"). These are public ownership tokens, not secrets — but an
@@ -59,17 +57,17 @@ export const metadata = {
   },
 };
 
-// Theme + interface mode are applied before first paint so a returning
-// light-theme or ORB HUB user never sees a flash of the wrong chrome.
-// Theme default is the pale icy surface (V.2 brief, 1 Oct 2026: the primary
-// reference's light surfaces; "do not reproduce the dark outer backdrop as the
-// default background of every screen"). Only an explicit SETTINGS pick
-// ("dark"/"light" in asilum-theme) changes it; the device's own scheme no
-// longer decides (it did from Aug 12 to 1 Oct).
+// The theme is applied before first paint so a returning passenger never
+// sees a flash of the wrong chrome. (V.2: the ORB HUB second interface is
+// gone; there is one interface.)
+// The theme follows the device by default, with Light, Dark and System in
+// Settings (V.2 Blueprint, owner, 17 Oct 2026, clause 2.24 — supersedes the
+// 1 Oct "always light" default). Only an explicit pick ("dark"/"light" in
+// asilum-theme) overrides the device.
 // DESIGN CONSOLE hand edits (asilum-uilab) ride the same train: --ed-* vars
 // land inline on <html> so an edited layout never flashes the shipped one.
 // Key/value grammar mirrors lib/uilab.js validValue — keep them in sync.
-const PREPAINT = `try{var r=document.documentElement;var t=localStorage.getItem("asilum-theme");if(t!=="dark"&&t!=="light")t="light";r.dataset.theme=t;r.dataset.model=localStorage.getItem("asilum-model")||"01";var o=JSON.parse(localStorage.getItem("asilum-uilab")||"{}");for(var k in o){if((/^--ed-[a-z-]+$/.test(k)||k==="--glow-ink")&&/^(none|-?\\d+(\\.\\d+)?(px|em|s|%)?)$/.test(o[k]))r.style.setProperty(k,o[k]);}}catch(e){}`;
+const PREPAINT = `try{var r=document.documentElement;var t=localStorage.getItem("asilum-theme");if(t!=="dark"&&t!=="light")t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";r.dataset.theme=t;var o=JSON.parse(localStorage.getItem("asilum-uilab")||"{}");for(var k in o){if(/^--ed-[a-z-]+$/.test(k)&&/^(none|-?\\d+(\\.\\d+)?(px|em|s|%)?)$/.test(o[k]))r.style.setProperty(k,o[k]);}}catch(e){}`;
 
 export default function RootLayout({ children }) {
   return (

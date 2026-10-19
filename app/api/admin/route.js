@@ -27,6 +27,35 @@
 //     is the account's verify token served by its claimed domains?
 //   business.link-source { accountId, sourceName } — verified business ↔
 //     inventory namespace, unique, one time each.
+//   asterisk.functions — ASTERISK governance (V.2, slice 5): every function's
+//     state (paused, grade, standing, settings), the open queue counts
+//   asterisk.pause { function, paused, note? } — stop or resume one function;
+//     a paused function's new work waits in the admin queue
+//   asterisk.ledger { function?, limit? } — every logged decision with its
+//     evidence, confidence and reasoning, overrides marked
+//   asterisk.override { id, outcome: {answer?, ...}, note? } — supersede a
+//     decision; the override is a new row, ground truth
+//   asterisk.queue.list { status?, function? } · asterisk.queue.decide { id, decision }
+//   asterisk.grade { function } — audit one function over its ledger and set
+//     its standing (two poor grades hand it to the queue)
+//   asterisk.threshold { category, amount } — the high-value gate per category
+//   verification.replica.confirm { house, pattern, note? } — add to the library
+//   aftersale.returns { status? } · aftersale.deliver { order, source?, tracking? }
+//   aftersale.decide { id, approve, fault, refundTo, refundCents?, decision }
+//   aftersale.refund { id } · aftersale.dispatch { order, extensionDays, approved }
+//   score.penalty { propose, userId, reason } | { id, penaltyAction } · score.mark { review, excluded?, refunded? }
+//   score.read { subject } · credit.void { userId, amountCents, note } · credit.read { userId }
+//   brdcst.list { state? } — every campaign (V.2 chapter 5; slice 8)
+//   brdcst.interrupt { id, reason: "interrupted"|"event_cancelled"|"policy", note? }
+//     — ASILUM stops a campaign: unused days refund as credit with the bonus;
+//     a policy reason parks it under review
+//   brdcst.review { id, refund: true|false, note } — decide a policy review
+//   brdcst.sweep — send the three-hourly failed-payment reminders now
+//   payouts.list { state? } · payouts.release { order } · payouts.deduct { order, returnId, amountCents } — 10.12–10.13, 6.7 (slice 11)
+//   topups.list { state? } · topups.settle { id } — the platform's Credit top-ups (5.32)
+//   wardrobe.offers { limit? } — every Wardrobe private-sale negotiation (chapter 13)
+//   verification.appeals { state? } · verification.appeal.decide { id, upheld, decision } — 12.9, a human decides
+//   identity.read { accountId } — the home town and whether an ethnicity is on record (never the value)
 //   steward.report — the board, the repairs the hands would make, the ledger
 //   steward.act { confirm?: [actionId], dryRun? } — make the delegated
 //     repairs (lib/steward/decisions.js); `confirm` is a person's yes, for
@@ -459,6 +488,206 @@ export async function POST(req) {
       // tier one named in `confirm` (a person's yes for THIS run). revert =
       // undo one ledger row. Every write goes through lib/steward/index.js,
       // where the ledger row precedes the mutation in one transaction.
+      // ---- ASTERISK governance (V.2 Blueprint, Part I; slice 5) -------------
+      case "asterisk.functions": {
+        const [gov, G] = await Promise.all([import("../../../lib/db/production/asterisk.js"), import("../../../lib/asterisk/governance.js")]);
+        const states = await gov.getFunctionStates();
+        const backlog = await gov.countOpenQueue();
+        return NextResponse.json({
+          policy: { confidenceCap: G.CONFIDENCE_CAP, splitUnder: G.SPLIT_UNDER, collectiveBar: G.COLLECTIVE_BAR, maxAgents: G.MAX_AGENTS, taskBudgetMs: G.TASK_BUDGET_MS },
+          functions: G.FUNCTION_IDS.map((fn) => ({ ...states.get(fn), label: G.FUNCTIONS[fn].label, safe: G.FUNCTIONS[fn].safe, prevents: G.FUNCTIONS[fn].prevents, implementedBy: G.FUNCTIONS[fn].implementedBy, backlog: backlog[fn] || 0 })),
+        });
+      }
+      case "asterisk.pause": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        const { isFunction } = await import("../../../lib/asterisk/governance.js");
+        if (!isFunction(body.function)) return NextResponse.json({ error: "function must be one of the seven" }, { status: 400 });
+        const state = await gov.setFunctionPaused(body.function, body.paused !== false, { actor: adminActor(), note: body.note ? String(body.note).slice(0, 300) : null });
+        return NextResponse.json({ state });
+      }
+      case "asterisk.ledger": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        const { isFunction } = await import("../../../lib/asterisk/governance.js");
+        const fn = body.function && isFunction(body.function) ? body.function : null;
+        return NextResponse.json({ actions: await gov.listAsteriskActions({ fn, limit: body.limit || 50 }) });
+      }
+      case "asterisk.override": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
+        const outcome = body.outcome && typeof body.outcome === "object" ? body.outcome : null;
+        if (!outcome) return NextResponse.json({ error: "outcome (an object) required — an override states what stands" }, { status: 400 });
+        const r = await gov.overrideAsteriskAction(String(body.id), { outcome, note: body.note ? String(body.note).slice(0, 300) : null, actor: adminActor() });
+        return NextResponse.json(r, { status: r.ok ? 200 : 409 });
+      }
+      case "asterisk.queue.list": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        const { isFunction } = await import("../../../lib/asterisk/governance.js");
+        const status = ["open", "decided", "all"].includes(body.status) ? body.status : "open";
+        return NextResponse.json({ cases: await gov.listAdminQueue({ status, fn: isFunction(body.function) ? body.function : null, limit: body.limit || 100 }) });
+      }
+      case "asterisk.queue.decide": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
+        const decision = body.decision && typeof body.decision === "object" ? body.decision : null;
+        if (!decision) return NextResponse.json({ error: "decision (an object) required" }, { status: 400 });
+        const r = await gov.decideAdminCase(String(body.id), { decision, actor: adminActor() });
+        return NextResponse.json(r, { status: r.ok ? 200 : 409 });
+      }
+      case "asterisk.grade": {
+        const [gov, G] = await Promise.all([import("../../../lib/db/production/asterisk.js"), import("../../../lib/asterisk/governance.js")]);
+        if (!G.isFunction(body.function)) return NextResponse.json({ error: "function must be one of the seven" }, { status: 400 });
+        const windowMs = 7 * 86_400_000;
+        const since = new Date(Date.now() - windowMs).toISOString();
+        const rows = await gov.listAsteriskActions({ fn: body.function, limit: 500, since });
+        const decisions = rows.filter((r) => r.actor === "asterisk" && r.outcome !== "queued").map((r) => ({ ...r.decision, overridden: r.overridden }));
+        const backlog = (await gov.countOpenQueue())[body.function] || 0;
+        const audit = G.auditFunction(body.function, { decisions, backlog, windowMs });
+        const prev = await gov.getFunctionState(body.function);
+        const standing = G.standingAfter(prev, audit.grade);
+        const state = standing.changed ? await gov.setFunctionStanding(body.function, { ...standing, audit }) : prev;
+        const calibration = G.calibrate(decisions.filter((d) => Number.isFinite(Number(d.confidence))).map((d) => ({ confidence: d.confidence, correct: !d.overridden })));
+        return NextResponse.json({ audit, standing, state, calibration });
+      }
+      case "asterisk.threshold": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        const category = String(body.category || "").trim().toLowerCase().slice(0, 40);
+        const amount = Number(body.amount);
+        if (!category || !Number.isFinite(amount) || amount < 0) return NextResponse.json({ error: "category and a non-negative amount" }, { status: 400 });
+        const cur = await gov.getFunctionState("authentication");
+        const state = await gov.setFunctionSettings("authentication", { highValue: { ...((cur.settings || {}).highValue || {}), [category]: amount } });
+        return NextResponse.json({ state });
+      }
+      case "verification.replica.confirm": {
+        const gov = await import("../../../lib/db/production/asterisk.js");
+        const r = await gov.confirmReplicaPattern({ house: body.house, pattern: body.pattern, note: body.note ? String(body.note).slice(0, 300) : null, actor: adminActor() });
+        return NextResponse.json(r, { status: r.ok ? 200 : 400 });
+      }
+      // ---- after the sale (V.2 chapter 6; slice 7) ---------------------------------
+      case "aftersale.returns": {
+        const A = await import("../../../lib/db/production/aftersale.js");
+        return NextResponse.json({ returns: await A.openReturns({ status: ["open", "approved", "refused", "refunded", "all"].includes(body.status) ? body.status : "open", limit: body.limit || 100 }) });
+      }
+      case "aftersale.deliver": {
+        const A = await import("../../../lib/db/production/aftersale.js");
+        try { return NextResponse.json(await A.recordDelivery({ orderId: String(body.order || ""), by: "admin", source: body.source === "carrier" ? "carrier" : "admin", tracking: body.tracking || null, deliveredAt: body.deliveredAt ? Date.parse(body.deliveredAt) : Date.now() }), { status: 201 }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "aftersale.decide": {
+        const A = await import("../../../lib/db/production/aftersale.js");
+        try { return NextResponse.json(await A.decideReturn({ returnId: String(body.id || ""), actor: adminActor(), approve: body.approve === true, fault: body.fault || "undetermined", refundTo: body.refundTo || "credit", refundCents: body.refundCents == null ? null : Number(body.refundCents), decision: body.decision || "" })); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "aftersale.refund": {
+        // an approved return refunds: in Credit here; to the original method through the order engine (external rail) or the connected refund ledger (native, not yet)
+        const A = await import("../../../lib/db/production/aftersale.js");
+        try {
+          const r = await A.getReturn(String(body.id || ""));
+          if (!r) return NextResponse.json({ error: "return not found" }, { status: 404 });
+          if (r.refundTo === "original") {
+            const result = await refundOrder(r.orderId, { actor: adminActor() });
+            if (result.status !== 200) return NextResponse.json({ error: result.error }, { status: result.status });
+          }
+          return NextResponse.json({ return: await A.settleReturnRefund({ returnId: r.id, actor: adminActor() }) });
+        } catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "aftersale.dispatch": {
+        const A = await import("../../../lib/db/production/aftersale.js");
+        try { return NextResponse.json(await A.markDispatch({ orderId: String(body.order || ""), by: "admin", event: "extension", extensionMs: Number(body.extensionDays || 0) * 86_400_000, approved: body.approved === true })); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "score.penalty": {
+        const S = await import("../../../lib/db/production/score.js");
+        try {
+          if (body.propose) return NextResponse.json({ penalty: await S.proposePenalty({ userId: String(body.userId || ""), reason: String(body.reason || ""), orderId: body.order || null, halfStars: body.halfStars || 1 }) }, { status: 201 });
+          const action = ["confirm", "overturn", "uphold"].includes(body.penaltyAction) ? body.penaltyAction : null;
+          if (!action) return NextResponse.json({ error: "penaltyAction must be confirm, overturn or uphold" }, { status: 400 });
+          return NextResponse.json({ penalty: await S.movePenalty({ penaltyId: String(body.id || ""), action, by: adminActor() }) });
+        } catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "score.mark": {
+        const S = await import("../../../lib/db/production/score.js");
+        try { return NextResponse.json({ review: await S.markReview({ reviewId: String(body.review || ""), excluded: body.excluded, refunded: body.refunded, actor: adminActor() }) }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "score.read": {
+        const S = await import("../../../lib/db/production/score.js");
+        const subject = String(body.subject || "");
+        return NextResponse.json({ score: await S.passengerScore(subject), penalties: await S.penaltiesFor(subject), reviews: await S.reviewsAbout(subject, { includeHidden: true }) });
+      }
+      case "credit.void": {
+        const Cr = await import("../../../lib/db/production/credit.js");
+        try { return NextResponse.json({ entry: await Cr.voidCredit({ userId: String(body.userId || ""), amountCents: Number(body.amountCents), note: body.note || "", actor: adminActor() }) }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "credit.read": {
+        const Cr = await import("../../../lib/db/production/credit.js");
+        const userId = String(body.userId || "");
+        return NextResponse.json({ userId, balanceCents: await Cr.creditBalance(userId), ledger: await Cr.creditLedger(userId, { limit: body.limit || 100 }) });
+      }
+      // ---- BRDCST (V.2 chapter 5; slice 8) --------------------------------------------
+      case "brdcst.list": {
+        const B = await import("../../../lib/db/production/brdcst.js");
+        const { stateAt, usage } = await import("../../../lib/brdcst/index.js");
+        const now = Date.now();
+        const all = (await B.listCampaigns({ limit: body.limit || 200 })).map((c) => ({ ...c, state: stateAt(c, now), usage: usage(c, now) }));
+        return NextResponse.json({ campaigns: body.state ? all.filter((c) => c.state === body.state) : all });
+      }
+      case "brdcst.interrupt": {
+        const B = await import("../../../lib/db/production/brdcst.js");
+        const reason = ["interrupted", "event_cancelled", "policy"].includes(body.reason) ? body.reason : "interrupted";
+        try { return NextResponse.json(await B.cancelCampaign({ campaignId: String(body.id || ""), by: "admin", reason, refundTo: "credit", bonusAs: "days" })); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "brdcst.review": {
+        const B = await import("../../../lib/db/production/brdcst.js");
+        try { return NextResponse.json({ campaign: await B.decideReview({ campaignId: String(body.id || ""), refund: body.refund === true, note: body.note || "", actor: adminActor() }) }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "verification.appeals": {
+        const I = await import("../../../lib/db/production/identity.js");
+        return NextResponse.json({ appeals: await I.listAppeals({ state: body.state || "open", limit: body.limit || 100 }) });
+      }
+      case "verification.appeal.decide": {
+        const I = await import("../../../lib/db/production/identity.js");
+        try { return NextResponse.json({ appeal: await I.decideAppeal({ appealId: String(body.id || ""), upheld: body.upheld === true, decision: body.decision || "", actor: adminActor() }) }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "identity.read": {
+        const I = await import("../../../lib/db/production/identity.js");
+        const row = await I.getIdentity(String(body.accountId || ""));
+        return NextResponse.json({ identity: row ? { hometown: row.hometown, ethnicityOnRecord: !!row.ethnicity, updatedAt: row.updatedAt } : null, devices: (await I.listDevices(String(body.accountId || ""))).length });
+      }
+      case "payouts.list": {
+        const M = await import("../../../lib/db/production/money.js");
+        return NextResponse.json({ payouts: await M.listPayouts({ state: body.state || null, limit: body.limit || 200 }) });
+      }
+      case "payouts.release": {
+        const M = await import("../../../lib/db/production/money.js");
+        try { return NextResponse.json(await M.releasePayout({ orderId: String(body.order || ""), by: adminActor() })); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "payouts.deduct": {
+        const M = await import("../../../lib/db/production/money.js");
+        try { return NextResponse.json({ payout: await M.deductFromPayout({ orderId: String(body.order || ""), returnId: String(body.returnId || ""), amountCents: Number(body.amountCents) }) }); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "topups.list": {
+        const M = await import("../../../lib/db/production/money.js");
+        return NextResponse.json({ topups: await M.listTopUps({ state: body.state || null, limit: body.limit || 200 }) });
+      }
+      case "topups.settle": {
+        const M = await import("../../../lib/db/production/money.js");
+        try { return NextResponse.json(await M.settleTopUp({ id: body.id })); }
+        catch (e) { return NextResponse.json({ error: e.message, code: e.code || null }, { status: e.status || 409 }); }
+      }
+      case "wardrobe.offers": {
+        const M = await import("../../../lib/db/production/money.js");
+        return NextResponse.json({ offers: await M.listWardrobeOffers({ limit: body.limit || 200 }) });
+      }
+      case "brdcst.sweep": {
+        const B = await import("../../../lib/db/production/brdcst.js");
+        return NextResponse.json({ reminders: await B.sweepPaymentReminders() });
+      }
       case "steward.report":
       case "steward.act":
       case "steward.revert": {

@@ -1,5 +1,9 @@
 // tests/type-stack.test.js — two faces, and the digi-cam face never comes back.
 //
+// V.2 (owner's blueprint, 17 Oct 2026, "Visual constitution"): Michroma is
+// the primary face, Inter the secondary for body text. Share Tech Mono
+// (STM) retired with the CRT language; its files are gone too.
+//
 // Owner directive, 17 August: "get rid of the digi cam font, only the main font
 // from now on." The digi-cam face was OSD (VT323), an LCD/pixel face that had
 // spread to TWENTY-FIVE rules — counters, clocks, wire handles, the passport
@@ -23,16 +27,20 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (p) => readFileSync(ROOT + p, "utf8");
 
-test("the type stack is exactly two faces", () => {
+test("the type stack is three faces: Michroma, Inter, and the description face Share Tech Mono (owner reference, 18 Oct 2026)", () => {
   const css = read("app/globals.css");
   const faces = [...css.matchAll(/@font-face \{ font-family: "([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(faces.sort(), ["Michroma", "STM"],
+  assert.deepEqual(faces.sort(), ["Inter", "Michroma", "Share Tech Mono"],
     "a third @font-face means a face was added without a decision");
 
-  // Michroma is the display voice, STM is everything else.
+  // Michroma is the display voice, Inter is everything else.
   assert.match(css, /--mich:\s*"Michroma", var\(--helv\)/);
-  assert.match(css, /--helv:\s*"STM"/);
-  assert.match(css, /--serif:\s*"STM"/);
+  assert.match(css, /--helv:\s*"Inter"/);
+  assert.match(css, /--serif:\s*"Inter"/);
+  assert.match(css, /--mono:\s*"Share Tech Mono"/, "the description face has its token");
+  assert.ok(!/"STM"/.test(css.replace(/\/\*[\s\S]*?\*\//g, "")), "the old STM alias stays retired — the face is named in full");
+  assert.ok(existsSync(ROOT + "public/fonts/sharetech.ttf") && existsSync(ROOT + "public/fonts/OFL-sharetechmono.txt"), "Share Tech Mono ships with its licence");
+  assert.ok(existsSync(ROOT + "public/fonts/inter.woff2") && existsSync(ROOT + "public/fonts/OFL-inter.txt"), "Inter ships with its licence");
 });
 
 test("the digi-cam face is gone, by name and by file", () => {
@@ -87,11 +95,12 @@ test("nothing in app/ or lib/ still asks for it", () => {
   assert.deepEqual(offenders, [], "these still reference the retired face");
 });
 
-test("the font files that ship are only the two faces, in both formats", () => {
+test("the font files that ship are the three faces and their licences", () => {
   const shipped = readdirSync(ROOT + "public/fonts").sort();
   assert.deepEqual(shipped, [
-    "OFL-michroma.txt", "OFL-sharetechmono.txt",
+    "OFL-inter.txt", "OFL-michroma.txt", "OFL-sharetechmono.txt",
+    "inter.ttf", "inter.woff2",
     "michroma.ttf", "michroma.woff2",
-    "sharetech.ttf", "sharetech.woff2",
-  ].sort(), "public/fonts must hold exactly the two faces and their licences");
+    "sharetech.ttf",
+  ].sort(), "public/fonts must hold exactly the three faces and their licences");
 });

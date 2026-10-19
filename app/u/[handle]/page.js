@@ -26,7 +26,7 @@ function WirePosts({ posts, live }) {
   return (
     <>
       {!live && (
-        <div className="empty">the wire could not be reached — their transmissions are unavailable right now.</div>
+        <div className="empty">the Feed could not be reached — their transmissions are unavailable right now.</div>
       )}
       {posts.map((p) => (
         <div className="fpost wpost" key={p.id}>
@@ -79,9 +79,9 @@ export default function UserPage({ params }) {
   if (room) {
     return (
       <div className="wrap">
-        <div className="locline"><a href="/hotlist">← THE WIRE</a><span>/ {handle}</span></div>
+        <div className="locline"><a href="/">← THE FEED</a><span>/ {handle}</span></div>
         <PublicRoom room={room} handle={handle} />
-        <h3 className="statshead">ON THE WIRE</h3>
+        <h3 className="statshead">IN THE FEED</h3>
         {wire === null && <div className="empty">pulling their transmissions…</div>}
         {wire && wire.live && wire.posts.length === 0 && (
           <div className="empty">no transmissions yet.</div>
@@ -98,13 +98,13 @@ export default function UserPage({ params }) {
     if (wire.posts.length > 0 || !wire.live) {
       return (
         <div className="wrap">
-          <div className="locline"><a href="/hotlist">← THE WIRE</a><span>/ {handle}</span></div>
+          <div className="locline"><a href="/">← THE FEED</a><span>/ {handle}</span></div>
           <h1 className="headline"><span className="red">*</span>{handle}</h1>
           <p className="deck">
             this reader hasn&apos;t published a room — only their wire record
             speaks for them.
           </p>
-          <h3 className="statshead">ON THE WIRE</h3>
+          <h3 className="statshead">IN THE FEED</h3>
           <WirePosts posts={wire.posts} live={wire.live} />
         </div>
       );

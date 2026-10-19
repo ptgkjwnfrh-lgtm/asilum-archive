@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { relatedItems } from "../../../lib/brain/index.js";
 import { getEdges } from "../../../lib/db/index.js";
+import { getProductTags } from "../../../lib/db/production.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import { requestSubject } from "../../../lib/security/request.js";
 import { getDiscoverablePool, publicProduct } from "../../../lib/products.js";
@@ -40,6 +41,14 @@ export async function GET(req) {
   // It returns null below the stake threshold and the key is then omitted
   // entirely, so a cheap piece carries no trace of the feature at all.
   const evidence = await readEvidence(source).catch(() => null);
+  // THE TYPED TAG LAYER RIDES THE SAME REQUEST (V.2 slice 4). The listing
+  // popup renders the tag grammar over the record AND the product_tags rows
+  // ASTERISK's tagger and the admins wrote (scene, material, origin); the
+  // Feed card has only the record, so the rows may add tags BEHIND the
+  // product and never change the visible three unless an admin's row says
+  // so. One indexed read; an empty layer is an empty array.
+  const typedTags = (await getProductTags(itemId).catch(() => []))
+    .map((t) => ({ tag: t.tag, tagType: t.tagType, confidence: t.confidence, source: t.source }));
 
   // THE SAME PHOTOGRAPH, ELSEWHERE — on the same ride, for the same reason.
   // Not stake-gated like the authenticity reading: a cheaper identical listing
@@ -54,6 +63,7 @@ export async function GET(req) {
   return NextResponse.json({
     source: source.id, item: publicProduct(source), count: items.length,
     items: items.map(publicProduct).filter(Boolean),
+    typedTags,
     ...(evidence ? { evidence } : {}),
     ...(sameShot ? { sameShot } : {}),
   });

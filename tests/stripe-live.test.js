@@ -1,6 +1,6 @@
 // tests/stripe-live.test.js — the fetch client against the REAL Stripe API,
-// test mode. SKIPPED unless STRIPE_SECRET_KEY is set. Never run with a live
-// key: the first assertion refuses anything that is not sk_test_.
+// test mode. SKIPPED unless STRIPE_SECRET_KEY is set. A non-test key is
+// refused while this module loads, before ANY test can make a provider call.
 //
 // HOW TO ACTUALLY RUN IT: `npm run test:live-stripe`.
 //
@@ -23,10 +23,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 const KEY = process.env.STRIPE_SECRET_KEY || "";
+const REQUIRED = process.env.STRIPE_TEST_REQUIRED === "1";
+if (KEY && !KEY.startsWith("sk_test_")) {
+  throw new Error("REFUSING Stripe provider tests with a non-test key");
+}
+if (REQUIRED && !KEY) {
+  throw new Error("REFUSING required Stripe provider tests without STRIPE_SECRET_KEY");
+}
 const live = KEY ? test : test.skip;
 
 live("checkout session round-trip against Stripe test mode", async () => {
-  assert.ok(KEY.startsWith("sk_test_"), "REFUSING a non-test key");
   const { createCheckoutSession, retrieveCheckoutSession } = await import("../lib/payments/stripe.js");
   const session = await createCheckoutSession({
     orderId: "ord_live_test",

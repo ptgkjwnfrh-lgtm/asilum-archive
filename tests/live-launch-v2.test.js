@@ -13,24 +13,30 @@ import { readFileSync } from "node:fs";
 
 const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 
-test("four tabs — Front Cover, The Feed, Map, Account — and the account drawers are not tabs", async () => {
-  // V.2 brief (owner, 1 Oct 2026, decision 1): exactly four main tabs; Likes,
-  // Search and Messages are utilities; the Wire is a subview of the Feed.
-  const { navFor, ACCOUNT_MENU, currentDestination } = await import("../lib/nav.js");
+test("the destinations are FEED, PASSPORT and ACCOUNT; the deck keys are FEED and ACCOUNT; the passport is the globe", async () => {
+  // V.2 Blueprint (owner, 17 Oct 2026, Foundations): the Central Control
+  // Deck is FEED · SEARCH · POST · MESSAGES · ACCOUNT; the Passport Button
+  // is a fixture, not a key; Front Cover and Map are no longer tabs.
+  const { navFor, deckFor, fixtureFor, ACCOUNT_MENU, currentDestination } = await import("../lib/nav.js");
   const labels = navFor("passport").map((n) => n.label);
-  assert.deepEqual(labels, ["FRONT COVER", "THE FEED", "MAP", "ACCOUNT"]);
+  assert.deepEqual(labels, ["FEED", "PASSPORT", "ACCOUNT"]);
+  assert.deepEqual(deckFor("passport").map((n) => n.label), ["FEED", "ACCOUNT"], "two routes on the deck");
+  assert.equal(fixtureFor("passport", "passport").href, "/board", "the globe opens the passport");
+  assert.equal(fixtureFor("business", "passport"), null, "a business has no passport, so no globe");
+  assert.deepEqual(deckFor("business").map((n) => n.label), ["FEED", "ANALYTICS"], "a business swaps ACCOUNT for ANALYTICS");
   assert.deepEqual(ACCOUNT_MENU.map((m) => m.href), ["/profile", "/orders", "/settings"]);
-  for (const m of ACCOUNT_MENU) assert.ok(!labels.includes(m.label), m.label + " must not be a tab");
-  // the routes that folded in still light their parent
-  assert.equal(currentDestination("passport", "/stats").label, "ACCOUNT");
-  assert.equal(currentDestination("passport", "/upload").label, "ACCOUNT");
-  assert.equal(currentDestination("passport", "/board").label, "ACCOUNT");
-  assert.equal(currentDestination("passport", "/").label, "THE FEED", "the feed is home");
-  assert.equal(currentDestination("passport", "/hotlist").label, "THE FEED");
-  assert.equal(currentDestination("passport", "/discover").label, "THE FEED", "global search answers under the feed");
-  assert.equal(currentDestination("passport", "/stylist").label, "THE FEED");
-  assert.equal(currentDestination("passport", "/map").label, "MAP", "the map is a root of its own");
-  assert.equal(currentDestination("passport", "/checkout"), null);
+  for (const m of ACCOUNT_MENU) assert.ok(!labels.includes(m.label), m.label + " must not be a destination");
+  assert.equal(currentDestination("passport", "/stats").label, "PASSPORT");
+  assert.equal(currentDestination("passport", "/upload").label, "PASSPORT");
+  assert.equal(currentDestination("passport", "/board").label, "PASSPORT");
+  assert.equal(currentDestination("passport", "/map").label, "PASSPORT", "the map is the passport's");
+  assert.equal(currentDestination("passport", "/").label, "FEED", "the feed is home");
+  assert.equal(currentDestination("passport", "/cover").label, "FEED", "the cover is a page under the feed");
+  assert.equal(currentDestination("passport", "/hotlist").label, "FEED");
+  assert.equal(currentDestination("passport", "/discover").label, "FEED", "global search answers under the feed");
+  assert.equal(currentDestination("passport", "/stylist").label, "FEED");
+  assert.equal(currentDestination("passport", "/profile").label, "ACCOUNT");
+  assert.equal(currentDestination("passport", "/settings").label, "ACCOUNT");
 });
 
 test("the places register: fixtures say so, sourced rows carry a source and a check date", async () => {
@@ -122,14 +128,22 @@ test("the one save has one record shape and refuses what it cannot list", async 
   assert.throws(() => saveRecord({ kind: "piece", id: "", title: "x" }), /id and a title/);
 });
 
-test("the sample media is credited, and only the eight licensed files are referenced", async () => {
+test("the sample media is credited, and only the eight licensed files and the one generated clip are referenced", async () => {
   const { SAMPLE_POSTS, SAMPLE_CREDITS } = await import("../lib/model/media.js");
   const credits = JSON.parse(read("public/model/credits.json"));
   for (const sp of SAMPLE_POSTS) {
     assert.equal(sp.sample, true);
+    if (sp.video) {
+      // the sample MOTION (slice 9) is a GENERATED test pattern, not a licensed photograph: it says so, and it is the one clip
+      assert.equal(sp.video.generated, true, sp.id + " must declare itself generated");
+      assert.match(sp.video.url, /^\/model\/motion-test-pattern\.mp4$/);
+      assert.equal(sp.image, undefined, "a MOTION sample carries no photograph");
+      continue;
+    }
     assert.match(sp.image.src, /^\/model\/[a-z0-9-]+\.jpg$/);
     assert.ok(sp.image.credit && sp.image.license, sp.id + " must carry a credit");
   }
+  assert.equal(SAMPLE_POSTS.filter((sp) => sp.video).length, 1);
   for (const key of Object.keys(SAMPLE_CREDITS)) assert.match(SAMPLE_CREDITS[key].license, /Unsplash License|CC BY/);
   assert.ok(Array.isArray(credits.assets) && credits.assets.length >= 7);
 });
@@ -143,15 +157,20 @@ test("no gate before the first reward: the sign-up sheet never opens itself", ()
   assert.ok(!/if \(!onboarded && [^\n]*setConnectOpen\(true\)/.test(home), "the connect sheet must not open on first visit");
 });
 
-test("the four tabs are the control center's, read from the nav table", () => {
-  // the dock renders the nav table, not a second list; the shell renders the
-  // account drawers; the old thumb bar and destination row are gone
+test("the five keys are the deck's, read from the deck table; the shell mounts the three fixtures", () => {
+  // the deck renders DECK (lib/dock.js) and resolves its two routes through
+  // lib/nav.js; the shell mounts the Info Dock, the Passport Button, the deck
+  // and the one sheet; the old header, thumb bar and destination row are gone
   const cc = read("app/components/ControlCenter.jsx");
   const shell = read("app/shell.js");
   assert.ok(/className="tabbar"/.test(cc));
-  assert.ok(/nav\.map\(\(n\) => \{[\s\S]*?className=\{"tabl"/.test(cc), "the control center renders the nav table");
-  assert.ok(/<ControlCenter kind=\{accountKind\} pathname=\{pathname\} \/>/.test(shell), "the shell mounts the control center");
+  assert.ok(/DECK\.map\(\(k\) => key\(k\)\)/.test(cc), "the deck renders the DECK table");
+  assert.ok(/deckFor\(kind\)/.test(cc), "the deck's routes come from lib/nav.js");
+  assert.ok(/<InfoDock \/>/.test(shell), "the shell mounts the Info Dock");
+  assert.ok(/<PassportButton kind=\{accountKind\} pathname=\{pathname\} \/>/.test(shell), "the shell mounts the Passport Button");
+  assert.ok(/<ControlCenter kind=\{accountKind\} pathname=\{pathname\} \/>/.test(shell), "the shell mounts the deck");
   assert.ok(/<SheetHost \/>/.test(shell), "the shell mounts the one sheet");
-  assert.ok(!/className="topnav"/.test(shell), "no destination row in the header");
-  assert.ok(/ACCOUNT_MENU\.map/.test(shell), "the account circle renders ACCOUNT_MENU");
+  assert.ok(!/className="topnav"/.test(shell), "no destination row");
+  assert.ok(!/className="tophead/.test(shell), "no header");
+  assert.ok(!/os-crt/.test(shell), "no CRT layer");
 });

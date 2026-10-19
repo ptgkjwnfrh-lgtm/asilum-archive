@@ -39,7 +39,7 @@ test("a transition is recorded once; the outbox holds one row per person; the sw
   assert.deepEqual(await enqueueNotification({ userId: A, kind: "liked-sold", subjectId: "x1", payload: { title: "t" } }), { queued: true });
   assert.deepEqual(await enqueueNotification({ userId: A, kind: "liked-sold", subjectId: "x1" }), { queued: false, reason: "duplicate" });
   await setNotificationPrefs(B, { soldLikes: false });
-  assert.deepEqual(await getNotificationPrefs(B), { soldLikes: false });
+  assert.equal((await getNotificationPrefs(B)).soldLikes, false, "the sold-likes switch is off (the commerce preferences ride beside it since slice 6)");
   assert.deepEqual(await enqueueNotification({ userId: B, kind: "liked-sold", subjectId: "x1" }), { queued: false, reason: "opted-out" });
   await assert.rejects(enqueueNotification({ userId: A, kind: "spam", subjectId: "x1" }), /known kind/);
   const list = await listNotifications(A, { unreadOnly: true });

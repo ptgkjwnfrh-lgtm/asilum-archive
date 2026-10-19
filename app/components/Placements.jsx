@@ -14,14 +14,23 @@
 import { useEffect, useState } from "react";
 import { tickerItems } from "../../lib/placements.js";
 import { readDrafts } from "../../lib/studio/drafts.js";
+import { getUid } from "../../lib/client.js";
+import { discoveryCenter } from "../../lib/location.js";
 
 export function usePlacements() {
   const [items, setItems] = useState(null);
   useEffect(() => {
     let live = true;
     const today = new Date().toISOString().slice(0, 10);
-    fetch("/api/places?dated=1").then((r) => (r.ok ? r.json() : { places: [] })).catch(() => ({ places: [] }))
-      .then((d) => { if (live) setItems(tickerItems({ placements: [], drafts: readDrafts(), places: d.places || [], today })); });
+    // SPONSORED entries are live BRDCST campaigns in reach of THIS viewer
+    // (V.2 chapter 5; slice 8): taste first, distance second, by the server
+    const qs = new URLSearchParams({ ticker: "1" });
+    const uid = getUid(); if (uid) qs.set("user", uid);
+    const c = discoveryCenter(); if (c) { qs.set("lat", String(c.lat)); qs.set("lng", String(c.lng)); }
+    Promise.all([
+      fetch("/api/places?dated=1").then((r) => (r.ok ? r.json() : { places: [] })).catch(() => ({ places: [] })),
+      fetch("/api/brdcst?" + qs.toString()).then((r) => (r.ok ? r.json() : { placements: [] })).catch(() => ({ placements: [] })),
+    ]).then(([d, b]) => { if (live) setItems(tickerItems({ placements: b.placements || [], drafts: readDrafts(), places: d.places || [], today })); });
     return () => { live = false; };
   }, []);
   return items;

@@ -17,7 +17,10 @@ export const dynamic = "force-dynamic";
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const user = await resolveRequestUser(req, searchParams.get("user") || "").catch(() => null);
-  return NextResponse.json({ connectors: connectorRegistry({ account: user || null }), oauth: false, note: "no OAuth flow exists yet; states are the approved capabilities and their status here" },
+  const connected = user ? (await import("../../../lib/connectors/tokens.js")).listConnections(user).then((rows) => rows.map((r) => r.provider)).catch(() => []) : [];
+  const { musicConfig } = await import("../../../lib/connectors/oauth.js");
+  const music = musicConfig();
+  return NextResponse.json({ connectors: connectorRegistry({ account: user || null, connected: await connected }), oauth: { spotify: music.spotify.configured, "apple-music": music["apple-music"].configured }, note: "the music seams connect through /api/connect/oauth when keyed; every other state is the approved capability's status here" },
     { headers: { "cache-control": "private, no-store" } });
 }
 
@@ -33,7 +36,8 @@ export async function POST(req) {
   const user = await resolveRequestUser(req, String(body.user || "")).catch(() => null);
   const capability = String(body.capability || Object.keys(c.capabilities)[0]);
   if (!c.capabilities[capability]) return NextResponse.json({ error: "unknown capability", capabilities: Object.keys(c.capabilities) }, { status: 400 });
-  const state = capabilityState(platform, capability, { account: user || null });
+  const connected = user ? await (await import("../../../lib/connectors/tokens.js")).listConnections(user).then((rows) => rows.map((r) => r.provider)).catch(() => []) : [];
+  const state = capabilityState(platform, capability, { account: user || null, connected });
   const message = connectSentence(platform, capability, state);
   // 501 for anything that cannot proceed here; 200 only for a capability that
   // works WITHOUT a connection (the manual stamps) — a connection itself never

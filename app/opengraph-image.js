@@ -1,12 +1,19 @@
 // app/opengraph-image.js — the social card, GENERATED, not committed.
 //
+// V.2 (owner's blueprint, 17 Oct 2026): the card follows the new look. No
+// terminal grid, no phosphor bloom, no floating frames — the ground is the
+// dark theme's black, the accent block is the phosphorus green, the wordmark
+// is Michroma, "magazine.com" and the demo line are Inter. Everything below
+// this paragraph about the 17 August comp is the history of the layout,
+// which is kept; only the materials changed.
+//
 // Rebuilt 17 August against the owner's reference comp. What that comp asked
 // for and what shipped:
 //   terminal grid + phosphor bloom      -> SVG data-URI grid + radial --sig glow
 //   red block and rule across the top   -> kept, --red
 //   kicker over the wordmark            -> "PERSONALIZED FASHION TERMINAL"
 //   chrome *ASILUM, glowing red asterisk-> gradient clipped to text, --red glow
-//   green glowing "magazine.com"        -> --sig in STM, tracked, glowing
+//   green glowing "magazine.com"        -> --sig in Inter (V.2), tracked, no glow
 //   three-word strip                    -> DISCOVERY · COMMERCE · COMMUNITY
 //   the demo line                       -> kept verbatim
 //
@@ -23,7 +30,7 @@
 //      ("get rid of the digi cam font"). The comp's INTENT is matched with the
 //      house's own materials rather than importing new ones.
 //
-// THE NAME IS "*ASILUM magazine" AND THE WORD magazine IS NEVER DROPPED (owner
+// THE NAME IS "*ASILUM" — the word magazine is retired (owner, 17 Oct 2026;
 // directive, 17 August). It was being dropped in fourteen metadata strings —
 // title template, siteName, og/twitter titles — while the shell wordmark had it
 // right all along. tests/brand-name.test.js is that rule, executable.
@@ -53,10 +60,10 @@ import { ImageResponse } from "next/og";
 // file-tracing question to get wrong.
 const FONT_DIR = join(process.cwd(), "public", "fonts");
 const MICHROMA = readFileSync(join(FONT_DIR, "michroma.ttf"));
-const STM = readFileSync(join(FONT_DIR, "sharetech.ttf"));
+const INTER = readFileSync(join(FONT_DIR, "inter.ttf"));
 
 export const alt =
-  "*ASILUM magazine — personalized fashion terminal. A demo archive of synthetic sample records.";
+  "*ASILUM — personalized fashion terminal. Native Storefronts and a labeled demo archive.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -65,26 +72,12 @@ export const contentType = "image/png";
 // closest a build-time image can get, so THESE ARE ASSERTED AGAINST
 // app/globals.css BY TEST. Do not edit one without the other, and do not "tidy"
 // them into a shared object the test cannot read.
-const BG = "#070b10";    // --bg
-const INK = "#d4ffe8";   // --ink
-const RED = "#ff3838";   // --red
-const SIG = "#46ff96";   // --sig
-const GREY = "#56937a";  // --grey
-const FAINT = "#2f5947"; // --faint
-
-// The terminal grid and the phosphor bloom, as PRIMITIVES.
-//
-// Both were first written the way you would write them in CSS — an SVG data-URI
-// tile for the grid, a `radial-gradient` for the bloom. Satori painted NEITHER,
-// and the giveaway was that editing their values produced a byte-identical PNG:
-// if a change to a colour changes nothing, the thing is not being drawn. So the
-// grid is positioned hairlines and the bloom is a blurred box-shadow, which
-// Satori does render. Verified by looking at the output, not by reading a
-// support table.
-const GRID_STEP = 30;
-const GRID_COLOR = "rgba(120,255,190,0.07)"; // --line, thinned for a backdrop
-const COLS = Math.ceil(1200 / GRID_STEP);
-const ROWS = Math.ceil(630 / GRID_STEP);
+const BG = "#070b0c";    // --bg
+const INK = "#e8eff1";   // --ink
+const RED = "#8cf0a6";   // --red (the accent: phosphorus green in the dark theme)
+const SIG = "#6e9cff";   // --sig
+const GREY = "#8a9ba3";  // --grey
+const FAINT = "#2a3a41"; // --faint
 
 export default function OpengraphImage() {
   return new ImageResponse(
@@ -96,55 +89,11 @@ export default function OpengraphImage() {
           display: "flex",
           position: "relative",
           background: BG,
-          fontFamily: "STM",
+          fontFamily: "Inter",
         }}
       >
-        {/* --- background plates, back to front --- */}
-        {Array.from({ length: COLS }, (_, i) => (
-          <div key={`v${i}`} style={{ position: "absolute", left: i * GRID_STEP, top: 0, bottom: 0, width: 1, display: "flex", background: GRID_COLOR }} />
-        ))}
-        {Array.from({ length: ROWS }, (_, i) => (
-          <div key={`h${i}`} style={{ position: "absolute", top: i * GRID_STEP, left: 0, right: 0, height: 1, display: "flex", background: GRID_COLOR }} />
-        ))}
-        {/* the phosphor bloom, bottom-left, as in the comp — a blurred shadow,
-            because a radial-gradient silently does not paint here.
-            THE EMITTER MUST BE TINY. A box-shadow paints OUTSIDE its element, so
-            the first version used 380x300 boxes and printed two dark discs where
-            their own bodies sat — visible in the render, invisible in the code. */}
-        <div
-          style={{
-            position: "absolute", left: 90, bottom: 40, width: 4, height: 4,
-            display: "flex", borderRadius: 9999,
-            boxShadow: "0 0 260px 170px rgba(70,255,150,0.22)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute", left: 250, bottom: -10, width: 4, height: 4,
-            display: "flex", borderRadius: 9999,
-            boxShadow: "0 0 180px 110px rgba(70,255,150,0.14)",
-          }}
-        />
-        {/* The comp's floating UI frames, drawn as four hairlines each.
-            They went missing for two builds: an earlier edit to the bloom
-            replaced the whole span up to this marker and took them with it, and
-            because "change a value, get an identical PNG" is also what a
-            not-rendered element looks like, I first blamed Satori. It was my
-            patch. Kept as hairlines rather than a `border` only because the grid
-            above already proves this primitive paints. */}
-        {[
-          { x: 942, y: 176, w: 218, h: 136, o: 0.34 },
-          { x: 1028, y: 344, w: 132, h: 78, o: 0.22 },
-        ].map((f, i) => (
-          <div key={`f${i}`} style={{ position: "absolute", left: f.x, top: f.y, width: f.w, height: f.h, display: "flex" }}>
-            <div style={{ position: "absolute", left: 0, top: 0, width: f.w, height: 1, display: "flex", background: GREY, opacity: f.o }} />
-            <div style={{ position: "absolute", left: 0, top: f.h - 1, width: f.w, height: 1, display: "flex", background: GREY, opacity: f.o }} />
-            <div style={{ position: "absolute", left: 0, top: 0, width: 1, height: f.h, display: "flex", background: GREY, opacity: f.o }} />
-            <div style={{ position: "absolute", left: f.w - 1, top: 0, width: 1, height: f.h, display: "flex", background: GREY, opacity: f.o }} />
-          </div>
-        ))}
-        <div style={{ position: "absolute", left: 1114, top: 156, width: 46, height: 3, display: "flex", background: RED, opacity: 0.85 }} />
-
+        {/* V.2: one flat ground. The grid, the bloom and the frames of the
+            phosphor card are retired with the CRT language. */}
         {/* --- the card --- */}
         <div
           style={{
@@ -173,7 +122,7 @@ export default function OpengraphImage() {
               <div
                 style={{
                   display: "flex", fontFamily: "Michroma", fontSize: 112, lineHeight: 1,
-                  color: RED, textShadow: `0 0 28px rgba(255,56,56,0.85), 0 0 60px rgba(255,56,56,0.45)`,
+                  color: RED,
                 }}
               >
                 *
@@ -188,18 +137,16 @@ export default function OpengraphImage() {
                 ASILUM
               </div>
             </div>
-            {/* magazine.com — never dropped (owner directive). In STM, the main
-                font: the site's OSD/VT323 face was retired site-wide on 17 Aug
-                ("get rid of the digi cam font"), so the card follows. --sig with
-                the glow, tracked like the .wordmark em line it stands in for. */}
+            {/* magazine.com — never dropped (owner directive). In Inter, the
+                body face (V.2); --sig, tracked like the .wordmark em line it
+                stands in for. No glow: the blueprint has none. */}
             <div
               style={{
                 display: "flex", justifyContent: "flex-end", width: 830, marginTop: -14,
-                fontFamily: "STM", fontSize: 62, letterSpacing: 2, color: SIG,
-                textShadow: `0 0 22px rgba(70,255,150,0.75), 0 0 52px rgba(70,255,150,0.35)`,
+                fontFamily: "Inter", fontSize: 62, letterSpacing: 2, color: SIG,
               }}
             >
-              magazine.com
+              asilum.com
             </div>
           </div>
 
@@ -210,7 +157,7 @@ export default function OpengraphImage() {
             </div>
             <div style={{ display: "flex", height: 1, marginTop: 22, background: FAINT, opacity: 0.7 }} />
             <div style={{ display: "flex", marginTop: 18, fontSize: 22, letterSpacing: 3, color: GREY }}>
-              A DEMO ARCHIVE OF SYNTHETIC SAMPLE RECORDS
+              NATIVE STOREFRONTS + LABELED DEMO ARCHIVE
             </div>
           </div>
         </div>
@@ -220,7 +167,7 @@ export default function OpengraphImage() {
       ...size,
       fonts: [
         { name: "Michroma", data: MICHROMA, style: "normal", weight: 400 },
-        { name: "STM", data: STM, style: "normal", weight: 400 },
+        { name: "Inter", data: INTER, style: "normal", weight: 400 },
       ],
     }
   );

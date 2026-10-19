@@ -1,6 +1,6 @@
 "use client";
 // THE FLOAT (owner order, 8 Sep, with a Spotify recording): tap the
-// photograph in the item detail and it floats alone in black space — a
+// photograph in the item detail and it floats alone over the fogged page (owner, 18 Oct 2026: "the background should be a fogged version of the feed"; it was black space) — a
 // rounded card that tilts with the phone (deviceorientation) or, where there
 // is no gyroscope, with the cursor; a soft shadow beneath it that slides the
 // other way, a glare crossing its face, a faint halo of its own colour behind.
@@ -25,18 +25,17 @@ export async function askTilt() {
 
 const MAX = 16; // degrees of tilt either way
 
-export default function FloatView({ src, aspect, tilt = true, onClose }) {
-  const layerRef = useRef(null);
-  const cardRef = useRef(null);
-  const haloRef = useRef(null);
-  const closeRef = useRef(null);
-  useEscape(onClose, true);
-  // aria-modal says the page behind is inert; the trap makes it so
-  useFocusTrap(layerRef, true);
-  useEffect(() => { closeRef.current?.focus(); }, []);
+/**
+ * THE TILT, shared (8 Sep; slice 14 lends it to the floating listing): the
+ * card turns with the phone (deviceorientation, once askTilt was granted in
+ * a tap) or, where there is no gyroscope, with the cursor; the pose it opened
+ * in is flat; the glare and the shadow slide. Writes --rx/--ry/--gx/--gy/
+ * --sx/--sy on the card; the halo follows. Reduced motion: still.
+ */
+export function useTilt(cardRef, haloRef = null, tilt = true) {
   useEffect(() => {
     const card = cardRef.current;
-    const halo = haloRef.current;
+    const halo = haloRef ? haloRef.current : null;
     if (!card) return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     const s = { rx: 0, ry: 0, tx: 0, ty: 0, raf: 0, base: null, gyro: false };
@@ -86,6 +85,18 @@ export default function FloatView({ src, aspect, tilt = true, onClose }) {
       if (s.raf) cancelAnimationFrame(s.raf);
     };
   }, [tilt]);
+}
+
+export default function FloatView({ src, aspect, tilt = true, onClose }) {
+  const layerRef = useRef(null);
+  const cardRef = useRef(null);
+  const haloRef = useRef(null);
+  const closeRef = useRef(null);
+  useEscape(onClose, true);
+  // aria-modal says the page behind is inert; the trap makes it so
+  useFocusTrap(layerRef, true);
+  useEffect(() => { closeRef.current?.focus(); }, []);
+  useTilt(cardRef, haloRef, tilt);
   // the card's width: inside 86vw and 560px, and inside 72vh at its own ratio
   const [aw, ah] = String(aspect || "3/4").split("/").map((x) => Number(x));
   const ar = aw > 0 && ah > 0 ? aw / ah : 0.75;

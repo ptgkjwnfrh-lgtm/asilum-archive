@@ -40,6 +40,7 @@ async function handlePOST(req) {
   if (!quota.allowed) return NextResponse.json(rateLimitResponse(quota), { status: 429 });
   const hidden = parsed.body.hiddenSections;
   const guidanceEnabled = parsed.body.guidanceEnabled;
+  const explorationOff = parsed.body.explorationOff; // V.2 14.9: the |A| in the Info Dock
   if (hidden !== undefined &&
       (!Array.isArray(hidden) || hidden.length > MEMORY_SECTIONS.length ||
        !hidden.every((s) => MEMORY_SECTIONS.includes(s)) ||
@@ -51,13 +52,17 @@ async function handlePOST(req) {
   if (guidanceEnabled !== undefined && typeof guidanceEnabled !== "boolean") {
     return NextResponse.json({ error: "guidanceEnabled must be boolean" }, { status: 400 });
   }
-  if (hidden === undefined && guidanceEnabled === undefined) {
+  if (explorationOff !== undefined && typeof explorationOff !== "boolean") {
+    return NextResponse.json({ error: "explorationOff must be boolean" }, { status: 400 });
+  }
+  if (hidden === undefined && guidanceEnabled === undefined && explorationOff === undefined) {
     return NextResponse.json(
-      { error: "hiddenSections or guidanceEnabled required" }, { status: 400 });
+      { error: "hiddenSections, guidanceEnabled or explorationOff required" }, { status: 400 });
   }
   const preferences = await saveMemoryPreferences(user, {
     ...(hidden !== undefined ? { hiddenSections: hidden } : {}),
     ...(guidanceEnabled !== undefined ? { guidanceEnabled } : {}),
+    ...(explorationOff !== undefined ? { explorationOff } : {}),
   });
   return NextResponse.json({ preferences });
 }

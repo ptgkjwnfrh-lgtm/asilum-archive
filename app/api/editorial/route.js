@@ -19,10 +19,14 @@ import { accountIdFromIdentity, resolveRequestUser } from "../../../lib/identity
 import { sanitizeStatement, screenStatement } from "../../../lib/profile/rooms.js";
 import { extractRefs } from "../../../lib/wire/refs.js";
 import { safeExternalUrl, safeImageUrl } from "../../../lib/url.js";
-import { validateComposition, attachmentsFor } from "../../../lib/wire/compose.js";
+import { validateComposition, attachmentsFor, eventsOf } from "../../../lib/wire/compose.js";
+import { deliverPosts } from "../../../lib/db/production/brdcst.js";
 import { fetchPreview } from "../../../lib/wire/preview.js";
 import { wireImageUrl } from "../../../lib/wire/media.js";
-import { getItem } from "../../../lib/db/index.js";
+import { getMotionAsset, motionForPost } from "../../../lib/db/production/media.js";
+import { motionUrls } from "../../../lib/media/worker.js";
+import { resolveProduct } from "../../../lib/products.js";
+import { sourceFor } from "../../../lib/social.js";
 import { listPlaces } from "../../../lib/places/registry.js";
 import { consumeRateLimit, rateLimitResponse } from "../../../lib/security/rateLimit.js";
 import { readJsonRequest } from "../../../lib/security/json.js";
@@ -94,7 +98,19 @@ export async function GET(req) {
   const quota = await consumeRateLimit({ scope: "editorial-read", subject: requestSubject(req), limit: 120, windowMs: 60_000 });
   if (!quota.allowed) return NextResponse.json(rateLimitResponse(quota), { status: 429 });
   try {
-    const posts = (await listEditorialPosts({ kind, limit, handle, id, authorId })).map(({ authorId: _a, ...post }) => post);
+    // An expired ECHO is never served live (V.2 Terms 5.4): filtered here,
+    // after the store, so the memory and the Postgres backends agree.
+    const now = Date.now();
+    // BRDCST delivery (V.2 5.13–5.15, 9.13; slice 8): a post's event footer
+    // rides only on a live campaign in reach of THIS viewer; on the feed
+    // path a viewer whose taste does not match does not see the promoted
+    // post at all; a permalink or a poster's page shows it bare instead.
+    const viewerId = authorId || (await resolveRequestUser(req, String(searchParams.get("user") || "")).catch(() => null));
+    const lat = searchParams.get("lat"), lng = searchParams.get("lng");
+    const delivered = await deliverPosts(await listEditorialPosts({ kind, limit, handle, id, authorId }), { viewerId, lat, lng, now, hide: id == null && !handle && !authorId }).catch((e) => { console.error("[editorial] delivery failed", e?.message || e); return null; });
+    const posts = (delivered || await listEditorialPosts({ kind, limit, handle, id, authorId }))
+      .map(({ authorId: _a, ...post }) => post)
+      .filter((post) => !(post.attachments && post.attachments.echo) || Number(post.attachments.echo.expiresAt) > now);
     // The permalink read answers 404 when the transmission is not on the
     // wire — deleted, held for review, or never published. A dead link
     // that pretends to be a page would be a lie (owner directive, Aug 14).
@@ -129,7 +145,7 @@ export async function POST(req) {
   // may post. This only establishes that an account is required at all.
   if (!accountIdFromIdentity(user)) {
     return NextResponse.json({
-      error: "posting to the wire requires a signed-in account",
+      error: "posting to the Feed requires a signed-in account",
       note: "sign in on PROFILE — a device on its own cannot publish",
     }, { status: 403 });
   }
@@ -152,15 +168,23 @@ export async function POST(req) {
     const pieceSnapshots = [];
     for (const ref of (composition.pieces || []).slice(0, 10)) {
       const id = typeof ref === "string" ? ref : ref && ref.id;
-      const it = await getItem(String(id)).catch(() => null);
-      if (!it) return NextResponse.json({ error: `piece ${id} is not a listing this catalog holds` }, { status: 400 });
-      pieceSnapshots.push({ id: it.id, title: it.title, brand: it.brand, img: it.img || null, price: it.price ?? null, currency: it.currency || "USD", source: it.source_name || it.source || null });
+      // Resolve through the same discoverability authority as Feed/search.
+      // A known id is not enough: draft, moderated, removed and sold-out
+      // native inventory must never become public through a Wire attachment.
+      const it = await resolveProduct(String(id)).catch(() => null);
+      if (!it) return NextResponse.json({ error: `piece ${id} is not an active catalog listing` }, { status: 400 });
+      pieceSnapshots.push({
+        id: it.id, title: it.title, brand: it.brand, img: it.img || null,
+        price: it.price ?? null, currency: it.currency || "USD", source: sourceFor(it),
+      });
     }
-    let eventSnapshot = null;
-    if (composition.event) {
-      const row = listPlaces({ dated: true }).find((pl) => pl.id === String(composition.event.id));
+    // every BRDCST on the post resolves to a map record (5.9–5.10); the
+    // snapshot never carries coordinates — the campaign keeps the centre
+    const eventSnapshots = [];
+    for (const ev of eventsOf(composition)) {
+      const row = listPlaces({ dated: true }).find((pl) => pl.id === String(ev.id));
       if (!row) return NextResponse.json({ error: "the event must be one the map knows" }, { status: 400 });
-      eventSnapshot = { id: row.id, name: row.name, kind: row.kind, city: row.city, startsAt: row.startsAt || null, endsAt: row.endsAt || null, tz: row.tz || null, status: row.status, admission: row.admission || null, sourceUrl: row.sourceUrl || null, sample: !!row.sample };
+      eventSnapshots.push({ id: row.id, name: row.name, kind: row.kind, city: row.city, startsAt: row.startsAt || null, endsAt: row.endsAt || null, tz: row.tz || null, status: row.status, admission: row.admission || null, sourceUrl: row.sourceUrl || null, sample: !!row.sample });
     }
     let linkSnapshot = null;
     if (composition.link) {
@@ -169,11 +193,21 @@ export async function POST(req) {
       const snap = await fetchPreview(url);
       linkSnapshot = snap.refused ? { url, title: "", description: "", image: "", host: new URL(url).hostname.replace(/^www\./, ""), refused: snap.refused, fetchedAt: new Date().toISOString() } : snap;
     }
+    // a MOTION resolves to ITS OWN admitted asset (slice 9): the row must be
+    // the author's and ready; the facts stored are the worker's, never the body's
+    let videoSnapshot = null;
+    if (composition.video) {
+      const asset = await getMotionAsset(String(composition.video.id || "")).catch(() => null);
+      if (!asset || asset.ownerId !== user) return NextResponse.json({ error: "the video is not an upload of yours", code: "VIDEO_NOT_YOURS" }, { status: 400 });
+      if (asset.state !== "ready") return NextResponse.json({ error: asset.state === "refused" ? `the video was refused: ${asset.refusalNote || asset.refusalCode}` : `the video is ${asset.state}, not admitted`, code: "VIDEO_NOT_READY" }, { status: 400 });
+      videoSnapshot = motionForPost(asset, motionUrls(asset));
+      composition.video = { ...composition.video, id: asset.id, state: asset.state, durationMs: asset.durationMs };
+    }
     let attachments;
-    try { attachments = attachmentsFor(composition, { pieceSnapshots, eventSnapshot, linkSnapshot }); }
+    try { attachments = attachmentsFor(composition, { pieceSnapshots, eventSnapshots, linkSnapshot, videoSnapshot }); }
     catch (e) { return NextResponse.json({ error: String(e.message).slice(0, 300) }, { status: 400 }); }
     compositionRow = { postKind: v.kind, layout: v.layout, attachments,
-      imageUrl: attachments.media && attachments.media[0] ? wireImageUrl(attachments.media[0].path) : safeImageUrl(body.imageUrl),
+      imageUrl: attachments.media && attachments.media[0] ? wireImageUrl(attachments.media[0].path) : videoSnapshot && videoSnapshot.poster ? videoSnapshot.poster : safeImageUrl(body.imageUrl),
       externalUrl: linkSnapshot ? linkSnapshot.url : safeExternalUrl(body.externalUrl),
       productRefs: pieceSnapshots.map((p) => p.id) };
   } else if (!text) return NextResponse.json({ error: "text required" }, { status: 400 });

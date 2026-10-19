@@ -1,6 +1,6 @@
 # asilum-brain
 
-ASiLUM — a fashion moodboard whose feed is ranked by a six-bridge
+ASILUM — a fashion moodboard whose feed is ranked by a six-bridge
 personalization engine: content match, dominant trait, co-engagement taste
 graph (Pinterest-style), popularity, exploration, and sponsored. Feeds are
 zoned — pieces you already like, pieces you'll *probably* like (taste expanded

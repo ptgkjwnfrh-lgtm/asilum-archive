@@ -84,14 +84,14 @@ export async function generateMetadata({ params }) {
     // is noindex rather than a robots.txt disallow.
     robots: { index: false, follow: false },
     openGraph: {
-      title: `${name} · *ASILUM magazine`,
+      title: `${name} · *ASILUM`,
       description,
       url,
-      siteName: "*ASILUM magazine",
+      siteName: "*ASILUM",
       type: "website",
       locale: "en_US",
     },
-    twitter: { card: "summary", title: `${name} · *ASILUM magazine`, description },
+    twitter: { card: "summary", title: `${name} · *ASILUM`, description },
   };
 }
 

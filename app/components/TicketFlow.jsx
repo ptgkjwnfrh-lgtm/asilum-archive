@@ -5,13 +5,16 @@
 // disclaimer consent → checkout continues on the ORIGINAL source site.
 // ASILUM never fulfills; the source platform confirms/ships/tracks/returns.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getUid, postJSON, sendJSON } from "../../lib/client.js";
-import { useOverlayDismiss } from "./dismiss.js";
+import { useOverlayDismiss, useFocusTrap } from "./dismiss.js";
 
 export default function TicketFlow({ item, onClose }) {
   const [state, setState] = useState("creating"); // creating|consent|done|unavailable|error
   const dismissOverlay = useOverlayDismiss(onClose); // mounts when open — AT ghost-click guarded
+  // it renders on <body> above the listing popup (slice 14): its own dialog, its own trap
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, true);
   const [ticket, setTicket] = useState(null);
   const [disclaimer, setDisclaimer] = useState(null);
   const [checked, setChecked] = useState(false);
@@ -58,7 +61,7 @@ export default function TicketFlow({ item, onClose }) {
 
   return (
     <div className="overlay" onClick={dismissOverlay}>
-      <div className="modal" style={{ maxWidth: 520, display: "block" }} onClick={(e) => e.stopPropagation()}>
+      <div ref={modalRef} className="modal" role="dialog" aria-modal="true" aria-label="purchase request" style={{ maxWidth: 520, display: "block" }} onClick={(e) => e.stopPropagation()}>
         <button className="mclose" onClick={onClose}>×</button>
         <div className="mbody" style={{ padding: "22px 20px" }}>
           <div className="ttl"><span className="red">*</span>PURCHASE REQUEST</div>

@@ -7,7 +7,7 @@
       "version": null
     },
     "contractVersion": 1,
-    "requestId": "8ad16926-a854-4ad0-b1bb-f78886027801",
+    "requestId": "05b96fd0-b2cd-4cf3-86c6-e5cf1c16db18",
     "outcome": "ok",
     "policyVersion": "2026-09-19.2",
     "q": "hedi slimane: celine",
@@ -19,15 +19,73 @@
         "brand": "Celine",
         "price": 125,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STATEMENT": 0.35
         },
-        "src": "ASILUM Vault",
-        "matchReason": "constraint match",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
+        "url": null,
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2022,
+          "season": "Fall/Winter",
+          "decade": "2020s",
+          "raw": "Fall/Winter 2022"
+        },
+        "size": {
+          "label": "FR 46",
+          "system": "FR",
+          "gender": "mens",
+          "fitsLikeUS": "XS",
+          "runsBias": 1,
+          "measurements": {
+            "chest": 38,
+            "waist": 36,
+            "shoulder": 17.3,
+            "length": 26
+          },
+          "measurementSource": "listing-unverified"
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
         "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
         "match": null
       },
       {
@@ -36,15 +94,73 @@
         "brand": "Celine",
         "price": 270,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STATEMENT": 0.35
         },
-        "src": "ASILUM Vault",
-        "matchReason": "constraint match",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
+        "url": null,
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2025,
+          "season": "Spring/Summer",
+          "decade": "2020s",
+          "raw": "Spring/Summer 2025"
+        },
+        "size": {
+          "label": "FR 48",
+          "system": "FR",
+          "gender": "mens",
+          "fitsLikeUS": "S",
+          "runsBias": 1,
+          "measurements": {
+            "chest": 40,
+            "waist": 38,
+            "shoulder": 17.9,
+            "length": 27
+          },
+          "measurementSource": "listing-unverified"
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
         "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
         "match": null
       },
       {
@@ -53,15 +169,73 @@
         "brand": "Celine",
         "price": 325,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STREETWEAR": 0.35
         },
-        "src": "ASILUM Vault",
-        "matchReason": "constraint match",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
+        "url": null,
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2022,
+          "season": "Fall/Winter",
+          "decade": "2020s",
+          "raw": "Fall/Winter 2022"
+        },
+        "size": {
+          "label": "FR 46",
+          "system": "FR",
+          "gender": "mens",
+          "fitsLikeUS": "XS",
+          "runsBias": 1,
+          "measurements": {
+            "chest": 38,
+            "waist": 36,
+            "shoulder": 17.3,
+            "length": 26
+          },
+          "measurementSource": "listing-unverified"
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
         "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
         "match": null
       }
     ],
@@ -147,7 +321,8 @@
         }
       ],
       "origin": null,
-      "reference": false
+      "reference": false,
+      "brdcst": []
     },
     "related": [
       {
@@ -498,6 +673,8 @@
         ],
         "served": true
       },
+      "tag": null,
+      "pins": [],
       "assist": null,
       "exclusions": [],
       "priceSort": null,
@@ -528,19 +705,37 @@
         "brand": "Celine",
         "price": 125,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STATEMENT": 0.35
         },
-        "category": "tops",
-        "src": "ASILUM Vault",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
         "url": null,
-        "confidenceScore": 0.5,
-        "matchReason": "constraint match",
-        "matchedTags": [],
-        "availability": "unknown",
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2022,
+          "season": "Fall/Winter",
+          "decade": "2020s",
+          "raw": "Fall/Winter 2022"
+        },
         "size": {
           "label": "FR 46",
           "system": "FR",
@@ -553,7 +748,30 @@
             "shoulder": 17.3,
             "length": 26
           }
-        }
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
+        "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
+        "availability": "unknown"
       },
       {
         "id": "syn-0260",
@@ -561,19 +779,37 @@
         "brand": "Celine",
         "price": 270,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STATEMENT": 0.35
         },
-        "category": "tops",
-        "src": "ASILUM Vault",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
         "url": null,
-        "confidenceScore": 0.5,
-        "matchReason": "constraint match",
-        "matchedTags": [],
-        "availability": "unknown",
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2025,
+          "season": "Spring/Summer",
+          "decade": "2020s",
+          "raw": "Spring/Summer 2025"
+        },
         "size": {
           "label": "FR 48",
           "system": "FR",
@@ -586,7 +822,30 @@
             "shoulder": 17.9,
             "length": 27
           }
-        }
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
+        "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
+        "availability": "unknown"
       },
       {
         "id": "syn-0323",
@@ -594,19 +853,37 @@
         "brand": "Celine",
         "price": 325,
         "currency": "USD",
-        "img": null,
         "tags": {
           "MINIMAL": 0.7,
           "SEDUCTIVE": 0.5,
           "STREETWEAR": 0.35
         },
-        "category": "tops",
-        "src": "ASILUM Vault",
+        "img": null,
+        "alt": null,
+        "source": "Asilum synthetic seed",
+        "source_name": "Asilum synthetic seed",
+        "source_product_url": null,
         "url": null,
-        "confidenceScore": 0.5,
-        "matchReason": "constraint match",
-        "matchedTags": [],
-        "availability": "unknown",
+        "designers": [
+          "Hedi Slimane",
+          "Celine"
+        ],
+        "category": "tops",
+        "subcategory": null,
+        "color": null,
+        "colors": [],
+        "colorEvidence": null,
+        "material": null,
+        "fit": null,
+        "silhouette": null,
+        "condition": null,
+        "decade": null,
+        "era": {
+          "year": 2022,
+          "season": "Fall/Winter",
+          "decade": "2020s",
+          "raw": "Fall/Winter 2022"
+        },
         "size": {
           "label": "FR 46",
           "system": "FR",
@@ -619,7 +896,30 @@
             "shoulder": 17.3,
             "length": 26
           }
-        }
+        },
+        "is_available": true,
+        "availability_status": "unknown",
+        "commerce_rail": null,
+        "storefront_slug": null,
+        "storefront_name": null,
+        "native_listing_id": null,
+        "default_variant_id": null,
+        "price_cents": null,
+        "inventory_available": null,
+        "native_checkout_ready": false,
+        "listing_version": null,
+        "confidenceScore": 0.5,
+        "matchReason": "constraint match",
+        "matchedTags": [],
+        "purchasable": false,
+        "originEvidence": {
+          "status": "demo",
+          "sourceLabel": null,
+          "brandIsClaim": true,
+          "note": "sample record — not real inventory, not for sale"
+        },
+        "src": "ASILUM Vault",
+        "availability": "unknown"
       }
     ],
     "itemsShown": "3 of 6 on this page",

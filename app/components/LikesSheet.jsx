@@ -24,7 +24,7 @@ import ModelTag from "./ModelTag.jsx";
 
 const STATUS_WORD = { available: "AVAILABLE", sold: "SOLD", ended: "ENDED", removed: "REMOVED", unavailable: "UNAVAILABLE", price_changed: "PRICE CHANGED", source_unavailable: "SOURCE DOWN", unknown: "" };
 
-const TABS = [["pieces", "PIECES"], ["wire", "WIRE"], ["sold", "SOLD"]];
+const TABS = [["pieces", "PIECES"], ["wire", "POSTS"], ["sold", "SOLD"]];
 
 function matches(rec, q) {
   if (!q) return true;
@@ -122,7 +122,7 @@ export default function LikesSheet() {
           ) : (
             <p className="pempty" role="status">
               {q ? "nothing in your " + (tab === "wire" ? "liked posts" : "liked pieces") + " matches that."
-                : tab === "wire" ? "no liked Wire posts yet — SAVE on a post keeps it here." : "no liked pieces yet — SAVE on a piece keeps it here."}
+                : tab === "wire" ? "no liked posts yet — STAMP on a post keeps it here." : "no liked pieces yet — SAVE on a piece keeps it here."}
             </p>
           )}
         </>

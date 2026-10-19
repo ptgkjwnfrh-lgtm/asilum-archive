@@ -11,6 +11,10 @@
 // Milestones are STAMPS for real acts (first collection, taste defined,
 // first transmission) — there is no streak and no timer.
 
+import { openSheet } from "../../lib/dockstate.js";
+import BehindUploads from "../components/BehindUploads.jsx";
+import AttendanceBlock from "../components/AttendanceBlock.jsx";
+import { ScoreLine } from "../components/ScoreSheet.jsx";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Notice from "../components/Notice.jsx";
@@ -163,6 +167,18 @@ export default function BoardPage() {
   useEffect(() => {
     const user = getUid();
     setUid(user);
+    // V.2 14.11 (slice 10c): on first opening, the Passport asks its five to
+    // seven questions in a popup — once per session until they are answered
+    // or skipped; LATER keeps the place
+    if (user) {
+      let asked = false;
+      try { asked = !!window.sessionStorage.getItem("asilum-onboarding-asked"); } catch {}
+      if (!asked && !new URLSearchParams(window.location.search).get("id")) {
+        authorizedFetch("/api/passport/onboarding?user=" + encodeURIComponent(user)).then((r) => (r.ok ? r.json() : null)).then((d) => {
+          if (d && d.progress && !d.progress.done) { try { window.sessionStorage.setItem("asilum-onboarding-asked", "1"); } catch {} openSheet("onboarding"); }
+        }).catch(() => {});
+      }
+    }
     const sp = new URLSearchParams(window.location.search);
     const id = sp.get("id");
     if (id) {
@@ -268,7 +284,7 @@ export default function BoardPage() {
       uploadId: window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(36).slice(2, 10),
     })
       .then((r) => (r && r.ok ? r.json() : null))
-      .then((d) => { if (d && d.recognized?.length) setRecognized(d.recognized); })
+      .then((d) => { if (d && d.recognized?.length) setRecognized(d.recognized); try { window.dispatchEvent(new CustomEvent("asilum:upload")); } catch {} })
       .catch(() => {});
     const seen = [...new Set(merged.palette.map((s) => s.name))].slice(0, 3).join(", ");
     setNotice(analyses.length
@@ -324,7 +340,7 @@ export default function BoardPage() {
         <div className="ppdoc lg" ref={ppRef} aria-label="passport document">
           {ppGlass}
           <div className="ppsec"><span className="ppnum">№ AS·{String(boards.length).padStart(2, "0")}·{String(convictions().length).padStart(2, "0")}</span></div>
-          <div className="ppnation">ASILUM MAGAZINE <b>*</b> FASHION PASSPORT</div>
+          <div className="ppnation">ASILUM <b>*</b> FASHION PASSPORT</div>
           <div className="ppbody">
             <div className="ppphotocol">
               <span className="ppquad"><b>PASSPORT</b><span>パスポート</span><span>REISEPASS</span><span>PASSEPORT</span></span>
@@ -343,13 +359,17 @@ export default function BoardPage() {
               <div><dt>BASED IN<em>/ Basé à</em></dt><dd>{loc && loc.baseCity ? loc.baseCity.name : "—"}{loc && loc.baseCity && !basedIn ? <span className="ppmono"> PRIVATE</span> : null}</dd></div>
               <div><dt>COUNTRY OF ORIGIN<em>/ Pays</em></dt><dd>{pinfo.origin}</dd></div>
               <div><dt>TASTE CLASS<em>/ Classe de goût</em></dt><dd><span className="red">*</span> {tasteClass(convictions())}</dd></div>
-              <div className="sp2"><dt>AUTHORITY<em>/ Autorité</em></dt><dd><span className="red">*</span>THE ASTERISK SYSTEM</dd></div>
+              <div className="sp2"><dt>AUTHORITY<em>/ Autorité</em></dt><dd><span className="red">*</span>ASTERISK — PERSONALIZED FASHION TERMINAL</dd></div>
               <div><dt>SAVED</dt><dd>{pinCount + (counts.total - counts.piece)}</dd></div>
               <div className="sp2"><dt>CONVICTIONS</dt><dd>{convictions().length} ACTIVE</dd></div>
             </dl>
           </div>
-          <div className="ppmrz">{mrzTint(mrzTop)}<br />{mrzTint(mrzBot)}</div>
+          {/* THE OG DOCUMENT (owner, 18 Oct 2026: "the og passport design should
+              transfer over 90% accurately" — iteration 5, 25 Jul, 7db2b89): the
+              data page, then the hologram window, the microprint, and the
+              machine zone at the FOOT of the document */}
           <PassportSecurity topTag={convictions()[0]?.[0]} topWeight={convictions()[0]?.[1] || 0} map={docMap} />
+          <div className="ppmrz">{mrzTint(mrzTop)}<br />{mrzTint(mrzBot)}</div>
           <div className="ppdocacts">
             <button className="ppbtn" onClick={() => switchTab("places")}>OPEN MAP</button>
             <button className="ppbtn primary" onClick={warpToUpload}>STAMP PASSPORT</button>
@@ -496,6 +516,10 @@ export default function BoardPage() {
                 <button className="btn ghost" onClick={() => fileRef.current && fileRef.current.click()}>UPLOAD IMAGES</button>
                 <input ref={fileRef} type="file" accept="image/*" multiple hidden aria-label="upload images to train the passport" onChange={onUpload} />
               </div>
+              <BehindUploads uid={uid} />
+              {/* slice 12: the Passenger Score on the Passport (6.18) and where you went (17.19) */}
+              <div className="bdatt"><b>PASSENGER SCORE</b><ScoreLine subject={uid} /></div>
+              <AttendanceBlock uid={uid} />
               {recognized.length > 0 && (
                 <div className="stampknow">
                   <span className="stampknow-mark" aria-hidden="true">✳</span>
@@ -512,7 +536,7 @@ export default function BoardPage() {
               <p className="deck">imports — pinterest, spotify, apple music, letterboxd — need real OAuth and arrive as secondary setup, never simulated.</p>
               <section className="ppbenefit" aria-label="member benefit example">
                 <div className="cclbl">YOUR MEMBER BENEFIT <ModelTag>EXAMPLE — NOT A LIVE OFFER</ModelTag></div>
-                <p className="stp">On a $600 piece the founders fee is 1%: <b>$6</b>. A funded member credit of <b>$5</b> would make that fee <b>$1</b>. A real, auditable benefit — never a crossed-out price, never an invented markdown. At 1,000 redemptions a $5 credit is up to $5,000 of foregone fee revenue; taste status never buys purchasing power.</p>
+                <p className="stp">On a $600 piece the passenger fee is $1 + 1.5%: <b>$10</b>. A funded member credit of <b>$5</b> would make that fee <b>$5</b>. A real, auditable benefit — never a crossed-out price, never an invented markdown. At 1,000 redemptions a $5 credit is up to $5,000 of foregone fee revenue; taste status never buys purchasing power.</p>
               </section>
             </section>
           )}

@@ -51,7 +51,8 @@ test("the candidate limits are enforced and named", () => {
   assert.equal(validateComposition({ text: "x", layout: "fragment", pieces: [] }).errors[0].code, "fragment-empty");
   assert.equal(validateComposition({ text: "x", event: { name: "no id" } }).errors[0].code, "unresolved-event");
   assert.equal(validateComposition({ text: "x", link: "http://example.org" }).errors[0].code, "bad-link");
-  assert.equal(validateComposition({ text: "x", video: { path: "v" } }).errors[0].code, "video-unavailable");
+  // slice 9: a video is an ADMITTED asset — a path or a link is refused until the worker has read it
+  assert.equal(validateComposition({ text: "x", video: { path: "v" } }).errors[0].code, "video-unadmitted");
   const expose = validateComposition({ text: "x", media: [img(1)], layout: "expose", layers: [{ text: "THE CUT", color: "neon" }] });
   assert.equal(expose.errors[0].code, "layer-color");
   assert.ok(LAYER_COLORS.includes("paper"));

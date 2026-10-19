@@ -11,6 +11,83 @@ import Notice from "../components/Notice.jsx";
 import { getUid, authorizedFetch, thumbFor, sendJSON, postJSON } from "../../lib/client.js";
 import { sourceFor } from "../../lib/social.js";
 import PageMast from "../components/PageMast.jsx";
+import AMark from "../components/AMark.jsx";
+
+/**
+ * AFTER THE SALE on one paid order (V.2 chapter 6 and 10; slice 7): the
+ * delivery and the 14-day windows it opened, |A| Protection as it was
+ * elected (never preselected), a return or a complaint inside the window,
+ * the review once delivered (double blind), the seller's own tracking and
+ * dispatch marks. Everything is /api/aftersale's and /api/score's answer.
+ */
+function OrderAftersale({ order, onNotice }) {
+  const [facts, setFacts] = useState(null);
+  const [form, setForm] = useState({ kind: "change_of_mind", reason: "", evidence: "", stars: "5", text: "", tracking: "" });
+  const user = getUid() || "";
+  const load = () => authorizedFetch("/api/aftersale?order=" + encodeURIComponent(order.id) + "&user=" + encodeURIComponent(user))
+    .then((r) => (r.ok ? r.json() : null)).then((d) => setFacts(d || false)).catch(() => setFacts(false));
+  useEffect(() => { load(); }, [order.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  async function act(body, ok) {
+    const r = await postJSON("/api/aftersale", { user, order: order.id, ...body }).catch(() => null);
+    const d = r ? await r.json().catch(() => ({})) : {};
+    onNotice(r && r.ok ? ok : (d.error || "that could not be recorded"));
+    if (r && r.ok) load();
+  }
+  async function review() {
+    const r = await postJSON("/api/score", { user, order: order.id, action: "review", stars: Number(form.stars), text: form.text }).catch(() => null);
+    const d = r ? await r.json().catch(() => ({})) : {};
+    onNotice(r && r.ok ? (d.settled && d.settled.published ? "review submitted and published — both sides are in" : "review submitted — hidden until the other side submits or 14 days pass") : (d.error || "the review could not be submitted"));
+    if (r && r.ok) load();
+  }
+  if (order.status !== "paid" || order.kind === "ticket_fee") return null;
+  if (facts === null) return <div className="aftersale fine">reading the after-sale record…</div>;
+  if (facts === false) return <div className="aftersale fine">the after-sale record could not be read.</div>;
+  const d = facts.delivery;
+  const openReturn = (facts.returns || []).find((r) => r.state === "open" || r.state === "approved");
+  return (
+    <div className="aftersale">
+      <div>
+        {d ? <>delivered {String(d.deliveredAt).slice(0, 10)} ({d.source === "carrier" ? "carrier-confirmed" : d.source === "seller" ? "seller-entered tracking" : "recorded by ASILUM"}) · return and review by {String(facts.windows.returnBy).slice(0, 10)}</>
+          : "not delivered yet — the 14-day return and review windows start at carrier-confirmed delivery (10.21)"}
+      </div>
+      <div className="fine">
+        <AMark label="|A|" /> Protection: {facts.election ? (facts.election.elected ? `elected, ${(facts.election.priceCents / 100).toFixed(2)}` : "not elected") : "not offered"}{facts.election && facts.election.offer && facts.election.offer.available === false ? ` — ${facts.election.offer.reason}` : ""}
+        {facts.law.creditApplied ? " · paid with Credit: no change-of-mind return without Protection (11.2)" : ""}
+        {facts.law.sellerReturnsEnabled ? " · the seller accepts returns" : ""}
+      </div>
+      {(facts.returns || []).map((r) => <div className="fine" key={r.id}>{r.kind.replaceAll("_", " ")} · {r.state}{r.refundTo ? ` · refund to ${r.refundTo}` : ""}{r.labelPayer ? ` · label: ${r.labelPayer.replaceAll("_", " ")}` : ""}</div>)}
+      {facts.payout ? <div className="fine">payout: {facts.payout.state.replaceAll("_", " ")} — {facts.payout.reason}</div> : null}
+      <div className="acts">
+        {facts.role === "buyer" && facts.can.return && !openReturn ? (
+          <>
+            <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} aria-label="return kind">
+              <option value="change_of_mind">change of mind</option><option value="wrong_item">wrong item</option><option value="damage">damage</option><option value="non_delivery">non-delivery</option>
+            </select>
+            <input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} aria-label="reason" placeholder="reason" />
+            {form.kind !== "change_of_mind" ? <input value={form.evidence} onChange={(e) => setForm({ ...form, evidence: e.target.value })} aria-label="evidence" placeholder="evidence (photo URL, tracking)" /> : null}
+            <button type="button" className="txtbtn" onClick={() => act({ action: "return", kind: form.kind, reason: form.reason, evidence: form.evidence || null }, form.kind === "change_of_mind" ? "return opened" : "complaint filed — an administrator decides on the evidence")}>{form.kind === "change_of_mind" ? "RETURN" : "FILE COMPLAINT"}</button>
+          </>
+        ) : null}
+        {facts.role === "seller" && facts.can.deliver ? (
+          <>
+            <input value={form.tracking} onChange={(e) => setForm({ ...form, tracking: e.target.value })} aria-label="tracking number" placeholder="tracking" />
+            <button type="button" className="txtbtn" onClick={() => act({ action: "deliver", tracking: form.tracking || null }, "delivery recorded as your tracking — the windows opened")}>MARK DELIVERED</button>
+          </>
+        ) : null}
+        {facts.role === "seller" && facts.can.dispatch && !(facts.dispatch && facts.dispatch.handedAt) ? (
+          <button type="button" className="txtbtn" onClick={() => act({ action: "dispatch", event: facts.dispatch && facts.dispatch.labelPrintedAt ? "handoff" : "label" }, "dispatch recorded")}>{facts.dispatch && facts.dispatch.labelPrintedAt ? "HANDED TO CARRIER" : "LABEL PRINTED"}</button>
+        ) : null}
+        {facts.can.review ? (
+          <>
+            <select value={form.stars} onChange={(e) => setForm({ ...form, stars: e.target.value })} aria-label="stars">{[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}</select>
+            <input value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} aria-label="review" placeholder="the transaction, not the person" />
+            <button type="button" className="txtbtn" onClick={review}>REVIEW</button>
+          </>
+        ) : facts.can.reviewReason && d ? <span className="fine">{facts.can.reviewReason}</span> : null}
+      </div>
+    </div>
+  );
+}
 
 export default function OrdersPage() {
   const [bagHistory, setBagHistory] = useState(null);
@@ -123,7 +200,7 @@ export default function OrdersPage() {
             </a>
             <div className="hlbrand">
               {(o.currency || "usd").toUpperCase()} {((o.total_cents ?? o.amount_cents) / 100).toFixed(2)}
-              {o.kind === "ticket_fee" ? " (founders fee)" : ""}
+              {o.kind === "ticket_fee" ? " (passenger fee)" : o.kind === "brdcst" ? " (BRDCST)" : ""}
               {" · "}
               {o.status === "paid" && o.kind === "ticket_fee" ? "FEE PAID — ticket open; the piece is bought at the source"
                 : o.status === "paid" ? "PAID — the designer ships it"
@@ -138,6 +215,7 @@ export default function OrdersPage() {
               {o.created_at ? new Date(o.created_at).toLocaleDateString() : ""}
               {" · "}order {String(o.id).slice(0, 12)}…
             </div>
+            <OrderAftersale order={o} onNotice={setNotice} />
           </div>
         </div>
       ))}

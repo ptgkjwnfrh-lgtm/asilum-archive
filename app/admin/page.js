@@ -56,10 +56,132 @@ const PANELS = [
     note: "what people asked that asterisk could not answer. this is the demand signal for research — promoting one says it is worth investigating, not that an answer exists." },
   { id: "steward", n: "09", title: "THE STEWARD", read: { action: "steward.report" },
     note: "one pass over the live machine, worst first — and, since 3 sep, hands. the checks only read. what the hands would do is listed under HANDS before it is done; ACT makes the delegated repairs (reversible, capped, ledgered before each one), CONFIRM is your yes to a money-adjacent one for this run only, and the never tier is reported and left. every repair is a ledger row you can REVERT. a check that could not run is shown as UNMEASURABLE and counts against the board: a dark light is not a green one." },
+  { id: "governance", n: "10", title: "ASTERISK GOVERNANCE", read: { action: "asterisk.functions" },
+    note: "ASTERISK runs ASILUM; you sit above it (V.2 blueprint, slice 5). seven functions, each with its safe outcome under 75%. PAUSE stops one in seconds — its new work waits in the queue below. every decision is on the ledger with its evidence, confidence (never above 90%) and reasoning; OVERRIDE supersedes one and your word becomes ground truth. GRADE audits a function over the last seven days; two poor grades in a row hand its decisions to the queue until it passes. a thin ledger grades U — unmeasured, not a pass." },
+  { id: "brdcst", n: "11", title: "BRDCST", read: { action: "brdcst.list" },
+    filter: { key: "state", label: "STATE", options: ["", "draft", "scheduled", "active", "ended", "cancelled", "under_review"] },
+    note: "every BRDCST campaign (V.2 chapter 5, slice 8): targeting, the quote as shown, the schedule a payment fixed, usage by full days. INTERRUPT stops one and refunds its completely unused days as Credit with the bonus; EVENT CANCELLED does the same on the organizer's word; POLICY parks it under review, where REFUND or REFUSE decides (15.5). SWEEP sends the three-hourly failed-payment reminders now." },
   { id: "ontology", n: "08", title: "ONTOLOGY", read: { action: "asterisk.ontology", limit: 500 },
     filter: { key: "tagType", label: "TYPE", options: ["", "aesthetic", "category", "material", "silhouette", "color", "era", "mood"] },
     note: "the canonical tag space, seeded from the LIVE vocabularies so it extends rather than forks (§6). SYNC is idempotent and additive — merges and deprecations are versioned rows, never silent renames." },
 ];
+
+/** Panel 10: the functions, the queue, the ledger — every value server truth. */
+function Governance({ data, busy, act, call }) {
+  const [queue, setQueue] = useState(null);
+  const [ledger, setLedger] = useState(null);
+  const [fn, setFn] = useState("");
+  const [notes, setNotes] = useState({});
+  const [grade, setGrade] = useState(null);
+  // GRADE re-reads the functions here rather than reloading the panel: a
+  // reload unmounts this component and the audit it just showed with it.
+  const [fresh, setFresh] = useState(null);
+  const functions = fresh || data.functions || [];
+  const read = useCallback(async (body) => {
+    try { const res = await fetch("/api/admin", await call(body)); return res.ok ? await res.json() : null; } catch { return null; }
+  }, [call]);
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      const [q, l] = await Promise.all([read({ action: "asterisk.queue.list", status: "open", limit: 50 }), read({ action: "asterisk.ledger", function: fn || undefined, limit: 30 })]);
+      if (!live) return;
+      setQueue(q ? q.cases : false); setLedger(l ? l.actions : false);
+    })();
+    return () => { live = false; };
+  }, [read, fn, data]);
+  const pct = (c) => (c == null ? "—" : Math.round(c * 100) + "%");
+  return (
+    <>
+      <div className="rkrow">
+        <div className="rkname">POLICY</div>
+        <div className="rkctl rkmono">CAP {pct(data.policy?.confidenceCap)} · SPLIT &lt; {pct(data.policy?.splitUnder)} · DONE ≥ {pct(data.policy?.collectiveBar)} · ≤ {data.policy?.maxAgents} AGENTS · {Math.round((data.policy?.taskBudgetMs || 0) / 60000)} MIN</div>
+        <div className="rkdesc">the numbers live in lib/asterisk/governance.js and nowhere else. passengers never see them.</div>
+      </div>
+      {functions.map((f) => (
+        <div className="rkrow deskrow" key={f.function}>
+          <div className="rkname">
+            <span className={"rkled" + (!f.paused && !f.handed ? " on" : "")} aria-hidden="true" />
+            {f.label}
+          </div>
+          <div className="rkctl">
+            <span className="rkmono">{f.paused ? "PAUSED" : f.handed ? "HANDED" : "ACTIVE"} · GRADE {f.grade} · {f.backlog} QUEUED</span>
+            <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "asterisk.pause", function: f.function, paused: !f.paused, note: notes[f.function] || null }, f.function)}>
+              {f.paused ? "RESUME" : "PAUSE"}
+            </button>
+            <button className="fitbtn" disabled={busy !== ""} onClick={async () => { const r = await read({ action: "asterisk.grade", function: f.function }); setGrade(r ? { fn: f.function, ...r } : false); const again = await read({ action: "asterisk.functions" }); if (again) setFresh(again.functions); }}>
+              GRADE
+            </button>
+          </div>
+          <div className="rkdesc">
+            safe outcome: {f.safe}. prevents {f.prevents}. {f.implementedBy}
+            {f.paused ? <><br />paused by {f.pausedBy} at {String(f.pausedAt).slice(0, 19).replace("T", " ")}{f.pauseNote ? ` — ${f.pauseNote}` : ""}</> : null}
+            {f.handed ? <><br />two poor audits in a row — decisions go to the queue until a passing grade</> : null}
+            {f.auditedAt ? <><br />last audit {String(f.auditedAt).slice(0, 19).replace("T", " ")}: grade {f.grade}, {f.consecutivePoor} poor in a row</> : null}
+            {f.function === "authentication" && f.settings?.highValue ? <><br />high-value gate: {Object.entries(f.settings.highValue).map(([c, a]) => `${c} ≥ ${a}`).join(", ")}</> : null}
+          </div>
+        </div>
+      ))}
+      {grade && grade.fn ? (
+        <div className="rkrow">
+          <div className="rkname">AUDIT · {grade.fn.toUpperCase()}</div>
+          <div className="rkctl rkmono">GRADE {grade.audit.grade}{grade.audit.unmeasured ? " (UNMEASURED)" : ""}</div>
+          <div className="rkdesc">
+            productivity: {grade.audit.productivity.throughput} decided, {grade.audit.productivity.backlog} queued, {grade.audit.productivity.overBudget} over budget, {grade.audit.productivity.costPerTask ?? "—"} tokens/task.
+            accuracy: {grade.audit.accuracy.overridden} of {grade.audit.accuracy.decided} overridden{grade.audit.accuracy.overrideRate != null ? ` (${pct(grade.audit.accuracy.overrideRate)})` : ""}.
+            {grade.audit.complexSearch ? ` complex search: ${JSON.stringify(grade.audit.complexSearch)}.` : " complex search: not this function."}
+            {" "}calibration: {grade.calibration.measured ? grade.calibration.bands.filter((b) => b.measured).map((b) => `${b.band} said ${pct(b.stated)} was right ${pct(b.observed)}`).join("; ") : "too few decisions to measure a band"}.
+          </div>
+        </div>
+      ) : grade === false ? <div className="pempty">the audit could not run.</div> : null}
+      <div className="rkrow">
+        <div className="rkname">QUEUE</div>
+        <div className="rkctl rkmono">{Array.isArray(queue) ? `${queue.length} OPEN` : queue === false ? "UNREAD" : "READING…"}</div>
+        <div className="rkdesc">what reached you: fraud first, then value, then age. fraud and high value alerted; the rest waited.</div>
+      </div>
+      {(Array.isArray(queue) ? queue : []).map((c) => (
+        <div className="rkrow deskrow" key={c.id}>
+          <div className="rkname"><span className={"rkled" + (c.alert ? " on" : "")} aria-hidden="true" />{c.function.toUpperCase()} <em className="deskdim">#{c.id}</em></div>
+          <div className="rkctl">
+            <span className="rkmono">{c.fraud ? "FRAUD · " : ""}{c.value != null ? `${c.value} · ` : ""}{c.reason.toUpperCase()}</span>
+            <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "asterisk.queue.decide", id: c.id, decision: { word: "reviewed", note: notes["q" + c.id] || "reviewed at the desk" } }, "q" + c.id)}>DECIDE</button>
+          </div>
+          <div className="rkdesc">{c.subjectId || "—"}{c.payload?.title ? ` · ${c.payload.title}` : ""} · {c.reasons.join(", ")} · {String(c.at).slice(0, 19).replace("T", " ")}</div>
+        </div>
+      ))}
+      <div className="rkrow">
+        <div className="rkname">LEDGER</div>
+        <div className="rkctl">
+          <select className="wcap" value={fn} onChange={(e) => setFn(e.target.value)} aria-label="function">
+            <option value="">EVERY FUNCTION</option>
+            {functions.map((f) => <option key={f.function} value={f.function}>{f.label}</option>)}
+          </select>
+          <span className="rkmono">{Array.isArray(ledger) ? `${ledger.length} ROW${ledger.length === 1 ? "" : "S"}` : ledger === false ? "UNREAD" : "READING…"}</span>
+        </div>
+        <div className="rkdesc">every action with its evidence, confidence and reasoning. an override is a new row naming the one it supersedes.</div>
+      </div>
+      {(Array.isArray(ledger) ? ledger : []).map((r) => (
+        <div className="rkrow deskrow" key={r.id}>
+          <div className="rkname">{r.function.toUpperCase()} <em className="deskdim">#{r.id} · {r.actor}</em></div>
+          <div className="rkctl">
+            <span className="rkmono">{r.outcome.toUpperCase()} · {pct(r.confidence)}{r.overridden ? ` · OVERRIDDEN BY #${r.overriddenBy}` : ""}{r.groundTruth ? " · GROUND TRUTH" : ""}</span>
+            {r.actor === "asterisk" && !r.overridden && r.outcome !== "queued" ? (
+              <>
+                <input className="wcap decknote" aria-label={"what stands for #" + r.id + ", and why"} title="what stands, and why" value={notes["o" + r.id] || ""} onChange={(e) => setNotes({ ...notes, ["o" + r.id]: e.target.value })} />
+                <button className="fitbtn" disabled={busy !== "" || !(notes["o" + r.id] || "").trim()} onClick={() => act({ action: "asterisk.override", id: r.id, outcome: { answer: notes["o" + r.id] }, note: notes["o" + r.id] }, "o" + r.id)}>OVERRIDE</button>
+              </>
+            ) : null}
+          </div>
+          <div className="rkdesc">
+            {r.subjectId ? `${r.subjectId} · ` : ""}{r.kind || ""}{r.decision?.answer != null ? ` · answer: ${typeof r.decision.answer === "string" ? r.decision.answer : JSON.stringify(r.decision.answer)}` : ""}
+            <br />{r.decision?.reasoning}
+            {Array.isArray(r.decision?.evidence) && r.decision.evidence.length ? <><br />evidence: {r.decision.evidence.slice(0, 6).join(" · ")}</> : null}
+            <br />{String(r.at).slice(0, 19).replace("T", " ")}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default function AdminDeskPage() {
   const [token, setToken] = useState("");
@@ -339,6 +461,45 @@ export default function AdminDeskPage() {
               </div>
             ))}
           </>
+        )}
+
+        {/* ---- 11 BRDCST ---- */}
+        {panel === "brdcst" && data && (
+          <>
+            <div className="rkrow">
+              <div className="rkname">REMINDERS</div>
+              <div className="rkctl"><button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.sweep" }, "sweep")}>SWEEP NOW</button></div>
+              <div className="rkdesc">a failed BRDCST payment notifies at once and every three hours until resolved; a passenger may mute theirs.</div>
+            </div>
+            {(data.campaigns || []).length === 0 && <div className="empty">no campaigns.</div>}
+            {(data.campaigns || []).map((c) => (
+              <div className="rkrow deskrow" key={c.id}>
+                <div className="rkname"><span className={"rkled" + (c.state === "active" ? " on" : "")} aria-hidden="true" />{c.eventName || c.id}</div>
+                <div className="rkctl">
+                  <span className="rkmono">{String(c.state).toUpperCase()} · {c.radiusMi} MI · taste +{Math.round(c.tasteBreadth * 100)}% · {c.durationDays}d · {(c.totalCents / 100).toFixed(2)} ({(c.creditCents / 100).toFixed(2)} credit) · used {c.usage.usedDays} / unused {c.usage.unusedDays}</span>
+                  {["active", "scheduled"].includes(c.state) ? <>
+                    <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.interrupt", id: c.id, reason: "interrupted" }, c.id)}>INTERRUPT</button>
+                    <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.interrupt", id: c.id, reason: "event_cancelled" }, c.id)}>EVENT CANCELLED</button>
+                    <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.interrupt", id: c.id, reason: "policy" }, c.id)}>POLICY</button>
+                  </> : null}
+                  {c.state === "under_review" ? <>
+                    <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.review", id: c.id, refund: true, note: "refunded at the desk" }, c.id)}>REFUND</button>
+                    <button className="fitbtn" disabled={busy !== ""} onClick={() => act({ action: "brdcst.review", id: c.id, refund: false, note: "refused at the desk" }, c.id)}>REFUSE</button>
+                  </> : null}
+                </div>
+                <div className="rkdesc">
+                  {c.ownerId} · post {c.postId || "—"} · events {c.eventIds.join(", ")} · {c.paidAt ? `paid ${String(c.paidAt).slice(0, 10)} via ${c.paidVia}` : "unpaid"}{c.startsAt ? ` · ${String(c.startsAt).slice(0, 10)} → ${String(c.endsAt).slice(0, 10)}` : ""}
+                  {c.paymentFailedAt ? ` · payment failed ${String(c.paymentFailedAt).slice(0, 16)}${c.remindersMuted ? " (muted)" : ""}` : ""}
+                  {c.refund ? ` · refund ${JSON.stringify(c.refund).slice(0, 160)}` : ""}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* ---- 10 ASTERISK GOVERNANCE ---- */}
+        {panel === "governance" && data && (
+          <Governance data={data} busy={busy} act={act} call={call} />
         )}
 
         {/* ---- 09 THE STEWARD ---- */}
